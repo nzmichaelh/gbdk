@@ -1,19 +1,7 @@
 	;; Originally from GBDK by Pascal Felber.
 	
 	.area	_CODE
-__mulschar::	
-__muluchar::
-	push	de
-	push	bc
-	push	ix
-	ld	ix,#0
-	add	ix,sp
-
-	ld	c,8(ix)
-	ld	e,9(ix)
-	call	.mulu8
 	
-	pop	ix
 	pop	bc
 	pop	de
 	ret
@@ -22,21 +10,28 @@ __mulsint::
 __muluint::
 	push	de
 	push	bc
-	push	ix
-	ld	ix,#0
-	add	ix,sp
+	ld	hl,#6
+	add	hl,sp
 
-	ld	c,8(ix)
-	ld	b,9(ix)
-	ld	e,10(ix)
-	ld	d,11(ix)
-	call	.mulu16
+	ld	c,(hl)
+	inc	hl
+	ld	b,(hl)
+	inc	hl
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+	jp	.mulu16
 	
-	pop	ix
-	pop	bc
-	pop	de
-	ret
-		
+__mulschar::	
+__muluchar::
+	push	de
+	push	bc
+	ld	hl,#6
+	add	hl,sp
+
+	ld	c,(hl)
+	inc	hl
+	ld	e,(hl)
 .mul8:
 .mulu8:
 	LD	B,#0x00		; Sign extend is not necessary with mul
@@ -74,5 +69,8 @@ __muluint::
 	JR	Z,.mend		; Exit if MSB of multiplier is 0
 	ADD	HL,BC		; Add multiplicand to product
 .mend:
-	RET			; HL = result
+				; HL = result
+	pop	bc
+	pop	de
+	ret
 

@@ -36,22 +36,29 @@ _strcpy::
 _memcpy::
 	push	de
 	push	bc
-	push	ix
-	ld	ix,#0
-	add	ix,sp
-	ld	e,8(ix)
-	ld	d,9(ix)
-	ld	l,10(ix)
-	ld	h,11(ix)
-	ld	c,12(ix)
-	ld	b,13(ix)
+	ld	hl,#6
+	add	hl,sp
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+	inc	hl
+	ld	a,(hl)
+	ex	af,af'
+	inc	hl
+	ld	a,(hl)
+	inc	hl
+	ld	c,(hl)
+	inc	hl
+	ld	b,(hl)
+	ld	h,a
+	ex	af,af'
+	ld	l,a
 
 	push	de
 
 	ldir
 
 	pop	hl
-	pop	ix
 	pop	bc
 	pop	de
 	ret

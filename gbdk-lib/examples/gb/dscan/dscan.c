@@ -4,7 +4,7 @@
  * Mr. N.U. of TeamKNOx                                             *
  ********************************************************************/
 
-#include <gb.h>
+#include <gb/gb.h>
 #include <stdlib.h>
 #include <rand.h>
 
@@ -18,7 +18,7 @@
 
 /* ************************************************************ */
 
-UWORD bkg_p[] =
+const UWORD bkg_p[] =
 {
   bkgCGBPal0c0,bkgCGBPal0c1,bkgCGBPal0c2,bkgCGBPal0c3,
   bkgCGBPal1c0,bkgCGBPal1c1,bkgCGBPal1c2,bkgCGBPal1c3,
@@ -30,7 +30,7 @@ UWORD bkg_p[] =
   bkgCGBPal7c0,bkgCGBPal7c1,bkgCGBPal7c2,bkgCGBPal7c3
 };
 
-UWORD obj_p[] =
+const UWORD obj_p[] =
 {
   foreCGBPal0c0,foreCGBPal0c1,foreCGBPal0c2,foreCGBPal0c3,
   foreCGBPal1c0,foreCGBPal1c1,foreCGBPal1c2,foreCGBPal1c3,
@@ -97,12 +97,12 @@ UWORD obj_p[] =
 
 unsigned char msg_tile[64];
 
-unsigned char msg_1up[]   = "1UP";
-unsigned char msg_lv[]    = "LV";
+const unsigned char *msg_1up   = "1UP";
+const unsigned char *msg_lv    = "LV";
 
-unsigned char msg_gover[] = "GAMEOVER";
-unsigned char msg_pause[] = " PAUSE! ";
-unsigned char msg_start[] = "        ";
+const unsigned char *msg_gover = "GAMEOVER";
+const unsigned char *msg_pause = " PAUSE! ";
+const unsigned char *msg_start = "        ";
 
 UBYTE pf, px, pp, pl;
 UWORD pw;
@@ -112,9 +112,6 @@ UBYTE ef[MAX_ET], ex[MAX_ET], ey[MAX_ET];
 UBYTE kf[MAX_KT], kx[MAX_KT], ky[MAX_KT];
 UBYTE rnd_enemy, rnd_kirai;
 UBYTE k_right, k_left;
-
-/* Seed for the random number generator */
-fixed seed;
 
 void set_sprite_attrb( UBYTE nb, UBYTE tile )
 {
@@ -315,23 +312,24 @@ void player()
 {
   UBYTE key;
   UBYTE i;
+  UINT16 seed;
 
   key = joypad();
   /* pause */
   if( key & J_START ) {
     if( pf == DEF_PF ) {
       /* Initialize the random number generator */
-      seed.b.l = DIV_REG;
+      seed = DIV_REG;
       waitpadup();
-      seed.b.h = DIV_REG;
-      initarand(seed.w);
+      seed |= ((UINT16)DIV_REG << 8);
+      initarand(seed);
       hide_msg();
       init_score();
       init_player();
       init_tama();
       init_enemy();
       init_kirai();
-      delay( 500UL );
+      delay( 500 );
     } else {
       show_pause();
       waitpadup();
@@ -353,7 +351,7 @@ void player()
             if(pw > 0)
               pw--;
             show_score( pw );
-            delay( 250UL );
+            delay( 250 );
           }
           show_score( ps );
         } else if( key & J_RIGHT ) {
@@ -361,7 +359,7 @@ void player()
             if(pw < 99)
               pw++;
             show_score( pw );
-            delay( 250UL );
+            delay( 250 );
           }
           show_score( ps );
         } else if( key & J_SELECT ) {
@@ -373,7 +371,7 @@ void player()
       }
       waitpadup();
       hide_msg();
-      delay( 500UL );
+      delay( 500 );
     }
     return;
   }
@@ -726,7 +724,6 @@ void main()
   disable_interrupts();
   DISPLAY_OFF;
 
-  initarand(seed.w);
   init_screen();
   init_score();
   init_player();

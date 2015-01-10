@@ -1,10 +1,10 @@
-#include <gb.h>
+#include <gb/gb.h>
 
 #include "bar_c.h"
 #include "bar_c.c"
 #include "bar_m.c"
 
-UWORD bar_p[] =
+const UWORD bar_p[] =
 {
   bar_cCGBPal0c0,bar_cCGBPal0c1,bar_cCGBPal0c2,bar_cCGBPal0c3,
   bar_cCGBPal1c0,bar_cCGBPal1c1,bar_cCGBPal1c2,bar_cCGBPal1c3,
@@ -16,7 +16,7 @@ UWORD bar_p[] =
   bar_cCGBPal7c0,bar_cCGBPal7c1,bar_cCGBPal7c2,bar_cCGBPal7c3
 };
 
-unsigned char bar_a[] =
+const unsigned char bar_a[] =
 {
   7,7,4,4,4,6,6,6,2,2,2,5,5,5,1,1,1,3,3,3,
   7,7,4,4,4,6,6,6,2,2,2,5,5,5,1,1,1,3,3,3,
@@ -38,7 +38,7 @@ unsigned char bar_a[] =
   3,3,3,3,0,0,0,0,5,5,5,5,0,0,0,0,0,0,0,0
 };
 
-int main()
+int main(void)
 {
   /* Transfer color palettes */
   set_bkg_palette( 7, 1, &bar_p[0] );
@@ -67,9 +67,5 @@ int main()
   enable_interrupts();
   DISPLAY_ON;
 
-  /* Loop forever */
-  while(1)
-    ;
-
-  return(0);
+  return 0;
 }

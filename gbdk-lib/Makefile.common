@@ -14,7 +14,7 @@ endif
 SCC = $(SDCCLIB)/bin/sdcc
 GBCC = $(SDCCLIB)/bin/lcc
 
-AS_Z80 = as-z80
+AS_Z80 = $(SDCCLIB)/bin/as-z80
 AS_GBZ80 = $(SDCCLIB)/bin/as-gbz80
 
 CLEANSPEC = *.o *.asm *.cdb *.sym *.lst *~

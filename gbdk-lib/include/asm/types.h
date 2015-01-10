@@ -1,9 +1,9 @@
 #ifndef ASM_TYPES_INCLUDE
 #define ASM_TYPES_INCLUDE
 
-#if SDCC_PORT==gbz80
+#if SDCC_PORT == gbz80
 #include <asm/gbz80/types.h>
-#elif SDCC_PORT==z80
+#elif SDCC_PORT == z80
 #include <asm/z80/types.h>
 #else
 #error Unrecognised port

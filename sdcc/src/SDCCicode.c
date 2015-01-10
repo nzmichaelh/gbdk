@@ -648,13 +648,13 @@ link *operandType (operand *op)
 	
     case TYPE :
 	return op->operand.typeOperand ;
+    default:
+	werror (E_INTERNAL_ERROR,__FILE__,__LINE__,
+		" operand type not known ");
+	assert (0) ; /* should never come here */
+	/*  Just to keep the compiler happy */
+	return (link *)0;
     }
-    
-    werror (E_INTERNAL_ERROR,__FILE__,__LINE__,
-	    " operand type not known ");
-    assert (0) ; /* should never come here */
-    /*  Just to keep the compiler happy */
-    return (link *)0;
 }
 
 /*-----------------------------------------------------------------*/
@@ -1328,7 +1328,7 @@ operand *geniCodeCast (link *type, operand *op, bool implicit)
 	return op;
     
     /* if this is a literal then just change the type & return */
-    if (IS_LITERAL(opetype) && !IS_PTR(type) && !IS_PTR(optype))
+    if (IS_LITERAL(opetype) && op->type == VALUE && !IS_PTR(type) && !IS_PTR(optype))
 	return operandFromValue(valCastLiteral(type,
 					       operandLitValue(op)));
           
@@ -1650,25 +1650,6 @@ link *aggrToPtr ( link *type, bool force)
     if ((DCL_TYPE(ptype) = PTR_TYPE(SPEC_OCLS(etype))) == CPOINTER)
 	DCL_PTR_CONST(ptype) = 1;
 
-/*     if (SPEC_OCLS(etype) == generic) */
-/* 	DCL_TYPE(ptype) = GPOINTER; */
-/*     else */
-/* 	if (SPEC_OCLS(etype)->codesp ) { */
-/* 	    DCL_TYPE(ptype) = CPOINTER ; */
-/* 	    DCL_PTR_CONST(ptype) = 1; */
-/* 	} */
-/* 	else */
-/* 	    if (SPEC_OCLS(etype)->fmap && !SPEC_OCLS(etype)->paged) */
-/* 		DCL_TYPE(ptype) = FPOINTER ; */
-/* 	    else */
-/* 		if (SPEC_OCLS(etype)->fmap && SPEC_OCLS(etype)->paged) */
-/* 		    DCL_TYPE(ptype) = PPOINTER ; */
-/* 		else */
-/* 		    if (SPEC_OCLS(etype) == idata) */
-/* 			DCL_TYPE(ptype) = IPOINTER; */
-/* 		    else */
-/* 			DCL_TYPE(ptype) = POINTER ; */
-    
     /* if the variable was declared a constant */
     /* then the pointer points to a constant */
     if (IS_CONSTANT(etype) )
@@ -1687,26 +1668,11 @@ operand *geniCodeArray2Ptr (operand *op)
 {
     link *optype = operandType(op);
     link *opetype = getSpec(optype);
-    
+
+    /* set the pointer depending on the storage class */    
     if ((DCL_TYPE(optype) = PTR_TYPE(SPEC_OCLS(opetype))) == CPOINTER)
 	DCL_PTR_CONST(optype) = 1;
 
-    /* set the pointer depending on the storage class */
-/*     if (SPEC_OCLS(opetype)->codesp ) { */
-/* 	DCL_TYPE(optype) = CPOINTER ; */
-/* 	DCL_PTR_CONST(optype) = 1; */
-/*     } */
-/*     else */
-/* 	if (SPEC_OCLS(opetype)->fmap && !SPEC_OCLS(opetype)->paged) */
-/* 	    DCL_TYPE(optype) = FPOINTER ; */
-/* 	else */
-/* 	    if (SPEC_OCLS(opetype)->fmap && SPEC_OCLS(opetype)->paged) */
-/* 		DCL_TYPE(optype) = PPOINTER ; */
-/* 	    else */
-/* 		if (SPEC_OCLS(opetype) == idata) */
-/* 		    DCL_TYPE(optype) = IPOINTER; */
-/* 		else */
-/* 		    DCL_TYPE(optype) = POINTER ; */
     
     /* if the variable was declared a constant */
     /* then the pointer points to a constant */
@@ -1729,10 +1695,12 @@ operand *geniCodeArray (operand *left,operand *right)
     link *ltype = operandType(left);
     
     if (IS_PTR(ltype)) {
+	if (IS_PTR(ltype->next) && left->isaddr)
+	    left = geniCodeRValue(left,FALSE);
 	return geniCodeDerefPtr(geniCodeAdd(left,right));
     }
 
-   /* array access */
+    /* array access */
     right = geniCodeMultiply(right,
 			     operandFromLit(getSize(ltype->next)));
 
@@ -1967,30 +1935,10 @@ operand *geniCodeAddressOf (operand *op)
     p = newLink();
     p->class = DECLARATOR ;
     
+    /* set the pointer depending on the storage class */
     if ((DCL_TYPE(p) = PTR_TYPE(SPEC_OCLS(opetype))) == CPOINTER)
 	DCL_PTR_CONST(p) = 1;
 
-    /* set the pointer depending on the storage class */
-/*     if (SPEC_OCLS(opetype)->codesp ) { */
-/* 	DCL_TYPE(p) = CPOINTER ; */
-/* 	DCL_PTR_CONST(p) = 1; */
-/*     } */
-/*     else */
-/* 	if (SPEC_OCLS(opetype)->fmap && !SPEC_OCLS(opetype)->paged) */
-/* 	    DCL_TYPE(p) = FPOINTER ; */
-/* 	else */
-/* 	    if (SPEC_OCLS(opetype)->fmap && SPEC_OCLS(opetype)->paged) */
-/* 		DCL_TYPE(p) = PPOINTER ; */
-/* 	    else */
-/* 		if (SPEC_OCLS(opetype) == idata) */
-/* 		    DCL_TYPE(p) = IPOINTER; */
-/* 		else */
-/* 		    if (SPEC_OCLS(opetype) == data || */
-/* 			SPEC_OCLS(opetype) == overlay) */
-/* 			DCL_TYPE(p) = POINTER ; */
-/* 		    else */
-/* 			DCL_TYPE(p) = GPOINTER; */
-    
     /* make sure we preserve the const & volatile */
     if (IS_CONSTANT(opetype)) 
 	DCL_PTR_CONST(p) = 1;
@@ -2065,16 +2013,19 @@ operand *geniCodeDerefPtr (operand *op)
     }
     
     /* now get rid of the pointer part */
-    if (lvaluereq && IS_ITEMP(op))
+    if (lvaluereq && IS_ITEMP(op) )
+    {
 	retype = getSpec(rtype = copyLinkChain(optype)) ;
+    }
     else
+    {
 	retype = getSpec(rtype = copyLinkChain(optype->next)) ;
+    }
     
     /* if this is a pointer then outputclass needs 2b updated */
     if (IS_PTR(optype)) 
 	setOClass(optype,retype);    
         
-
     op->isGptr = IS_GENPTR(optype);
 
     /* if the pointer was declared as a constant */
@@ -2090,6 +2041,7 @@ operand *geniCodeDerefPtr (operand *op)
 
     if (!lvaluereq)
 	op = geniCodeRValue(op,TRUE);
+
     setOperandType(op,rtype);
     
     return op;    
@@ -2251,13 +2203,14 @@ operand *geniCodeAssign (operand *left, operand *right, int nosupdate)
 	
     /* left is integral type and right is literal then
        check if the literal value is within bounds */
-    if (IS_INTEGRAL(ltype) && IS_LITERAL(rtype)) {
+    if (IS_INTEGRAL(ltype) && right->type == VALUE && IS_LITERAL(rtype)) {
 	int nbits = bitsForType(ltype);
 	long v = operandLitValue(right);
 
 	if (v > ((LONG_LONG)1 << nbits) && v > 0)
 	    werror(W_CONST_RANGE," = operation");
     }
+
     /* if the left & right type don't exactly match */
     /* if pointer set then make sure the check is
        done with the type & not the pointer */
@@ -2781,6 +2734,7 @@ operand *ast2iCode (ast *tree)
 	 tree->opval.op != INLINEASM ) {
 	if (IS_ASSIGN_OP(tree->opval.op) || 
 	    IS_DEREF_OP(tree)            || 
+	    (tree->opval.op == '&' && !tree->right) ||
 	    tree->opval.op == PTR_OP) {
 	    lvaluereq++;
 	    left = operandFromAst(tree->left);
@@ -2788,7 +2742,8 @@ operand *ast2iCode (ast *tree)
 	} else {
 	    left =  operandFromAst(tree->left);
 	}
-	if (tree->opval.op == INC_OP || tree->opval.op == DEC_OP) {
+	if (tree->opval.op == INC_OP || 
+	    tree->opval.op == DEC_OP) {
 	    lvaluereq++;
 	    right= operandFromAst(tree->right);
 	    lvaluereq--;
@@ -2802,8 +2757,11 @@ operand *ast2iCode (ast *tree)
     switch (tree->opval.op) {
 	
     case '[' :    /* array operation */
-	left= geniCodeRValue (left,FALSE);
-	right=geniCodeRValue (right,TRUE);		   
+	{
+	    link *ltype = operandType(left);
+	    left= geniCodeRValue (left,IS_PTR(ltype->next) ? TRUE : FALSE);
+	    right=geniCodeRValue (right,TRUE);		   
+	}
 	
 	return geniCodeArray (left,right);
 	

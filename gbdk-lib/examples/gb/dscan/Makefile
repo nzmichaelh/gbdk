@@ -1,4 +1,4 @@
-CC	= ../../bin/lcc -Wa-l -Wl-m
+CC	= ../../../bin/lcc -Wa-l -Wl-m -DGBDK_2_COMPAT=1 -v
 
 BINS	= dscan.gb
 

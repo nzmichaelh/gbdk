@@ -1,5 +1,5 @@
-gbdk3-2.91 - http://gbdk.sourceforge.net/
-----------------------------------------
+gbdk3-2.92 - http://gbdk.sourceforge.net/
+-----------------------------------------
 This is a early-release beta.  Please report any bugs :)
 
 Reporting problems and feature requests
@@ -21,11 +21,32 @@ extract, and type:
 
 make -f update.mak update
 
-The Linux binary needs to be installed in /usr/lib/gbdk, and
-the win32 binary in the root directory of some drive.  This will
-change.  Linux users also need to install libgc4 or above (Debian
-users try 'apt-get install libgc5').  The win32 version is compiled
-with cygwin b20.
+The Linux binary is normally installed in /usr/lib/gbdk, and
+the win32 binary in the root directory of the C drive.  If you
+install somewhere else, set GBDKDIR to the appropriate path.
+
+eg.  A win32 user installs to f:\tools\gbstuff\gbdk.  Add the line
+	set GBDKDIR=f:\tools\gbstuff\gbdk\
+	set PATH=%PATH%;f:\tools\gbstuff\gbdk\bin
+     to autoexec.bat so that lcc can find everything.  Note the
+trailing backslash.
+
+Linux users also need to install libgc4 or above (Debian users try
+'apt-get install libgc5').  The win32 version is compiled with cygwin
+b20.
+
+Changelog
+---------
+gbdk3-2.92:
+* All the examples now work (with a little bit of patching :)
+* Fixed problem with registers being cached instead of being marked
+  volatile.
+* More register packing - should be a bit faster.
+* You can now install somewhere except c:\gbdk | /usr/lib/gbdk
+* Arrays initalised with constant addresses a'la galaxy.c now
+  work.
+* Fixed minor bug with 104$: labels in as.
+* Up to 167d/s...
 
 Differences between this and gbdk-2.1.5
 ---------------------------------------
@@ -37,6 +58,9 @@ Differences between this and gbdk-2.1.5
   a 'good thing' as normally the promotion is unwanted on an eight
   bit system, but in some places you may get the wrong result.  If
   so, try promoting the varible manually i.e. (int)foo*20;
+* If funny things happen when you access registers, try delcaring them
+  as volatile.  See <hardware.h> for an example.  sdcc normally caches
+  varibles for speed, but this causes trouble when accessing registers.
 * The basic types have changed.  The sizes are now:
 	char		8 bits
 	int		16 bits
@@ -65,10 +89,6 @@ Differences between this and gbdk-2.1.5
 * Constant global structs (ie tile data, sprites) SHOULD be declared
   as 'const'  If they are not declared const, not only do they get copied
   into ram at startup but they take up about 6x the rom space.
-
-Notes
------
-The galaxy.c example compiles with errors.  This is expected.
 
 -- Michael Hope
    <michaelh@earthling.net>

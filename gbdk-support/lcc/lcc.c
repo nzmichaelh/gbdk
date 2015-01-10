@@ -2,7 +2,7 @@
  * lcc [ option ]... [ file | -llib ]...
  * front end for the ANSI C compiler
  */
-static char rcsid[] = "$Id: lcc.c,v 1.1.1.1 2000/02/22 04:13:06 michaelh Exp $";
+static char rcsid[] = "$Id: lcc.c,v 1.4 2000/03/08 04:31:46 michaelh Exp $";
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -23,10 +23,10 @@ struct list {		/* circular list nodes: */
 };
 
 static void *alloc(int);
-static List append(char *,List);
+List append(char *,List);
 extern char *basepath(char *);
 static int callsys(char *[]);
-extern char *concat(char *, char *);
+extern char *concat(const char *, const char *);
 static int compile(char *, char *);
 static void compose(char *[], List, List, List);
 static void error(char *, char *);
@@ -53,6 +53,8 @@ extern int getpid(void);
 extern char *cpp[], *include[], *com[], *as[],*ld[], inputs[], *suffixes[];
 extern int option(char *);
 
+void finalise(void);
+
 static int errcnt;		/* number of errors */
 static int Eflag;		/* -E specified */
 static int Sflag;		/* -S specified */
@@ -60,7 +62,7 @@ static int cflag;		/* -c specified */
 static int verbose;		/* incremented for each -v */
 static List llist[2];		/* loader files, flags */
 static List alist;		/* assembler flags */
-static List clist;		/* compiler flags */
+List clist;		/* compiler flags */
 static List plist;		/* preprocessor flags */
 static List ilist;		/* list of additional includes from LCCINPUTS */
 static List rmlist;		/* list of files to remove */
@@ -68,10 +70,10 @@ static char *outfile;		/* ld output file or -[cS] object file */
 static int ac;			/* argument count */
 static char **av;		/* argument vector */
 char *tempdir = TEMPDIR;	/* directory for temporary files */
-static char *progname;
+char *progname;
 static List lccinputs;		/* list of input directories */
 
-main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	int i, j, nf;
 	
 	progname = argv[0];
@@ -101,8 +103,8 @@ main(int argc, char *argv[]) {
 	}
 	plist = append("-D__LCC__", 0);
 	initinputs();
-	if (getenv("LCCDIR"))
-		option(stringf("-lccdir=%s", getenv("LCCDIR")));
+	if (getenv("GBDKDIR"))
+		option(stringf("--prefix=%s", getenv("GBDKDIR")));
 	for (nf = 0, i = j = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-o") == 0) {
 			if (++i < argc) {
@@ -132,6 +134,7 @@ main(int argc, char *argv[]) {
 		outfile = 0;
 	}
 	argv[j] = 0;
+	finalise();
 	for (i = 0; include[i]; i++)
 		plist = append(include[i], plist);
 	if (ilist) {
@@ -180,7 +183,7 @@ static void *alloc(int n) {
 }
 
 /* append - append a node with string str onto list, return new list */	
-static List append(char *str, List list) {
+List append(char *str, List list) {
 	List p = alloc(sizeof *p);
 
 	p->str = str;
@@ -290,7 +293,7 @@ static int callsys(char **av) {
 }
 
 /* concat - return concatenation of strings s1 and s2 */
-char *concat(char *s1, char *s2) {
+char *concat(const char *s1, const char *s2) {
 	int n = strlen(s1);
 	char *s = alloc(n + strlen(s2) + 1);
 
@@ -676,13 +679,18 @@ static void opt(char *arg) {
 			return;
 		case 'v':
 			if (verbose++ == 0) {
+#if 0
+			    /* GBDK removed */
 				if (strcmp(basepath(cpp[0]), "gcc-cpp") == 0)
 					plist = append(arg, plist);
+#endif
 				clist = append(arg, clist);
 				fprintf(stderr, "%s %s\n", progname, rcsid);
 			}
 			return;
 		}
+	if (option(arg))
+	    return;
 	if (cflag || Sflag || Eflag)
 		fprintf(stderr, "%s: %s ignored\n", progname, arg);
 	else

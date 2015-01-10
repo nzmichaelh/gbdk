@@ -578,7 +578,7 @@ double   floatFromVal ( value *val )
     if (!val)
 	return 0;
 
-    if (SPEC_SCLS(val->etype) != S_LITERAL) {
+    if (val->etype && SPEC_SCLS(val->etype) != S_LITERAL) {
 	werror(E_CONST_EXPECTED,val->name);
 	return 0;
     }
@@ -1213,8 +1213,8 @@ value *valForArray (ast *arrExpr)
 		if (SPEC_SCLS(arrExpr->left->etype) == S_IDATA)
 		    DCL_TYPE(val->type) = IPOINTER ;
 		else
-		    if (SPEC_SCLS(arrExpr->left->etype) == S_FLASH)
-			DCL_TYPE(val->type) = FLPOINTER ;
+		    if (SPEC_SCLS(arrExpr->left->etype) == S_EEPROM)
+			DCL_TYPE(val->type) = EEPPOINTER ;
 		    else
 			DCL_TYPE(val->type) = POINTER ;
     val->type->next = arrExpr->left->ftype;
@@ -1282,8 +1282,8 @@ value *valForStructElem(ast *structT, ast *elemT)
 		if (SPEC_SCLS(structT->etype) == S_IDATA)
 		    DCL_TYPE(val->type) = IPOINTER ;
 		else
-		    if (SPEC_SCLS(structT->etype) == S_FLASH)
-			DCL_TYPE(val->type) = FLPOINTER ;
+		    if (SPEC_SCLS(structT->etype) == S_EEPROM)
+			DCL_TYPE(val->type) = EEPPOINTER ;
 		    else
 			DCL_TYPE(val->type) = POINTER ;
     val->type->next = sym->type;

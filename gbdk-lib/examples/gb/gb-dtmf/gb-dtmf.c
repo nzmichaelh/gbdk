@@ -4,9 +4,10 @@
 /*              Osamu Ohashi                */
 /* ---------------------------------------- */
 
-#include <gb.h>
+#include <gb/gb.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 /* BG data */
 #include "frm_lcd.c"	/* Back ground pattern */
@@ -84,11 +85,11 @@
 #define R3 0x66U /*  852Hz,  851Hz */
 #define R4 0x75U /*  941Hz,  942Hz */ 
 
-unsigned char row[4] = {R1,R2,R3,R4};	/* DTMF frequency strage of Row */	
-unsigned char col[4] = {C1,C2,C3,C4};	/* DTMF frequency strage of Col */
+const unsigned char row[4] = {R1,R2,R3,R4};	/* DTMF frequency strage of Row */	
+const unsigned char col[4] = {C1,C2,C3,C4};	/* DTMF frequency strage of Col */
 
 /* It is possible to set up initial screen by each BG data. */
-unsigned char dtmf_tile[] = {
+const unsigned char dtmf_tile[] = {
 	 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
 
 	 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2,
@@ -120,26 +121,26 @@ unsigned char dtmf_tile[] = {
 	Normal buttons are created by 3tiles x 3tiles(24pixels x 24pixels)
 	Dialing button is created by 6tiles x 3tiles(48pixels x 24pixels)
 */
-unsigned char break_tile[] = {
+const unsigned char break_tile[] = {
 	 9,10,11,
 	12,13,14,
 	15,16,17
 };
 
-unsigned char dialing_break[] = {
+const unsigned char dialing_break[] = {
 	 9,10,10,10,10,11,
 	12,13,13,13,13,14,
 	15,16,16,16,16,17
 };
 
-unsigned char press_tile[] = {
+const unsigned char press_tile[] = {
 	18,19,20,
 	21,22,23,
 	24,25,26
 };
 
 
-unsigned char dialing_press[] = {
+const unsigned char dialing_press[] = {
 	18,19,19,19,19,20,
 	21,22,22,22,22,23,
 	24,25,25,25,25,26
@@ -148,12 +149,12 @@ unsigned char dialing_press[] = {
 /*
 	LCD image at initial & AC
 */
-unsigned char init_disp[] = {
+const unsigned char init_disp[] = {
 	59,59,59,59,59,59,59,59,59,59,59,59,59,59,59,59,59,59,
 	60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60
 };
 
-char	pad[4][6] = {		/* DTMF Pad assign */
+const char	pad[4][6] = {		/* DTMF Pad assign */
 	{'1','2','3','A','%','P'},
 	{'4','5','6','B','-','F'},
 	{'7','8','9','C',',','?'},
@@ -541,6 +542,9 @@ void main()
 	char str[MAX_DTMF];
 	char str_ms[10];
 
+        /* PENDING: sdcc is broken and needs this to be initalised. */
+	key2 = 1;
+
 	/* default dialling time setting */
 	on_time = DTMF_ON;
 	off_time = DTMF_OFF;
@@ -568,7 +572,7 @@ void main()
 	i = j = 0;
 
 	ch_pos = 0;
-	
+
 	while(1) {
 		wait_vbl_done();
 		key1 = joypad();
@@ -695,7 +699,6 @@ void main()
 				}
 			}
 		}
-
 		if(!(key1 & J_A)){
 			if((key1 & J_UP) && !(key2 & J_UP) && j > 0)
 				j--;

@@ -50,17 +50,20 @@ typedef struct structdef {
 } structdef ;
 
 /* noun definitions */
-enum  { V_INT   =  0,
+typedef enum { 
+	V_INT   =  0,
 	V_FLOAT     ,
         V_CHAR      ,
         V_VOID      ,
         V_STRUCT    ,
         V_LABEL     ,
         V_BIT       ,
-        V_SBIT      };
+        V_SBIT      
+} NOUN;
 
 /* storage class    */
-enum  { S_FIXED  =  0,
+typedef enum { 
+    	S_FIXED  =  0,
         S_AUTO       ,
         S_REGISTER   ,        
         S_CONSTANT   ,
@@ -75,12 +78,13 @@ enum  { S_FIXED  =  0,
         S_STACK      ,
         S_XSTACK     ,
         S_BIT        ,
-        S_FLASH      };
+        S_EEPROM      
+} STORAGE_CLASS;
 
 /* specifier is the last in the type-chain */
 typedef struct specifier {
-    unsigned    noun        ;  /* CHAR INT STRUCTURE LABEL   */
-    unsigned    sclass      ;  /* REGISTER,AUTO,FIX,CONSTANT */
+    NOUN	noun        ;  /* CHAR INT STRUCTURE LABEL   */
+    STORAGE_CLASS sclass    ;  /* REGISTER,AUTO,FIX,CONSTANT */
     struct memmap *oclass   ;  /* output storage class       */
     unsigned    _long : 1   ;  /* 1=long            */
     unsigned    _short: 1	;	/* 1=short int	  */
@@ -117,19 +121,21 @@ typedef struct specifier {
 } specifier ;
 
 /* types of declarators */
-enum {  POINTER   = 0,       /* pointer to near data */
+typedef enum {
+	POINTER   = 0,       /* pointer to near data */
         FPOINTER     ,       /* pointer to far data  */
         CPOINTER     ,       /* pointer to code space */
         GPOINTER     ,       /* _generic pointer     */
         PPOINTER     ,       /* paged area pointer   */
         IPOINTER     ,       /* pointer to upper 128 bytes */
 	UPOINTER     ,       /* unknown pointer used only when parsing */
-	FLPOINTER    ,       /* pointer to flash     */
+	EEPPOINTER   ,       /* pointer to eeprom     */
         ARRAY        ,
-        FUNCTION     };
+        FUNCTION     
+} DECLARATOR_TYPE;
 
 typedef struct declarator {
-    short    dcl_type;     /* POINTER,ARRAY or FUNCTION  */
+    DECLARATOR_TYPE dcl_type;     /* POINTER,ARRAY or FUNCTION  */
     short    num_elem;     /* # of elems if type==array  */
     short    ptr_const :1;   /* pointer is constant        */
     short    ptr_volatile:1; /* pointer is volatile        */
@@ -278,7 +284,7 @@ typedef struct symbol {
 			             DCL_TYPE(x) == GPOINTER   ||    \
 			             DCL_TYPE(x) == IPOINTER   ||    \
 			             DCL_TYPE(x) == PPOINTER   ||    \
-			             DCL_TYPE(x) == FLPOINTER  ||    \
+			             DCL_TYPE(x) == EEPPOINTER ||    \
                                      DCL_TYPE(x) == CPOINTER   ||    \
                                      DCL_TYPE(x) == UPOINTER  ))
 #define IS_PTR_CONST(x) (IS_PTR(x) && DCL_PTR_CONST(x))

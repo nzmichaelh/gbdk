@@ -272,7 +272,7 @@ static int notUsedInBlock (symbol *sym, eBBlock *ebp, iCode *ic)
 static int notUsedInRemaining (symbol *sym, eBBlock *ebp, iCode *ic)
 {
     return ((usedInRemaining (operandFromSymbol(sym),ic) ? 0 : 1) &&
-	    allDefsOutOfRange (sym->defs,ic->seq,ebp->lSeq));
+	    allDefsOutOfRange (sym->defs,ebp->fSeq,ebp->lSeq));
 }
 
 /*-----------------------------------------------------------------*/
@@ -441,7 +441,6 @@ static symbol *createStackSpil (symbol *sym)
 {
     symbol *sloc= NULL;
     int useXstack, model, noOverlay;
-    int stackAuto;
 
     char slocBuffer[30];
 
@@ -472,7 +471,7 @@ static symbol *createStackSpil (symbol *sym)
     /* set the type to the spilling symbol */
     sloc->type = copyLinkChain(sym->type);
     sloc->etype = getSpec(sloc->type);
-    SPEC_SCLS(sloc->etype) = S_AUTO ;    
+    SPEC_SCLS(sloc->etype) = S_DATA ;
     SPEC_EXTR(sloc->etype) = 0;
 
     /* we don't allow it to be allocated`
@@ -486,7 +485,6 @@ static symbol *createStackSpil (symbol *sym)
     useXstack = options.useXstack;
     model = options.model;
     noOverlay = options.noOverlay;
-    stackAuto = options.stackAuto;
     options.noOverlay = 1;
     options.model = options.useXstack = 0;
 
@@ -495,7 +493,6 @@ static symbol *createStackSpil (symbol *sym)
     options.useXstack = useXstack;
     options.model     = model;
     options.noOverlay = noOverlay;
-    options.stackAuto = stackAuto;
     sloc->isref = 1; /* to prevent compiler warning */
     
     /* if it is on the stack then update the stack */
@@ -612,8 +609,8 @@ static symbol *selectSpil (iCode *ic, eBBlock *ebp, symbol *forSym)
 	return sym;
     }
 
-    /* if the symbol is local to the block then */        
-    if (forSym->liveTo < ebp->lSeq ) {       
+    /* if the symbol is local to the block then */
+    if (forSym->liveTo < ebp->lSeq) {       
 
 	/* check if there are any live ranges allocated
 	   to registers that are not used in this block */
@@ -1571,6 +1568,7 @@ pack:
         
     remiCodeFromeBBlock(ebp,ic);
     hTabDeleteItem (&iCodehTab,ic->key,ic,DELETE_ITEM,NULL);
+    OP_DEFS(IC_RESULT(dic)) = bitVectSetBit(OP_DEFS(IC_RESULT(dic)),dic->key);
     return 1;
     
 }
@@ -2202,6 +2200,7 @@ static void packRegisters (eBBlock *ebp)
 			IC_RESULT(dic) = IC_RESULT(ic);
 			remiCodeFromeBBlock(ebp,ic);
 			hTabDeleteItem (&iCodehTab,ic->key,ic,DELETE_ITEM,NULL);
+			OP_DEFS(IC_RESULT(dic)) = bitVectSetBit(OP_DEFS(IC_RESULT(dic)),dic->key);
 			ic = ic->prev;
 		    } else
 			OP_SYMBOL(IC_RIGHT(ic))->ruonly =  0;
@@ -2217,6 +2216,7 @@ static void packRegisters (eBBlock *ebp)
 			IC_RESULT(dic) = IC_RESULT(ic);
 			remiCodeFromeBBlock(ebp,ic);
 			hTabDeleteItem (&iCodehTab,ic->key,ic,DELETE_ITEM,NULL);
+			OP_DEFS(IC_RESULT(dic)) = bitVectSetBit(OP_DEFS(IC_RESULT(dic)),dic->key);
 			ic = ic->prev;
 		    }
 		}

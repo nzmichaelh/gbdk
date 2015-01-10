@@ -322,7 +322,7 @@ const unsigned char door4_tiles[] = {
 };
 
 /* Should really be const, but sdcc doesnt yet support it. */
-unsigned char *film[] = {
+const unsigned char *film[] = {
   &door1_tiles[0x0C*0],
   &door2_tiles[0x0C*0],
   &door3_tiles[0x0C*0],

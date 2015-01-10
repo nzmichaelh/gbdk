@@ -1,4 +1,4 @@
-/Makefile/1.5/Mon Feb 28 00:58:19 2000//
+/Makefile/1.6/Sun Mar  5 22:11:32 2000//
 /bank_0.c/1.1/Wed Feb 23 02:49:17 2000//
 /bank_1.c/1.1/Wed Feb 23 02:49:17 2000//
 /bank_2.c/1.1/Wed Feb 23 02:49:17 2000//
@@ -8,10 +8,10 @@
 /filltest.c/1.1/Wed Feb 23 02:49:17 2000//
 /fonts.c/1.1/Wed Feb 23 02:49:17 2000//
 /fprpn.c/1.1/Wed Feb 23 02:49:17 2000//
-/galaxy.c/1.3/Mon Feb 28 00:58:19 2000//
+/galaxy.c/1.4/Sun Mar  5 22:11:32 2000//
 /irq.c/1.1/Wed Feb 23 02:49:17 2000//
 /paint.c/1.3/Sun Feb 27 22:54:33 2000//
-/ram_fn.c/1.1/Wed Feb 23 02:49:17 2000//
+/ram_fn.c/1.2/Sun Mar  5 22:11:32 2000//
 /rand.c/1.2/Fri Feb 25 02:52:56 2000//
 /rpn.c/1.1/Wed Feb 23 02:49:17 2000//
 /samptest.c/1.1/Wed Feb 23 02:49:17 2000//

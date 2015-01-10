@@ -3,6 +3,7 @@
 static char _defaultRules[] =
 {
 #include "peeph.rul"
+#include "peeph-z80.rul"
 };
 
 Z80_OPTS z80_opts;
@@ -21,6 +22,8 @@ static bool _z80_parseOptions(int *pargc, char **argv, int *i)
 
 static void _z80_finaliseOptions(void)
 {
+    port->mem.default_local_map = data;
+    port->mem.default_globl_map = data;
 }
 
 static void _z80_setDefaultOptions(void)
@@ -96,7 +99,10 @@ PORT z80_port = {
 	"_BSEG",
 	"_RSEG",
 	"_GSINIT",
-	"_OVERLAY"
+	"_OVERLAY",
+	"_GSFINAL",
+	NULL,
+	NULL
     },
     { 
 	-1, 0, 0, 8, 0

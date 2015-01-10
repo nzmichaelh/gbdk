@@ -1,12 +1,12 @@
 /(c).1/1.1/Mon Feb  7 07:47:30 2000//
-/Makefile.in/1.1/Mon Feb  7 07:47:30 2000//
+/Makefile.in/1.2/Wed Mar  1 13:14:57 2000//
 /arith_cl.h/1.1/Mon Feb  7 07:47:30 2000//
 /arith_inst.cc/1.1/Mon Feb  7 07:47:30 2000//
 /avr.cc/1.1/Mon Feb  7 07:47:30 2000//
 /avrcl.h/1.1/Mon Feb  7 07:47:30 2000//
 /bit_cl.h/1.1/Mon Feb  7 07:47:30 2000//
 /bit_inst.cc/1.1/Mon Feb  7 07:47:30 2000//
-/clean.mk/1.2/Mon Feb  7 07:59:35 2000//
+/clean.mk/1.3/Wed Mar  1 13:14:58 2000//
 /conf.mk/1.1/Mon Feb  7 07:47:30 2000//
 /glob.cc/1.1/Mon Feb  7 07:47:30 2000//
 /glob.h/1.1/Mon Feb  7 07:47:30 2000//

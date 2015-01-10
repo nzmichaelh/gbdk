@@ -4,17 +4,16 @@
 __divschar::	
 	push	de
 	push	bc
-	push	ix
-	ld	ix,#0
-	add	ix,sp
+	ld	hl,#6
+	add	hl,sp
 
-	ld	c,8(ix)
-	ld	e,9(ix)
+	ld	c,(hl)
+	inc	hl
+	ld	e,(hl)
 	call	.div8
 
 	ld	l,c
 	
-	pop	ix
 	pop	bc
 	pop	de
 	ret
@@ -22,17 +21,16 @@ __divschar::
 __modschar::
 	push	de
 	push	bc
-	push	ix
-	ld	ix,#0
-	add	ix,sp
+	ld	hl,#6
+	add	hl,sp
 
-	ld	c,8(ix)
-	ld	e,9(ix)
+	ld	c,(hl)
+	inc	hl
+	ld	e,(hl)
 	call	.div8
 
 	ld	l,e
 	
-	pop	ix
 	pop	bc
 	pop	de
 	ret
@@ -40,20 +38,21 @@ __modschar::
 __divsint::
 	push	de
 	push	bc
-	push	ix
-	ld	ix,#0
-	add	ix,sp
+	ld	hl,#6
+	add	hl,sp
 
-	ld	c,8(ix)
-	ld	b,9(ix)
-	ld	e,10(ix)
-	ld	d,11(ix)
+	ld	c,(hl)
+	inc	hl
+	ld	b,(hl)
+	inc	hl
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
 	call	.div16
 
 	ld	l,c
 	ld	h,b
 	
-	pop	ix
 	pop	bc
 	pop	de
 	ret
@@ -61,20 +60,21 @@ __divsint::
 __modsint::
 	push	de
 	push	bc
-	push	ix
-	ld	ix,#0
-	add	ix,sp
+	ld	hl,#6
+	add	hl,sp
 
-	ld	c,8(ix)
-	ld	b,9(ix)
-	ld	e,10(ix)
-	ld	d,11(ix)
+	ld	c,(hl)
+	inc	hl
+	ld	b,(hl)
+	inc	hl
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
 	call	.div16
 
 	ld	l,e
 	ld	h,d
 	
-	pop	ix
 	pop	bc
 	pop	de
 	ret
@@ -119,20 +119,21 @@ __moduchar::
 __divuint::
 	push	de
 	push	bc
-	push	ix
-	ld	ix,#0
-	add	ix,sp
+	ld	hl,#6
+	add	hl,sp
 
-	ld	c,8(ix)
-	ld	b,9(ix)
-	ld	e,10(ix)
-	ld	d,11(ix)
+	ld	c,(hl)
+	inc	hl
+	ld	b,(hl)
+	inc	hl
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
 	call	.divu16
 
 	ld	l,c
 	ld	h,b
 	
-	pop	ix
 	pop	bc
 	pop	de
 	ret
@@ -140,20 +141,22 @@ __divuint::
 __moduint::
 	push	de
 	push	bc
-	push	ix
-	ld	ix,#0
-	add	ix,sp
+	ld	hl,#6
+	add	hl,sp
 
-	ld	c,8(ix)
-	ld	b,9(ix)
-	ld	e,10(ix)
-	ld	d,11(ix)
+	ld	c,(hl)
+	inc	hl
+	ld	b,(hl)
+	inc	hl
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+
 	call	.divu16
 
 	ld	l,e
 	ld	h,d
 	
-	pop	ix
 	pop	bc
 	pop	de
 	ret
@@ -258,10 +261,12 @@ __moduint::
 	SCF			; Set carry, invalid result
 	RET
 .divide:
-	LD	L,C		; L = low byte of dividend/quotient
-	LD	H,B		; H = high byte of dividend/quotient
-	LD	BC,#0x00	; BC = remainder
+	ld	hl,#0
+;	LD	L,C		; L = low byte of dividend/quotient
+;	LD	H,B		; H = high byte of dividend/quotient
+;	LD	BC,#0x00	; BC = remainder
 	OR	A		; Clear carry to start
+	ex	af,af
 	LD	A,#16		; 16 bits in dividend
 .dvloop:
 	;; Shift next bit of quotient into bit 0 of dividend
@@ -271,40 +276,42 @@ __moduint::
 	;; HL holds remainder
 	;; Do a 32-bit left shift, shifting carry to L, L to H,
 	;;  H to C, C to B
-	LD	(.dcnt),A
-	RL	L		; Carry (next bit of quotient) to bit 0
-	RL	H		; Shift remaining bytes
-	RL	C
+	ex	af,af'
+	RL	C		; Carry (next bit of quotient) to bit 0
 	RL	B		; Clears carry since BC was 0
+	adc	hl,hl		
+
 	;; If remainder is >= divisor, next bit of quotient is 1. This
 	;;  bit goes to carry
-	PUSH	BC		; Save current remainder
-	LD	A,C		; Substract divisor from remainder
-	SBC	E
-	LD	C,A
-	LD	A,B
-	SBC	D
-	LD	B,A
+	PUSH	HL		; Save current remainder
+	sbc	hl,de
+;	LD	A,C		; Substract divisor from remainder
+;	SBC	E
+;	LD	C,A
+;	LD	A,B
+;	SBC	D
+;	LD	B,A
 	CCF			; Complement borrow so 1 indicates a
 				;  successful substraction (this is the
 				;  next bit of quotient)
 	jp	C,.drop		; Jump if remainder is >= dividend
-	POP	BC		; Otherwise, restore remainder
+	POP	HL		; Otherwise, restore remainder
 	jp	.nodrop
 .drop:
 	INC	SP
 	INC	SP
 .nodrop:
-	LD	A,(.dcnt)
+	ex	af,af'
 	DEC	A		; DEC does not affect carry flag
 	jp	NZ,.dvloop
+	ex	af,af'
 	;; Shift last carry bit into quotient
-	LD	D,B		; DE = remainder
-	LD	E,C
-	RL	L		; Carry to L
-	LD	C,L		; C = low byte of quotient
-	RL	H
-	LD	B,H		; B = high byte of quotient
+	LD	D,H		; DE = remainder
+	LD	E,L
+	RL	C		; Carry to L
+;	LD	C,L		; C = low byte of quotient
+	RL	B
+;	LD	B,H		; B = high byte of quotient
 	OR	A		; Clear carry, valid result
 	RET
 

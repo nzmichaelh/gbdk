@@ -1226,7 +1226,12 @@ bool isConformingBody (ast *pbody, symbol *sym, ast *body)
 		return FALSE;
 	    else
 		return isConformingBody(pbody->left,sym,body) ;
-	} 
+	} else {
+	    if (astHasSymbol(pbody->left,sym) ||
+		astHasSymbol(pbody->right,sym))
+		return FALSE;
+	}
+
 	
 	/*------------------------------------------------------------------*/
     case  '|':
@@ -1763,8 +1768,8 @@ ast *decorateType (ast *tree)
 		    if (SPEC_SCLS(tree->left->etype) == S_IDATA)
 			DCL_TYPE(p) = IPOINTER ;
 		    else
-			if (SPEC_SCLS(tree->left->etype) == S_FLASH)
-			    DCL_TYPE(p) = FLPOINTER ;
+			if (SPEC_SCLS(tree->left->etype) == S_EEPROM)
+			    DCL_TYPE(p) = EEPPOINTER ;
 			else
 			    DCL_TYPE(p) = POINTER ;
 
@@ -2213,7 +2218,11 @@ ast *decorateType (ast *tree)
 	    return tree;
 	}
 	LRVAL(tree) = RRVAL(tree) = 1;
-	COPYTYPE(TTYPE(tree),TETYPE(tree),LTYPE(tree));
+	if (IS_LITERAL(LTYPE(tree)) && !IS_LITERAL(RTYPE(tree))) {	    
+	    COPYTYPE(TTYPE(tree),TETYPE(tree),RTYPE(tree));	
+	} else {
+	    COPYTYPE(TTYPE(tree),TETYPE(tree),LTYPE(tree));
+	}
 	return tree ;
         
 	/*------------------------------------------------------------------*/

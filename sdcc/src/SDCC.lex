@@ -108,7 +108,7 @@ struct options  save_options  ;
 "enum"         { count(); return(ENUM); }
 "extern"       { count(); return(EXTERN); }
 "far"          { count(); TKEYWORD(XDATA);  }
-"flash"        { count(); TKEYWORD(FLASH);  }
+"eeprom"       { count(); TKEYWORD(EEPROM);  }
 "float"        { count(); return(FLOAT); }
 "for"          { count(); return(FOR); }
 "goto"	       { count(); return(GOTO); }
@@ -118,7 +118,7 @@ struct options  save_options  ;
 "interrupt"    { count(); return(INTERRUPT);}
 "long"	       { count(); return(LONG); }
 "near"	       { count(); TKEYWORD(DATA);}
-"pdata"        { count(); return(PDATA); }
+"pdata"        { count(); TKEYWORD(PDATA); }
 "reentrant"    { count(); TKEYWORD(REENTRANT);}
 "register"     { count(); return(REGISTER); }
 "return"       { count(); return(RETURN); }
@@ -140,7 +140,7 @@ struct options  save_options  ;
 "xdata"        { count(); TKEYWORD(XDATA); }
 "_data"	       { count(); TKEYWORD(_NEAR); }
 "_code"	       { count(); TKEYWORD(_CODE); }
-"_flash"       { count(); TKEYWORD(_FLASH); }
+"_eeprom"      { count(); TKEYWORD(_EEPROM); }
 "_generic"     { count(); TKEYWORD(_GENERIC); }
 "_near"	       { count(); TKEYWORD(_NEAR); }
 "_xdata"       { count(); TKEYWORD(_XDATA);}

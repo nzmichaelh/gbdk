@@ -11,7 +11,7 @@ void inc()
 
 void print_counter()
 {
-  printf(" Counter is %u\n", counter);
+    printf(" Counter is %u\n", counter);
 }
 
 void main()

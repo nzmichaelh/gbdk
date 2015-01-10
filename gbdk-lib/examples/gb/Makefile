@@ -1,4 +1,4 @@
-CC	= ../../bin/lcc -Wa-l -Wl-m -DGBDK_2_COMPAT=1 -Wl-j
+CC	= ../../bin/lcc -Wa-l -Wl-m -DGBDK_2_COMPAT=1 -Wl-j -v
 
 BINS	= galaxy.gb \
 	space.gb \
@@ -22,6 +22,9 @@ all:	$(BINS)
 %.o:	%.c
 	$(CC) -c -o $@ $<
 
+%.s:	%.c
+	$(CC) -S -o $@ $<
+	
 %.o:	%.s
 	$(CC) -c -o $@ $<
 
@@ -29,7 +32,7 @@ all:	$(BINS)
 	$(CC) -o $@ $<
 
 clean:
-	rm -f *.o *.lst *.map *.gb
+	rm -f *.o *.lst *.map *.gb *~ *.rel *.cdb *.ihx *.lnk *.sym *.asm
 
 ############################################################
 # Multiple bank example

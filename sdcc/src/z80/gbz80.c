@@ -9,6 +9,7 @@
 
 static char _defaultRules[] =
 {
+#include "peeph.rul"
 #include "peeph-gbz80.rul"
 };
 
@@ -26,6 +27,8 @@ static void _gbz80_init(void)
 
 static void _gbz80_finaliseOptions(void)
 {
+    port->mem.default_local_map = data;
+    port->mem.default_globl_map = data;
 }
 
 static void _gbz80_setDefaultOptions(void)
@@ -101,7 +104,10 @@ PORT gbz80_port = {
 	"_BSEG",
 	"_RSEG",
 	"_GSINIT",
-	"_OVERLAY"
+	"_OVERLAY",
+	"_GSFINAL",
+	NULL,
+	NULL
     },
     { 
 	-1, 0, 0, 4, 0
