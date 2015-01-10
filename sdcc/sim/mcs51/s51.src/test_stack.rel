@@ -1,0 +1,101 @@
+;!FILE test_stack.asm
+XH
+H A areas 1F global symbols
+M test_stack
+S __sdcc_external_startup Ref0000
+A _CODE size 0 flags 0
+A DSEG size 0 flags 0
+A OSEG size 0 flags 4
+A SSEG size 1 flags 0
+A ISEG size 0 flags 0
+A BSEG size 0 flags 80
+A XSEG size 0 flags 40
+A CODE size 33 flags 20
+S A$test_stack$50 Def0000
+S A$test_stack$51 Def0003
+S A$test_stack$61 Def002B
+S A$test_stack$53 Def000B
+S A$test_stack$55 Def0013
+S A$test_stack$57 Def001B
+S A$test_stack$59 Def0023
+A GSINIT size D flags 20
+S A$test_stack$70 Def0006
+S A$test_stack$71 Def0008
+S A$test_stack$72 Def000A
+S A$test_stack$68 Def0000
+S A$test_stack$69 Def0003
+A CSEG size E flags 20
+S _main Def000A
+S A$test_stack$81 Def0003
+S C$test_stack.c$1$0$0 Def0006
+S A$test_stack$79 Def0000
+S C$test_stack.c$3$1$1 Def0006
+S C$test_stack.c$4$1$1 Def0009
+S A$test_stack$99 Def0006
+S XG$main$0$0 Def000D
+S C$test_stack.c$6$1$1 Def000A
+S C$test_stack.c$8$1$1 Def000A
+S C$test_stack.c$9$1$1 Def000D
+S _jaj Def0006
+S G$main$0$0 Def000A
+S XG$jaj$0$0 Def0009
+S G$jaj$0$0 Def0006
+S A$test_stack$103 Def0009
+S A$test_stack$113 Def000A
+S A$test_stack$117 Def000D
+T 00 00
+R 00 00 00 03
+T 00 00
+R 00 00 00 03
+T 00 00
+R 00 00 00 07
+T 00 00 02 00 00 32
+R 00 00 00 07 00 03 00 08
+T 00 04
+R 00 00 00 07
+T 00 0B 32
+R 00 00 00 07
+T 00 0C
+R 00 00 00 07
+T 00 13 32
+R 00 00 00 07
+T 00 14
+R 00 00 00 07
+T 00 1B 32
+R 00 00 00 07
+T 00 1C
+R 00 00 00 07
+T 00 23 32
+R 00 00 00 07
+T 00 24
+R 00 00 00 07
+T 00 2B 32
+R 00 00 00 07
+T 00 2C
+R 00 00 00 07
+T 00 00
+R 00 00 00 08
+T 00 00 75 81 07 12 00 00 E5 82 60 03 02 00 00
+R 00 00 00 08 02 06 00 00 00 0D 00 09
+T 00 0D
+R 00 00 00 08
+T 00 00
+R 00 00 00 09
+T 00 00 12 00 0A 02 00 03
+R 00 00 00 09 00 03 00 09 00 06 00 09
+T 00 06
+R 00 00 00 09
+T 00 06 12 00 06
+R 00 00 00 09 00 03 00 09
+T 00 09
+R 00 00 00 09
+T 00 09 22
+R 00 00 00 09
+T 00 0A
+R 00 00 00 09
+T 00 0A 12 00 06
+R 00 00 00 09 00 03 00 09
+T 00 0D
+R 00 00 00 09
+T 00 0D 22
+R 00 00 00 09

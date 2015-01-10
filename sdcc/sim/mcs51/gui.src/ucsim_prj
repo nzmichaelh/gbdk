@@ -1,0 +1,275 @@
+<?xml version="1.0"?>
+<GTK-Interface>
+
+<project>
+  <name>ucsim</name>
+  <directory></directory>
+  <source_directory></source_directory>
+  <pixmaps_directory>pixmaps</pixmaps_directory>
+  <language>C</language>
+  <gettext_support>False</gettext_support>
+  <use_widget_names>False</use_widget_names>
+  <main_source_file>gladesrc.c</main_source_file>
+  <main_header_file>gladesrc.h</main_header_file>
+  <handler_source_file>gladesig.c</handler_source_file>
+  <handler_header_file>gladesig.h</handler_header_file>
+</project>
+
+<widget>
+  <class>GtkWindow</class>
+  <name>window1</name>
+  <title>Microcontroller Simulator</title>
+  <type>GTK_WINDOW_TOPLEVEL</type>
+  <position>GTK_WIN_POS_NONE</position>
+  <allow_shrink>False</allow_shrink>
+  <allow_grow>True</allow_grow>
+  <auto_shrink>False</auto_shrink>
+
+  <widget>
+    <class>GtkVBox</class>
+    <name>vbox1</name>
+    <homogeneous>False</homogeneous>
+    <spacing>0</spacing>
+
+    <widget>
+      <class>GtkMenuBar</class>
+      <name>menubar1</name>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>True</fill>
+      </child>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>item1</name>
+	<signal>
+	  <name>activate</name>
+	  <handler>on_item1_activate</handler>
+	  <last_modification_time>Fri, 28 May 1999 17:44:36 GMT</last_modification_time>
+	</signal>
+	<label>File</label>
+	<right_justify>False</right_justify>
+      </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>item2</name>
+	<signal>
+	  <name>activate</name>
+	  <handler>on_item2_activate</handler>
+	  <last_modification_time>Fri, 28 May 1999 17:44:37 GMT</last_modification_time>
+	</signal>
+	<label>View</label>
+	<right_justify>False</right_justify>
+      </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>item3</name>
+	<signal>
+	  <name>activate</name>
+	  <handler>on_item3_activate</handler>
+	  <last_modification_time>Fri, 28 May 1999 17:44:37 GMT</last_modification_time>
+	</signal>
+	<label>Run</label>
+	<right_justify>False</right_justify>
+      </widget>
+    </widget>
+
+    <widget>
+      <class>GtkToolbar</class>
+      <name>toolbar1</name>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>True</fill>
+      </child>
+      <orientation>GTK_ORIENTATION_HORIZONTAL</orientation>
+      <type>GTK_TOOLBAR_BOTH</type>
+      <space_size>5</space_size>
+      <tooltips>True</tooltips>
+
+      <widget>
+	<class>GtkButton</class>
+	<child_name>Toolbar:button</child_name>
+	<name>button1</name>
+	<label>Run</label>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<child_name>Toolbar:button</child_name>
+	<name>button2</name>
+	<label>Stop</label>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<child_name>Toolbar:button</child_name>
+	<name>button3</name>
+	<label>Step</label>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<child_name>Toolbar:button</child_name>
+	<name>button4</name>
+	<label>Next</label>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<child_name>Toolbar:button</child_name>
+	<name>button5</name>
+	<label>Break</label>
+      </widget>
+    </widget>
+
+    <widget>
+      <class>GtkHBox</class>
+      <name>hbox1</name>
+      <child>
+	<padding>0</padding>
+	<expand>True</expand>
+	<fill>True</fill>
+      </child>
+      <homogeneous>False</homogeneous>
+      <spacing>0</spacing>
+
+      <widget>
+	<class>GtkVBox</class>
+	<name>vbox2</name>
+	<child>
+	  <padding>0</padding>
+	  <expand>True</expand>
+	  <fill>True</fill>
+	</child>
+	<homogeneous>False</homogeneous>
+	<spacing>0</spacing>
+
+	<widget>
+	  <class>GtkVPaned</class>
+	  <name>vpaned1</name>
+	  <child>
+	    <padding>0</padding>
+	    <expand>True</expand>
+	    <fill>True</fill>
+	  </child>
+	  <handle_size>9</handle_size>
+	  <gutter_size>10</gutter_size>
+
+	  <widget>
+	    <class>GtkText</class>
+	    <name>text4</name>
+	    <can_focus>True</can_focus>
+	    <editable>False</editable>
+	    <text></text>
+	  </widget>
+
+	  <widget>
+	    <class>GtkNotebook</class>
+	    <name>notebook1</name>
+	    <can_focus>True</can_focus>
+	    <show_tabs>True</show_tabs>
+	    <show_border>True</show_border>
+	    <tab_pos>GTK_POS_TOP</tab_pos>
+	    <scrollable>False</scrollable>
+	    <tab_border>3</tab_border>
+	    <popup_enable>False</popup_enable>
+	    <num_pages>3</num_pages>
+
+	    <widget>
+	      <class>GtkText</class>
+	      <name>text2</name>
+	      <can_focus>True</can_focus>
+	      <editable>False</editable>
+	      <text></text>
+	    </widget>
+
+	    <widget>
+	      <class>Placeholder</class>
+	    </widget>
+
+	    <widget>
+	      <class>Placeholder</class>
+	    </widget>
+
+	    <widget>
+	      <class>GtkLabel</class>
+	      <child_name>Notebook:tab</child_name>
+	      <name>label1</name>
+	      <label>IRAM</label>
+	      <justify>GTK_JUSTIFY_CENTER</justify>
+	      <xalign>0.5</xalign>
+	      <yalign>0.5</yalign>
+	      <xpad>0</xpad>
+	      <ypad>0</ypad>
+	    </widget>
+
+	    <widget>
+	      <class>GtkLabel</class>
+	      <child_name>Notebook:tab</child_name>
+	      <name>label2</name>
+	      <label>XRAM</label>
+	      <justify>GTK_JUSTIFY_CENTER</justify>
+	      <xalign>0.5</xalign>
+	      <yalign>0.5</yalign>
+	      <xpad>0</xpad>
+	      <ypad>0</ypad>
+	    </widget>
+
+	    <widget>
+	      <class>GtkLabel</class>
+	      <child_name>Notebook:tab</child_name>
+	      <name>label3</name>
+	      <label>ROM</label>
+	      <justify>GTK_JUSTIFY_CENTER</justify>
+	      <xalign>0.5</xalign>
+	      <yalign>0.5</yalign>
+	      <xpad>0</xpad>
+	      <ypad>0</ypad>
+	    </widget>
+	  </widget>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkVBox</class>
+	<name>vbox3</name>
+	<child>
+	  <padding>0</padding>
+	  <expand>True</expand>
+	  <fill>True</fill>
+	</child>
+	<homogeneous>False</homogeneous>
+	<spacing>0</spacing>
+
+	<widget>
+	  <class>GtkText</class>
+	  <name>text3</name>
+	  <child>
+	    <padding>0</padding>
+	    <expand>True</expand>
+	    <fill>True</fill>
+	  </child>
+	  <can_focus>True</can_focus>
+	  <editable>False</editable>
+	  <text></text>
+	</widget>
+      </widget>
+    </widget>
+
+    <widget>
+      <class>GtkStatusbar</class>
+      <name>statusbar2</name>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>True</fill>
+      </child>
+    </widget>
+  </widget>
+</widget>
+
+</GTK-Interface>

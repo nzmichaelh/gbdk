@@ -1,0 +1,24 @@
+# Common settings
+
+ifndef PORTS
+PORTS = gbz80 z80
+endif
+ifndef PLATFORMS
+PLATFORMS = gb consolez80 rrgb
+endif
+
+ifndef SDCCLIB
+SDCCLIB = /home/michaelh/projects/sdcc
+endif
+
+SCC = $(SDCCLIB)/bin/sdcc
+GBCC = $(SDCCLIB)/bin/lcc
+
+AS_Z80 = as-z80
+AS_GBZ80 = $(SDCCLIB)/bin/as-gbz80
+
+CLEANSPEC = *.o *.asm *.cdb *.sym *.lst *~
+
+# Maccer rule
+%.s: %.ms
+	maccer -o $@ $<

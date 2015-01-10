@@ -1,0 +1,74 @@
+gbdk3-2.91 - http://gbdk.sourceforge.net/
+----------------------------------------
+This is a early-release beta.  Please report any bugs :)
+
+Reporting problems and feature requests
+---------------------------------------
+1.  Make sure that you have read this README fully.
+2.  Read the latest copy of this README
+    http://cvs.sourceforge.net/cgi-bin/cvsweb.cgi/~checkout~/gbdk-support/README?cvsroot=gbdk
+3.  Make sure you have the latest version
+    https://sourceforge.net/project/?group_id=1249
+4.  Check if anyone else has reported the problem
+    https://sourceforge.net/bugs/?group_id=1249
+5.  Submit a new bug using the link above.  It is _very_ helpful if you can 
+    show how to reproduce the bug and/or give me the source to try and/or
+    use the --dumpall (lcc -Wf--dumpall) option and send me all of the *.dump
+    files.  Use the email address below.
+
+To download the latest source, get the tarball on sourceforge,
+extract, and type:
+
+make -f update.mak update
+
+The Linux binary needs to be installed in /usr/lib/gbdk, and
+the win32 binary in the root directory of some drive.  This will
+change.  Linux users also need to install libgc4 or above (Debian
+users try 'apt-get install libgc5').  The win32 version is compiled
+with cygwin b20.
+
+Differences between this and gbdk-2.1.5
+---------------------------------------
+* It now uses sdcc <http://sdcc.sourceforge.net/> as the C compiler
+  which should lead to better code but unfortunatly will generate
+  a whole new set of bugs :)  Most of the differences below are due
+  to this change-over.
+* sdcc _does not_ automatically promote varibles to int's.  This is 
+  a 'good thing' as normally the promotion is unwanted on an eight
+  bit system, but in some places you may get the wrong result.  If
+  so, try promoting the varible manually i.e. (int)foo*20;
+* The basic types have changed.  The sizes are now:
+	char		8 bits
+	int		16 bits
+	long		32 bits
+	long long	Doesnt exist
+* Float support is there but unconnected.
+* gbdk changes the basic typedefs to make it more normal.  You can
+  define GBDK_2_COMPAT=1 (lcc -DGBDK_2_COMPAT=1 ...) to use the old
+  typedefs.
+	Before		Now		Or		Size
+	BYTE		INT8				8 signed
+	UBYTE		BYTE		UINT8		8 unsigned
+	WORD		INT16				16 signed
+	UWORD		WORD		UINT16		16 unsigned
+	DWORD		INT32				32 signed
+	UDWORD		DWORD		UINT32		32 unsigned
+* There is now real initalised static data support.  You can now use
+  BYTE abModifyMeLater[] = { 5, 6, 7, 8 };
+
+  void foo(void) 
+  {
+    abModifyMeLater[2] = 12;
+  }
+  and it will work.  Currently this is very inefficent but it will
+  be improved.  See const in the next section
+* Constant global structs (ie tile data, sprites) SHOULD be declared
+  as 'const'  If they are not declared const, not only do they get copied
+  into ram at startup but they take up about 6x the rom space.
+
+Notes
+-----
+The galaxy.c example compiles with errors.  This is expected.
+
+-- Michael Hope
+   <michaelh@earthling.net>
