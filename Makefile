@@ -61,6 +61,9 @@ distclean: clean build-dir-clean
 # Cross-compilation targets
 FIXUPMASKS = *.c *.h .bat *.s ChangeLog README
 
+build-dep:
+	sudo apt-get install -y build-essential bison flex
+
 native-build: gbdk-build gbdk-install
 
 cross-clean: sdcc-clean gbdk-support-clean
