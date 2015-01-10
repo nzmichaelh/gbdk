@@ -10,6 +10,7 @@ BIN	= maccer
 SRC	= maccer.c test-1.ms Makefile 
 DOC	= README ChangeLog
 OBJS	= maccer.o
+PREFIX	?= /usr/local/bin
 
 all: $(BIN)
 
@@ -21,7 +22,7 @@ clean:
 	rm -rf html
 
 install: $(BIN)
-	install --strip $(BIN) /usr/bin
+	install -D --strip $(BIN) $(PREFIX)/$(BIN)
 
 dist-src: clean
 	rm -f ../$(BIN)-$(VER).tar.gz
