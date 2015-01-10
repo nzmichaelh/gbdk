@@ -9,9 +9,7 @@ TOPDIR = $(shell pwd)
 # Package name, used for tarballs and cvs
 PKG = gbdk
 # Version, used for tarballs
-VER = 2.96d
-# Short version, used for cvs tags
-SHORTVER = 296d
+VER ?= $(shell git describe --tags --always | sed "s/^$(PKG)-//")
 
 # Prefix to add to the standard tools.  Usefull for a standard gcc
 # cross-compile.
@@ -106,20 +104,6 @@ build-bin-dir:
 
 build-dir-clean:
 	rm -r $(BUILDDIR)
-
-# Setup rules
-CVSFLAGS = -r $(PKG)-$(SHORTVER)
-
-setup-from-local:
-	rm -rf sdcc gbdk-lib gbdk-support
-	ln -s ../sdcc
-	ln -s ../gbdk-lib
-	ln -s ../gbdk-support
-
-setup-from-cvs:
-	cvs -d :pserver:anonymous@cvs.sdcc.sourceforge.net:/cvsroot/sdcc -q co $(CVSFLAGS) sdcc
-	cvs -d :pserver:anonymous@cvs.gbdk.sourceforge.net:/cvsroot/gbdk -q co $(CVSFLAGS) gbdk-lib
-	cvs -d :pserver:anonymous@cvs.gbdk.sourceforge.net:/cvsroot/gbdk -q co $(CVSFLAGS) gbdk-support
 
 # Rules for sdcc
 SDCCCONFIGUREFLAGS = \
