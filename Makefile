@@ -192,8 +192,8 @@ ifeq ($(ARCHIVETYPE),zip)
 	rm -f $(TOPDIR)/gbdk-$(VER)-$(TARGETOS).zip
 	cd $(BUILDDIR)/..; zip -9Xrq $(TOPDIR)/gbdk-$(VER)-$(TARGETOS).zip gbdk
 else
-	rm -f $(TOPDIR)/gbdk-$(VER)-$(TARGETOS).tar.gz
-	cd $(BUILDDIR)/..; tar czf $(TOPDIR)/gbdk-$(VER)-$(TARGETOS).tar.gz gbdk
+	rm -f gbdk-$(VER)-$(TARGETOS).tar.xz
+	tar caf gbdk-$(VER)-$(TARGETOS).tar.xz -C $(BUILDDIR)/.. gbdk
 endif
 
 binary-tidyup:
