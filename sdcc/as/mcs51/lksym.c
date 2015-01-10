@@ -16,7 +16,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#if defined(_MSC_VER)
+#include <malloc.h>
+#else
 #include <alloc.h>
+#endif
 #include "aslink.h"
 
 /*)Module	lksym.c
@@ -33,7 +37,7 @@
  *		int	symeq()
  *		VOID	syminit()
  *		VOID	symmod()
- *		addr_t	symval()
+ *		Addr_T	symval()
  *
  *	lksym.c contains no local/static variables.
  */
@@ -101,9 +105,10 @@ syminit()
  *		int	lkerr		error flag
  *
  *	functions called:
- *		addr_t	eval()		lkeval.c
+ *		Addr_T	eval()		lkeval.c
  *		VOID	exit()		c_library
  *		int	fprintf()	c_library
+ *		char	getSid()	lklex.c
  *		char	get()		lklex.c
  *		char	getnb()		lklex.c
  *		sym *	lkpsym()	lksym.c
@@ -129,12 +134,14 @@ syminit()
 struct sym *
 newsym()
 {
-	register int c, i, nglob;
+  register unsigned i ;
+  register unsigned nglob ;
+	register int c ;
 	struct sym *tsp;
 	struct sym **s;
 	char id[NCPS];
 
-	getid(id, -1);
+	getSid(id);	// old: getid(id, -1);
 	tsp = lkpsym(id, 1);
 	c = getnb();get();get();
 	if (c == 'R') {
@@ -234,7 +241,7 @@ char *id;
 	return (sp);
 }
 
-/*)Function	addr_t	symval(tsp)
+/*)Function	Addr_T	symval(tsp)
  *
  *		sym *	tsp		pointer to a symbol structure
  *
@@ -243,7 +250,7 @@ char *id;
  *	value to the areax base address.
  *
  *	local variables:
- *		addr_t	val		relocated address value
+ *		Addr_T	val		relocated address value
  *
  *	global variables:
  *		none
@@ -255,11 +262,11 @@ char *id;
  *		none
  */
 
-addr_t
+Addr_T
 symval(tsp)
 register struct sym *tsp;
 {
-	register addr_t val;
+	register Addr_T val;
 
 	val = tsp->s_addr;
 	if (tsp->s_axp) {
@@ -471,15 +478,11 @@ VOID *
 new(n)
 unsigned int n;
 {
-	register char *p,*q;
-	register unsigned int i;
+	register char *p;
 
-	if ((p = (char *) malloc(n)) == NULL) {
+	if ((p = (char *) calloc(n, 1)) == NULL) {
 		fprintf(stderr, "Out of space!\n");
 		lkexit(1);
-	}
-	for (i=0,q=p; i<n; i++) {
-		*q++ = 0;
 	}
 	return (p);
 }

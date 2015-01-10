@@ -26,24 +26,24 @@
 
 /* #define SDCDB_DEBUG */
 
+#ifdef SDCDB_DEBUG
+// set D_x to 0 to turn off, 1 to turn on.
+#define D_break  1
+#define D_simi   1
+#define D_sdcdb  1
+#define D_symtab 1
+
+#define Dprintf(f, fs) {if (f) printf fs ; }
+#else
+#define Dprintf(f, fs) { }
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
 #include "sdccconf.h"
-#ifdef _NO_GC
-
-#define GC_malloc malloc
-#define GC_free free
-#define GC_realloc realloc
-
-#else
-
-#include "gc/gc.h"
-
-#endif
-
 #include "src/SDCCset.h"
 #include "src/SDCChasht.h"
 
@@ -60,20 +60,23 @@ typedef short bool;
 #define min(a,b) (a < b ? a : b)
 #endif
 
-#ifndef ALLOC
-#define  ALLOC(x,sz) if (!(x = GC_malloc(sz)))                          \
-         {                                                           \
-            fprintf(stderr,"sdcdb: out of memory\n"); \
-            exit (1);                                                \
-         }
-#endif
-#ifndef ALLOC_ATOMIC
-#define ALLOC_ATOMIC(x,sz)   if (!(x = GC_malloc_atomic(sz)))   \
-         {                                               \
-            fprintf(stderr,"sdcdb: out of memory\n"); \
-            exit (1);                                    \
-         }
-#endif
+/* 
+ * #ifndef ALLOC
+ * #define  ALLOC(x,sz) if (!(x = calloc(1, sz)))                          \
+ *          {                                                           \
+ *             fprintf(stderr,"sdcdb: out of memory\n"); \
+ *             exit (1);                                                \
+ *          }
+ * #endif
+ * #ifndef ALLOC_ATOMIC
+ * #define ALLOC_ATOMIC(x,sz)   if (!(x = calloc(1, sz)))   \
+ *          {                                               \
+ *             fprintf(stderr,"sdcdb: out of memory\n"); \
+ *             exit (1);                                    \
+ *          }
+ * #endif
+ */
+
 /* generalpurpose stack related macros */
 #define  STACK_DCL(stack,type,size)                   \
          typedef  type  t_##stack   ;                 \

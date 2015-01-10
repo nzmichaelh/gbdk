@@ -47,21 +47,31 @@
 #include <string.h>
 /** For printf */
 #include <stdio.h>
+
+#if defined(SDCC_ds390)
+#include <tinibios.h>
+#define clock() ClockTicks()
+#define CLOCKS_PER_SEC 1000
+#define memcpy(d,s,l) memcpyx(d,s,l)
+
+#elif defined(__z80) || defined(__gbz80)
+unsigned int _clock(void);
+
+#define clock _clock
+#define CLOCKS_PER_SEC	100
+
+#else
 /** For clock() */
 #include <time.h>
 #include <types.h>
-
-/** Print the number of t-states this program has been executing for.
-    Optional :)
-*/
-void _printTStates(void);
+#endif
 
 /** Set to one to print more messages about expected values etc. 
  */
 #define DEBUG	0
 
 #if DEBUG
-#define DPRINTF(_a)  printf _a
+#define DPRINTF(_a) printf _a
 #else
 #define DPRINTF(_a)
 #endif
@@ -77,6 +87,10 @@ int             Arr_2_Glob [50] [50];
 
 /* Used instead of malloc() */
 static Rec_Type _r[2];
+
+void mark(void)
+{
+}
 
 void Proc_1 (REG Rec_Pointer Ptr_Val_Par);
 void Proc_2 (One_Fifty *Int_Par_Ref);
@@ -104,7 +118,7 @@ int main(void)
     Str_30          Str_2_Loc;
     REG   int             Run_Index;
     REG   int             Number_Of_Runs;
-    unsigned runTime;
+    unsigned  long runTime;
 
     printf("[dhry]\n");
 
@@ -128,7 +142,11 @@ int main(void)
     /* overflow may occur for this array element.                   */
 
     /* 32766 is the highest value for a 16 bitter */
-    Number_Of_Runs = 10000;
+#if DEBUG
+    Number_Of_Runs = 3000;
+#else
+    Number_Of_Runs = 32766;
+#endif    
 
     runTime = clock();
 
@@ -136,7 +154,7 @@ int main(void)
     for (Run_Index = 1; Run_Index <= Number_Of_Runs; ++Run_Index) {
 	DPRINTF(("Run_Index = %d\n", Run_Index));
 	if (!(Run_Index & 1023))
-	    printf("Loops: %u\r", Run_Index);
+	    printf("Loops: %u\r\n", Run_Index);
 	Proc_5();
 	Proc_4();
 	/* Ch_1_Glob == 'A', Ch_2_Glob == 'B', Bool_Glob == true */
@@ -202,8 +220,6 @@ int main(void)
 	DPRINTF(("Looping.\n"));
     } /* loop "for Run_Index" */
 
-    _printTStates();
-
     printf("Run_Index = %d\n", Run_Index);
 
     runTime = clock() - runTime;
@@ -223,10 +239,8 @@ int main(void)
     printf ("        should be:   %c\n", 'B');
     printf ("Arr_1_Glob[8]:       %d\n", Arr_1_Glob[8]);
     printf ("        should be:   %d\n", (int)7);
-#if 0
+#if 1
     printf ("Arr_2_Glob[8][7]:    %d\n", Arr_2_Glob[8][7]);
-#else
-    //    printf ("Arr_2_Glob[8][7]:    %d\n", Arr_2_Glob[8][7]);
 #endif
     printf ("        should be:   Number_Of_Runs + 10\n");
     printf ("Ptr_Glob->\n");
@@ -260,16 +274,24 @@ int main(void)
     printf ("        should be:   %d\n", (int)7);
     printf ("Enum_Loc:            %d\n", Enum_Loc);
     printf ("        should be:   %d\n", (int)1);
-    printf ("Str_1_Loc:           %s\n", Str_1_Loc);
+    printf ("Str_1_Loc:           %s\n", (char *)Str_1_Loc);
     printf ("        should be:   DHRYSTONE PROGRAM, 1'ST STRING\n");
-    printf ("Str_2_Loc:           %s\n", Str_2_Loc);
+    printf ("Str_2_Loc:           %s\n", (char *)Str_2_Loc);
     printf ("        should be:   DHRYSTONE PROGRAM, 2'ND STRING\n");
     printf ("\n");
 #endif
-    printf("Dhrystones/s = %u\n", Number_Of_Runs / (runTime/CLOCKS_PER_SEC));
+#if 1
+    printf("Number of runs: %u.  runTime: %u.\n", Number_Of_Runs, (unsigned)runTime);
+    mark();
+    printf("Dhrystones/s = %u\n", (unsigned)((unsigned long)Number_Of_Runs / (runTime/CLOCKS_PER_SEC)));
     printf("MIPS = d/s/1757 = (sigh, need floats...)\n");
+#endif
+#ifdef PRINT_T_STATES    
     _printTStates();
-    printf("Time: %u ticks\n", runTime);
+#endif    
+#if 1
+    printf("Time: %lu ticks\n", runTime);
+#endif
 }
 
 void Proc_1 (REG Rec_Pointer Ptr_Val_Par)
@@ -541,3 +563,4 @@ Boolean Func_2 (char *Str_1_Par_Ref, char *Str_2_Par_Ref)
 	    }
 	} /* if Ch_Loc */
 } /* Func_2 */
+

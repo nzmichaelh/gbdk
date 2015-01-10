@@ -36,7 +36,11 @@ serial
 _autobaud
 _startup
 _ser
+puts
+gets
 printfl
 printf_large
+printf_fast
 vprintf
 assert
+time

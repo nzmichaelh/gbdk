@@ -70,12 +70,12 @@ cl_bool_opt::cl_bool_opt(bool *opt, char *Iid, char *Ihelp):
 {}
 
 void
-cl_bool_opt::print(FILE *f)
+cl_bool_opt::print(class cl_console *con)
 {
   if (*(bool *)option)
-    fprintf(f, "TRUE");
+    con->printf("TRUE");
   else
-    fprintf(f, "FALSE");
+    con->printf("FALSE");
 }
 
 bool
@@ -112,41 +112,41 @@ cl_bool_opt::set_value(char *s)
  * Debug on console
  */
 
-cl_cons_debug_opt::cl_cons_debug_opt(class cl_sim *Asim,
+cl_cons_debug_opt::cl_cons_debug_opt(class cl_app *the_app,
 				     char *Iid,
 				     char *Ihelp):
   cl_option(0, Iid, Ihelp)
 {
-  sim= Asim;
+  app= the_app;
 }
 
 void
-cl_cons_debug_opt::print(FILE *f)
+cl_cons_debug_opt::print(class cl_console *con)
 {
-  if (sim->cmd->actual_console &&
-      sim->cmd->actual_console->flags & CONS_DEBUG)
-    fprintf(f, "TRUE");
+  if (/*sim->cmd->actual_console &&
+	sim->cmd->actual_console*/con->flags & CONS_DEBUG)
+    con->printf("TRUE");
   else
-    fprintf(f, "FALSE");
+    con->printf("FALSE");
 }
 
 bool
 cl_cons_debug_opt::get_value(void)
 {
-  return(sim->cmd->actual_console?
-	 (sim->cmd->actual_console->flags & CONS_DEBUG):
+  return(app->get_commander()->actual_console?
+	 (app->get_commander()->actual_console->flags & CONS_DEBUG):
 	 0);
 }
 
 void
 cl_cons_debug_opt::set_value(bool opt)
 {
-  if (sim->cmd->actual_console)
+  if (app->get_commander()->actual_console)
     {
       if (opt)
-	sim->cmd->actual_console->flags|= CONS_DEBUG;
+	app->get_commander()->actual_console->flags|= CONS_DEBUG;
       else
-	sim->cmd->actual_console->flags&= ~CONS_DEBUG;
+	app->get_commander()->actual_console->flags&= ~CONS_DEBUG;
     }
     
 }
@@ -157,15 +157,15 @@ cl_cons_debug_opt::set_value(char *s)
   char c;
 
   if (s &&
-      sim->cmd->actual_console)
+      app->get_commander()->actual_console)
     {
       c= toupper(*s);
       if (c == '1' ||
 	  c == 'T' ||
 	  c == 'Y')
-	sim->cmd->actual_console->flags|= CONS_DEBUG;
+	app->get_commander()->actual_console->flags|= CONS_DEBUG;
       else
-	sim->cmd->actual_console->flags&= ~CONS_DEBUG;
+	app->get_commander()->actual_console->flags&= ~CONS_DEBUG;
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Simulator of microcontrollers (info.cc)
+ * Simulator of microcontrollers (cmd.src/info.cc)
  *
  * Copyright (C) 1999,99 Drotos Daniel, Talker Bt.
  * 
@@ -39,26 +39,28 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
  * INFO BREAKPOINTS command
  */
 
-int
-cl_info_bp_cmd::do_work(class cl_cmdline *cmdline, class cl_console *con)
+//int
+//cl_info_bp_cmd::do_work(class cl_sim *sim,
+//			class cl_cmdline *cmdline, class cl_console *con)
+COMMAND_DO_WORK_UC(cl_info_bp_cmd)
 {
   int i;
   char *s;
 
   con->printf("Num Type       Disp Hit   Cnt   Address  What\n");
-  for (i= 0; i < sim->uc->fbrk->count; i++)
+  for (i= 0; i < uc->fbrk->count; i++)
     {
-      class cl_brk *fb= (class cl_brk *)(sim->uc->fbrk->at(i));
-      s= sim->uc->disass(fb->addr, NULL);
+      class cl_brk *fb= (class cl_brk *)(uc->fbrk->at(i));
+      s= uc->disass(fb->addr, NULL);
       con->printf("%-3d %-10s %s %-5d %-5d 0x%06x %s\n", fb->nr,
 		  "fetch", (fb->perm==brkFIX)?"keep":"del ",
 		  fb->hit, fb->cnt,
 		  fb->addr, s);
       free(s);
     }
-  for (i= 0; i < sim->uc->ebrk->count; i++)
+  for (i= 0; i < uc->ebrk->count; i++)
     {
-      class cl_ev_brk *eb= (class cl_ev_brk *)(sim->uc->ebrk->at(i));
+      class cl_ev_brk *eb= (class cl_ev_brk *)(uc->ebrk->at(i));
       con->printf("%-3d %-10s %s %-5d %-5d 0x%06x %s\n", eb->nr,
 		  "event", (eb->perm==brkFIX)?"keep":"del ",
 		  eb->hit, eb->cnt,
@@ -79,10 +81,12 @@ cl_info_bp_cmd::do_work(class cl_cmdline *cmdline, class cl_console *con)
  * INFO REGISTERS command
  */
 
-int
-cl_info_reg_cmd::do_work(class cl_cmdline *cmdline, class cl_console *con)
+//int
+//cl_info_reg_cmd::do_work(class cl_sim *sim,
+//			 class cl_cmdline *cmdline, class cl_console *con)
+COMMAND_DO_WORK_UC(cl_info_reg_cmd)
 {
-  sim->uc->print_regs(con);
+  uc->print_regs(con);
   return(0);
 }
 
@@ -91,66 +95,26 @@ cl_info_reg_cmd::do_work(class cl_cmdline *cmdline, class cl_console *con)
  * INFO HW command
  */
 
-int
-cl_info_hw_cmd::do_work(class cl_cmdline *cmdline, class cl_console *con)
+//int
+//cl_info_hw_cmd::do_work(class cl_sim *sim,
+//			class cl_cmdline *cmdline, class cl_console *con)
+COMMAND_DO_WORK_UC(cl_info_hw_cmd)
 {
+  class cl_hw *hw;
   class cl_cmd_arg *params[4]= { cmdline->param(0),
 				 cmdline->param(1),
 				 cmdline->param(2),
 				 cmdline->param(3) };
-  char *p0;
-  enum hw_cath cath;
-  class cl_hw *hw;
-  int i= 0;
 
-  if (params[0] == 0)
-    {
-      con->printf("Cathegory missing\n");
-      return(0);
-    }
-  p0= (params[0])->get_svalue();
-  if (strstr(p0, "t") == p0)
-    cath= HW_TIMER;
-  else if (strstr(p0, "u") == p0)
-    cath= HW_UART;
-  else if (strstr(p0, "po") == p0)
-    cath= HW_PORT;
-  else if (strstr(p0, "pc") == p0)
-    cath= HW_PCA;
-  else if (strstr(p0, "i") == p0)
-    cath= HW_INTERRUPT;
-  else if (strstr(p0, "w") == p0)
-    cath= HW_WDT;
+  if (cmdline->syntax_match(uc, HW)) {
+    hw= params[0]->value.hw;
+    hw->print_info(con);
+  }
   else
-    {
-      con->printf("Unknown cathegory\n");
-      return(0);
-    }
-  if (params[1] == 0)
-    {
-      // no ID
-      hw= sim->uc->get_hw(cath, &i);
-      while (hw)
-	{
-	  hw->print_info(con);
-	  i++;
-	  hw= sim->uc->get_hw(cath, &i);
-	}
-    }
-  else
-    {
-      // ID given
-      int id= (params[1])->get_ivalue();
-      hw= sim->uc->get_hw(cath, id, &i);
-      while (hw)
-	{
-	  hw->print_info(con);
-	  i++;
-	  hw= sim->uc->get_hw(cath, id, &i);
-	}      
-    }
-  return(0);
+    con->printf("%s\n", short_help?short_help:"Error: wrong syntax\n");
+
+  return(DD_FALSE);
 }
 
 
-/* End of info.cc */
+/* End of cmd.src/info.cc */

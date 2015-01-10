@@ -16,7 +16,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <alloc.h>
 #include "aslink.h"
 
 /*)Module	lkdata.c
@@ -76,7 +75,7 @@ int	pass;		/*	linker pass number
 int	rtcnt;		/*	count of elements in the
 			 *	rtval[] and rtflg[] arrays
 			 */
-addr_t	rtval[NTXT];	/*	data associated with relocation
+Addr_T	rtval[NTXT];	/*	data associated with relocation
 			 */
 int	rtflg[NTXT];	/*	indicates if rtval[] value is
 			 *	to be sent to the output file.
@@ -90,7 +89,7 @@ int	gline;		/*	LST file relocation active
 int	gcntr;		/*	LST file relocation active
 			 *	counter
 			 */
-addr_t	iram_size;	/*	internal ram size
+Addr_T	iram_size;	/*	internal ram size
 			 */
 
 /*
@@ -204,8 +203,8 @@ struct	head	*hp;	/*	Pointer to the current
  *	{
  *		struct	area	*a_ap;		Area link
  *		struct	areax	*a_axp;		Area extension link
- *		addr_t	a_addr;			Beginning address of area
- *		addr_t	a_size;			Total size of the area
+ *		Addr_T	a_addr;			Beginning address of area
+ *		Addr_T	a_size;			Total size of the area
  *		char	a_type;			Area subtype
  *		char	a_flag;			Flag byte
  *		char	a_id[NCPS];		Name
@@ -238,8 +237,8 @@ struct	area	*ap;	/*	Pointer to the current
  *		struct	areax	*a_axp;		Area extension link
  *		struct	area	*a_bap;		Base area link
  *		struct	head	*a_bhp;		Base header link
- *		addr_t	a_addr;			Beginning address of section
- *		addr_t	a_size;			Size of the area in section
+ *		Addr_T	a_addr;			Beginning address of section
+ *		Addr_T	a_size;			Size of the area in section
  *	};
  */
 struct	areax	*axp;	/*	Pointer to the current
@@ -264,7 +263,7 @@ struct	areax	*axp;	/*	Pointer to the current
  *		struct	areax	*s_axp;		Symbol area link
  *		char	s_type;			Symbol subtype
  *		char	s_flag;			Flag byte
- *		addr_t	s_addr;			Address
+ *		Addr_T	s_addr;			Address
  *		char	*s_id;			Name (JLH)
  *	};
  */
@@ -318,7 +317,7 @@ struct	globl	*gsp;	/*	Pointer to the current
  *	{
  *		struct	area  *s_area;	Paged Area link
  *		struct	areax *s_areax;	Paged Area Extension Link
- *		addr_t	s_addr;		Page address offset
+ *		Addr_T	s_addr;		Page address offset
  *	};
  */
 struct	sdp	sdp;	/* Base Page Structure */
@@ -337,9 +336,9 @@ struct	sdp	sdp;	/* Base Page Structure */
  *	{
  *		int	aindex;		Linking area
  *		int	mode;		Relocation mode
- *		addr_t	rtbase;		Base address in section
+ *		Addr_T	rtbase;		Base address in section
  *		int	rindex;		Area/Symbol reloaction index
- *		addr_t	rval;		Area/Symbol offset value
+ *		Addr_T	rval;		Area/Symbol offset value
  *	};
  */
 struct	rerr	rerr;	/*	Structure containing the

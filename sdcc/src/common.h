@@ -4,9 +4,15 @@
 #include <string.h>
 #include <assert.h>
 
+#if defined(__APPLE__) && (__MACH__)
+#ifdef _G
+#undef _G
+#endif
+#endif
+
 #include "SDCCglobl.h"
-#include "SDCCast.h"
 #include "SDCCmem.h"
+#include "SDCCast.h"
 #include "SDCCy.h"
 #include "SDCChasht.h"
 #include "SDCCbitv.h"
@@ -21,11 +27,10 @@
 #include "SDCClrange.h"
 #include "SDCCptropt.h"
 #include "SDCCopt.h"
+#include "SDCCglue.h"
+#include "SDCCpeeph.h"
 
 #include "asm.h"
 #include "port.h"
-#include "config.h"
 
-/*
-#include "SDCCralloc.h"
-*/
+#include "newalloc.h"

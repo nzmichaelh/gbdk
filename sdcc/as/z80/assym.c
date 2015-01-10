@@ -12,7 +12,12 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include <alloc.h>
+#if defined(__APPLE__) && defined(__MACH__)
+#include <sys/types.h>
+#include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
 #include "asm.h"
 
 /*)Module	assym.c
@@ -353,7 +358,7 @@ register char *p1, *p2;
 		if (*p1++ != *p2++)
 			return (0);
 #else
-		if (ccase[*p1++] != ccase[*p2++])
+		if (ccase[(unsigned char)(*p1++)] != ccase[(unsigned char)(*p2++)])
 			return (0);
 #endif
 
@@ -396,7 +401,7 @@ register char *p;
 #if	CASE_SENSITIVE
 		h += *p++;
 #else
-		h += ccase[*p++];
+		h += ccase[(unsigned char)(*p++)];
 #endif
 
 	} while (--n);

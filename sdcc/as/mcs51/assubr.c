@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include <alloc.h>
 #include "asm.h"
 
 /*)Module	assubr.c
@@ -99,12 +98,15 @@ register int c;
  *		none
  */
 
+extern int fatalErrors;
+
 VOID
 diag()
 {
 	register char *p,*errstr;
 
 	if (eb != ep) {
+	        fatalErrors++;
 		p = eb;
 		fprintf(stderr, "?ASxxxx-Error-<");
 		while (p < ep) {

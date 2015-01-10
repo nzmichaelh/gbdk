@@ -55,7 +55,6 @@ cl_base::cl_base(void) {}
 
 cl_base::~cl_base(void) {}
 
-
 int cl_base::init(void) {return(0);}
 
 
@@ -248,7 +247,7 @@ cl_list::for_each(iterator_func action, void *arg)
 void
 cl_list::free_item(void *item)
 {
-  delete item;
+  delete (class cl_base*)item;
 }
 
 
@@ -536,7 +535,7 @@ cl_strings::compare(void *key1, void *key2)
 void
 cl_strings::free_item(void* item)
 {
-  delete item;
+  delete (class cl_base*)item;
 }
 
 

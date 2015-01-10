@@ -19,7 +19,7 @@
 * COMPILE TIME OPTIONS: -
 * DEBUG OPTIONS: -
 ******************************************************************KE*/
-/*      $Id: ser.h,v 1.1.1.1 2000/01/17 03:24:29 michaelh Exp $    */
+/*      $Id: ser.h,v 1.2 2001/07/30 19:22:59 kbongers Exp $    */
 
 #ifndef _SER_H_
 #define _SER_H_
@@ -29,7 +29,7 @@ void ser_interrupt_handler(void) interrupt 4 using 1;
 void ser_putc(unsigned char);
 unsigned char ser_getc(void);
 void ser_printString(char *String);
-short ser_charAvail(void);
+char ser_charAvail(void);
 
 /*********************End of File************************************/
 #endif

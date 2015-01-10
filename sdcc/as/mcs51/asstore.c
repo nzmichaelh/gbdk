@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include <alloc.h>
 #include "asm.h"
 
 /*

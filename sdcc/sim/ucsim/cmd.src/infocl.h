@@ -1,5 +1,5 @@
 /*
- * Simulator of microcontrollers (infocl.h)
+ * Simulator of microcontrollers (cmd.src/infocl.h)
  *
  * Copyright (C) 1999,99 Drotos Daniel, Talker Bt.
  * 
@@ -25,49 +25,22 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA. */
 /*@1@*/
 
-#ifndef INFOCL_HEADER
-#define INFOCL_HEADER
+#ifndef CMD_INFOCL_HEADER
+#define CMD_INFOCL_HEADER
 
 #include "newcmdcl.h"
 
 
-class cl_info_bp_cmd: public cl_cmd
-{
-public:
-  cl_info_bp_cmd(class cl_sim *asim,
-		 char *aname,
-		 int  can_rep,
-		 char *short_hlp,
-		 char *long_hlp):
-    cl_cmd(asim, aname, can_rep, short_hlp, long_hlp) {}
-  virtual int do_work(class cl_cmdline *cmdline, class cl_console *con);
-};
+// INFO BP
+COMMAND_ON(uc,cl_info_bp_cmd);
 
-class cl_info_reg_cmd: public cl_cmd
-{
-public:
-  cl_info_reg_cmd(class cl_sim *asim,
-		  char *aname,
-		  int  can_rep,
-		  char *short_hlp,
-		  char *long_hlp):
-    cl_cmd(asim, aname, can_rep, short_hlp, long_hlp) {}
-  virtual int do_work(class cl_cmdline *cmdline, class cl_console *con);
-};
+// INFO REG
+COMMAND_ON(uc,cl_info_reg_cmd);
 
-class cl_info_hw_cmd: public cl_cmd
-{
-public:
-  cl_info_hw_cmd(class cl_sim *asim,
-		 char *aname,
-		 int  can_rep,
-		 char *short_hlp,
-		 char *long_hlp):
-    cl_cmd(asim, aname, can_rep, short_hlp, long_hlp) {}
-  virtual int do_work(class cl_cmdline *cmdline, class cl_console *con);
-};
+// INFO HW
+COMMAND_ON(uc,cl_info_hw_cmd);
 
 
 #endif
 
-/* End of infocl.h */
+/* End of cmd.src/infocl.h */

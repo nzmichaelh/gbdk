@@ -27,18 +27,26 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdio.h>
 
-#include "globals.h"
+// sim.src
+#include "appcl.h"
 
+// local
 #include "simavrcl.h"
 
 
 int
 main(int argc, char *argv[])
 {
-  simulator= new cl_simavr(0, argc, argv);
-  simulator->init();
-  simulator->main();
-  delete simulator;
+  class cl_app *app;
+  class cl_sim *sim;
+  
+  app= new cl_app();
+  app->init(argc, argv);
+  sim= new cl_simavr(app);
+  sim->init();
+  app->set_simulator(sim);
+  sim->main();
+  delete app;
   return(0);
 }
 

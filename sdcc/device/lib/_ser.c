@@ -26,10 +26,10 @@
 * COMPILE TIME OPTIONS: -
 * DEBUG OPTIONS: -
 ******************************************************************KE*/
-/*      $Id: _ser.c,v 1.1.1.1 2000/01/17 03:24:30 michaelh Exp $    */
+/*      $Id: _ser.c,v 1.4 2001/07/02 21:10:59 bernhardheld Exp $    */
 
 
-#include <reg51.h>
+#include <8052.h>
 
 #include "ser.h"
 
@@ -142,10 +142,10 @@ ser_printString(char *String)
   }
 }
 
-short
+char
 ser_charAvail(void)
 {
-  short ret = 0;
+  char ret = 0;
 
   if (ser_rxIndexIn != ser_rxIndexOut) {
     ret = 1;

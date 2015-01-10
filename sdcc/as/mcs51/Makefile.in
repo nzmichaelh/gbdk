@@ -11,20 +11,21 @@ SHELL		= /bin/sh
 CC		= @CC@
 CPP		= @CPP@
 INSTALL		= @INSTALL@
+STRIP           = @STRIP@
 
 PRJDIR		= ../..
 
 srcdir		= @srcdir@
 prefix		= @prefix@
-exec_prefix     = ${prefix}
-bindir          = ${exec_prefix}/bin
-libdir          = ${exec_prefix}/lib
-datadir         = ${prefix}/share
-includedir      = ${prefix}/include
-mandir          = ${prefix}/man
+exec_prefix     = @exec_prefix@
+bindir          = @bindir@
+libdir          = @libdir@
+datadir         = @datadir@
+includedir      = @includedir@
+mandir          = @mandir@
 man1dir         = $(mandir)/man1
 man2dir         = $(mandir)/man2
-infodir         = ${prefix}/info
+infodir         = @info@
 
 CPPFLAGS	= @CPPFLAGS@ -I. -I$(PRJDIR)
 CFLAGS		= @CFLAGS@ -Wall
@@ -45,6 +46,7 @@ LKSOURCES	= $(patsubst %.o,%.c,$(LKOBJECTS))
 ASX8051		= $(PRJDIR)/bin/asx8051
 ASLINK		= $(PRJDIR)/bin/aslink
 
+transform       = @program_transform_name@
 
 # Compiling entire program or any subproject
 # ------------------------------------------
@@ -59,9 +61,10 @@ $(ASLINK): $(LKOBJECTS)
 # Compiling and installing everything and runing test
 # ---------------------------------------------------
 install: all installdirs
-	$(INSTALL) -s $(ASX8051) $(bindir)/asx8051
-	$(INSTALL) -s $(ASLINK) $(bindir)/aslink
-
+	$(INSTALL) $(ASX8051) `echo $(bindir)/asx8051|sed '$(transform)'`
+	$(STRIP) `echo $(bindir)/asx8051|sed '$(transform)'`
+	$(INSTALL) $(ASLINK) `echo $(bindir)/aslink|sed '$(transform)'`
+	$(STRIP) `echo $(bindir)/aslink|sed '$(transform)'`
 
 # Deleting all the installed files
 # --------------------------------

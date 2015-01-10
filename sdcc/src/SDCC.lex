@@ -34,16 +34,16 @@ IS       (u|U|l|L)*
 #include <string.h>
 #include <ctype.h>
 #include "common.h"
+#include "newalloc.h"
     
 char *stringLiteral();
 char *currFname;
 
-extern int lineno			;
+extern int lineno, column;
 extern char *filename ;
 extern char *fullSrcFileName ;
 int   yylineno = 1               ;
 void count()                     ;
-void comment();
 int process_pragma(char *);
 #undef yywrap
 
@@ -53,7 +53,8 @@ int yywrap YY_PROTO((void))
 }
 #define TKEYWORD(token) return (isTargetKeyword(yytext) ? token :\
 			        check_type(yytext))
-char asmbuff[MAX_INLINEASM]			;
+char *asmbuff=NULL;
+int asmbuffSize=0;
 char *asmp ;
 extern int check_type		();
  extern int isTargetKeyword     ();
@@ -81,15 +82,41 @@ struct options  save_options  ;
 %}
 %x asm
 %%
-"_asm"        {  count(); asmp = asmbuff ;BEGIN(asm) ;}
-<asm>"_endasm" { count()	  	; 
-                  *asmp = '\0'				; 
-                  strcpy(yylval.yyinline,asmbuff)		; 
-                  BEGIN(INITIAL)	;
-                  return (INLINEASM)			; }
-<asm>.         { *asmp++ = yytext[0]	; }
-<asm>\n        { count(); *asmp++ = '\n' ;}
-"/*"	       { comment(); }
+"_asm"         {  
+  count(); 
+  asmp = asmbuff = realloc (asmbuff, INITIAL_INLINEASM);
+  asmbuffSize=INITIAL_INLINEASM;
+  BEGIN(asm) ;
+}
+<asm>"_endasm" { 
+  count();
+  *asmp = '\0';
+  yylval.yyinline = malloc (strlen(asmbuff)+1);
+  strcpy(yylval.yyinline,asmbuff);
+  BEGIN(INITIAL);
+  return (INLINEASM);
+}
+<asm>.         { 
+  if (asmp-asmbuff >= asmbuffSize-2) {
+    // increase the buffersize with 50%
+    int size=asmp-asmbuff;
+    asmbuffSize=asmbuffSize*3/2;
+    asmbuff = realloc (asmbuff, asmbuffSize); 
+    asmp=asmbuff+size;
+  }
+  *asmp++ = yytext[0];
+}
+<asm>\n        { 
+  count(); 
+  if (asmp-asmbuff >= asmbuffSize-3) {
+    // increase the buffersize with 50%
+    int size=asmp-asmbuff;
+    asmbuffSize=asmbuffSize*3/2;
+    asmbuff = realloc (asmbuff, asmbuffSize); 
+    asmp=asmbuff+size;
+  }
+  *asmp++ = '\n' ;
+}
 "at"	       { count(); TKEYWORD(AT)  ; }
 "auto"	       { count(); return(AUTO); }
 "bit"	       { count(); TKEYWORD(BIT) ; }
@@ -140,24 +167,15 @@ struct options  save_options  ;
 "void"         { count(); return(VOID); }
 "volatile"     { count(); return(VOLATILE); }
 "using"        { count(); TKEYWORD(USING); }
+"_naked"       { count(); TKEYWORD(NAKED); }
 "while"        { count(); return(WHILE); }
 "xdata"        { count(); TKEYWORD(XDATA); }
-"_data"	       { count(); TKEYWORD(_NEAR); }
-"_code"	       { count(); TKEYWORD(_CODE); }
-"_eeprom"      { count(); TKEYWORD(_EEPROM); }
-"_flash"       { count(); TKEYWORD(_CODE); }
-"_generic"     { count(); TKEYWORD(_GENERIC); }
-"_near"	       { count(); TKEYWORD(_NEAR); }
-"_sram"        { count(); TKEYWORD(_XDATA);}
-"_xdata"       { count(); TKEYWORD(_XDATA);}
-"_pdata"       { count(); TKEYWORD(_PDATA); }
-"_idata"       { count(); TKEYWORD(_IDATA); }
 "..."	       { count(); return(VAR_ARGS);}
 {L}({L}|{D})*  { count(); return(check_type()); }
 0[xX]{H}+{IS}? { count(); yylval.val = constVal(yytext); return(CONSTANT); }
 0{D}+{IS}?     { count(); yylval.val = constVal(yytext); return(CONSTANT); }
 {D}+{IS}?      { count(); yylval.val = constVal(yytext); return(CONSTANT); }
-'(\\.|[^\\'])+' { count();yylval.val = charVal (yytext); return(CONSTANT); }
+'(\\.|[^\\'])+' { count();yylval.val = charVal (yytext); return(CONSTANT); /* ' make syntax highliter happy */}
 {D}+{E}{FS}?   { count(); yylval.val = constFloatVal(yytext);return(CONSTANT); }
 {D}*"."{D}+({E})?{FS}?  { count(); yylval.val = constFloatVal(yytext);return(CONSTANT); }
 {D}+"."{D}*({E})?{FS}?	{ count(); yylval.val = constFloatVal(yytext);return(CONSTANT); }
@@ -215,9 +233,17 @@ struct options  save_options  ;
 "\r\n"		   { count(); }
 "\n"		   { count(); }
 [ \t\v\f]      { count(); }
+\\ {
+  char ch=input();
+  if (ch!='\n') {
+    // that could have been removed by the preprocessor anyway
+    werror (W_STRAY_BACKSLASH, column);
+    unput(ch);
+  }
+}
 .			   { count()	; }
 %%
-   
+
 int checkCurrFile ( char *s)
 {
     char lineNum[10]			;
@@ -245,8 +271,8 @@ int checkCurrFile ( char *s)
     /* set the current line number to   */
     /* line number if printFlag is on   */
     if (!*s) {		
-	yylineno = lNum ;
-	return 0;
+      lineno = yylineno = lNum ;
+      return 0;
     }
     
     /* if we have a filename then check */
@@ -255,61 +281,39 @@ int checkCurrFile ( char *s)
     s++ ;
 
     if ( strncmp(s,fullSrcFileName,strlen(fullSrcFileName)) == 0) {
-	    yylineno = lNum - 2;					
-	    currFname = fullSrcFileName ;
+      lineno = yylineno = lNum;					
+      currFname = fullSrcFileName ;
     }  else {
 	char *sb = s;
 	/* mark the end of the filename */
 	while (*s != '"') s++;
 	*s = '\0';
-	ALLOC_ATOMIC(currFname,strlen(sb)+1);
+	currFname = malloc (strlen(sb)+1);
 	strcpy(currFname,sb);
-	yylineno = lNum - 2;
+	lineno = yylineno = lNum;
     }
     filename = currFname ;
     return 0;
 }
     
-void comment()
-{
-	char c, c1;
-
-loop:
-	while ((c = input()) != '*' && c != 0)
-		if ( c == '\n')
-			yylineno++ ;
-
-	if ((c1 = input()) != '/' && c != 0)  {
-		if ( c1 == '\n' )
-			yylineno++ ;
-
-		unput(c1);
-		goto loop;
-   }
-
-}
-   
-   
-
 int column = 0;
 int plineIdx=0;
 
 void count()
 {
-	int i;
-	for (i = 0; yytext[i] != '\0'; i++)   {				
-		if (yytext[i] == '\n')      {         
-		   column = 0;
-		   lineno = ++yylineno ;
-		}
-		else 
-			if (yytext[i] == '\t')
-				column += 8 - (column % 8);
-			else
-				column++;
-   }
-         
-   /* ECHO; */
+  int i;
+  for (i = 0; yytext[i] != '\0'; i++)   {				
+    if (yytext[i] == '\n')      {         
+      column = 0;
+      lineno = ++yylineno ;
+    }
+    else 
+      if (yytext[i] == '\t')
+	column += 8 - (column % 8);
+      else
+	column++;
+  }
+  /* ECHO; */
 }
 
 int check_type()
@@ -325,49 +329,84 @@ int check_type()
 	}
 }
 
-char strLitBuff[2048]			;
+char strLitBuff[2048]; // TODO: this is asking for the next bug :)
 
-char *stringLiteral ()
-{
-       int ch;
-       char *str = strLitBuff			;
-       
-       *str++ = '\"'			;
-       /* put into the buffer till we hit the */
-       /* first \" */
-       while (1) {
+/*
+ * Change by JTV 2001-05-19 to not concantenate strings
+ * to support ANSI hex and octal escape sequences in string liteals 
+ */
 
-          ch = input()			;
-          if (!ch) 	    break	; /* end of input */
-	  /* if it is a \ then everything allowed */
-	  if (ch == '\\') {
-	     *str++ = ch     ; /* backslash in place */
-	     *str++ = input()		; /* following char in place */
-	     continue			;      /* carry on */
-	     }
-	     
-	 /* if new line we have a new line break */
-	 if (ch == '\n') break		;
-	 
-	 /* if this is a quote then we have work to do */
-	 /* find the next non whitespace character     */
-	 /* if that is a double quote then carry on    */
-	 if (ch == '\"') {
-	 
-	     while ((ch = input()) && isspace(ch)) ;
-	     if (!ch) break		; 
-	     if (ch != '\"') {
-	          unput(ch)			;
-		  break			;
-		  }
-		  
-		  continue		;
-        }
-	*str++  = ch;	  
-     }  
-     *str++ = '\"'			;
-     *str = '\0';
-     return strLitBuff			;
+char *stringLiteral () {
+  int ch;
+  char *str = strLitBuff;
+  
+  *str++ = '\"';
+  /* put into the buffer till we hit the first \" */
+  
+  while (1) {
+    ch = input();
+    
+    if (!ch)
+      break; /* end of input */
+    
+    /* if it is a \ then escape char's are allowed */
+    if (ch == '\\') {
+      ch=input();
+      if (ch=='\n') {
+	/* \<newline> is a continuator */
+	lineno=++yylineno;
+	column=0;
+	continue;
+      }
+      *str++ = '\\'; /* backslash in place */
+      *str++ = ch; /* get the escape char, no further check */
+      continue; /* carry on */
+    }
+    
+    /* if new line we have a new line break, which is illegal */
+    if (ch == '\n') {
+      werror (W_NEWLINE_IN_STRING);
+      *str++ = '\n';
+      lineno=++yylineno;
+      column=0;
+      continue;
+    }
+    
+    /* if this is a quote then we have work to do */
+    /* find the next non whitespace character     */
+    /* if that is a double quote then carry on    */
+    if (ch == '\"') {
+      *str++  = ch ; /* Pass end of this string or substring to evaluator */
+      while ((ch = input()) && (isspace(ch) || ch=='\\')) {
+	switch (ch) {
+	case '\\':
+	  if ((ch=input())!='\n') {
+	    werror (W_STRAY_BACKSLASH, column);
+	    unput(ch);
+	  } else {
+	    lineno=++yylineno;
+	    column=0;
+	  }
+	  break;
+	case '\n':
+	  yylineno++;
+	  break;
+	}
+      }
+
+      if (!ch) 
+	break; 
+
+      if (ch != '\"') {
+	unput(ch) ;
+	break ;
+      }
+    }
+    *str++  = ch; /* Put next substring introducer into output string */
+  }  
+  *str = '\0';
+  
+  return strLitBuff;
 }
 
 void doPragma (int op, char *cp)
@@ -408,11 +447,11 @@ void doPragma (int op, char *cp)
 	    /* append to the functions already listed
 	       in callee-saves */
 	    for (; options.calleeSaves[i] ;i++);
-	    parseWithComma(&options.calleeSaves[i],strdup(cp));
+	    parseWithComma(&options.calleeSaves[i], Safe_strdup(cp));
 	}
 	break;
     case P_EXCLUDE:
-	parseWithComma(options.excludeRegs,strdup(cp));
+	parseWithComma(options.excludeRegs, Safe_strdup(cp));
 	break;
     case P_LOOPREV:
 	optimize.noLoopReverse = 1;
@@ -498,7 +537,7 @@ int process_pragma(char *s)
     }
 
     if (strncmp(cp,PRAGMA_NOLOOPREV,strlen(PRAGMA_NOLOOPREV)) == 0) {
-	doPragma(P_EXCLUDE,NULL);
+	doPragma(P_LOOPREV,NULL);
 	return 0;
     }
 
@@ -520,4 +559,18 @@ int isTargetKeyword(char *s)
     }
     
     return 0;
+}
+
+extern int fatalError;
+
+int yyerror(char *s)
+{
+   fflush(stdout);
+
+   if (yylineno && filename)
+	fprintf(stdout,"\n%s(%d) %s: token -> '%s' ; column %d\n",
+		filename,yylineno,
+		s,yytext,column);
+   fatalError++;
+   return 0;
 }

@@ -27,10 +27,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "ddconfig.h"
 
-#include <stdio.h>
+// sim.src
+#include "appcl.h"
 
-#include "globals.h"
-
+// local
 #include "sim51cl.h"
 
 
@@ -42,12 +42,17 @@ int
 main(int argc, char *argv[])
 {
   int retval;
-
-  simulator= new cl_sim51(argc, argv);
-  if (simulator->init())
+  class cl_app *app;
+  class cl_sim *sim;
+  
+  app= new cl_app();
+  app->init(argc, argv);
+  sim= new cl_sim51(app);
+  if (sim->init())
     return(1);
-  retval= simulator->main();
-  delete simulator;
+  app->set_simulator(sim);
+  retval= /*sim->main()*/app->run();
+  delete app;
   
   return(retval);
 }

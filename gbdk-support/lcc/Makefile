@@ -1,11 +1,11 @@
 # Simple Makefile for the lcc frontend.
 
-ifndef SDCCLIB
-SDCCLIB = /home/michaelh/projects/gbdk-current/
+ifndef TARGETDIR
+TARGETDIR = /opt/gbdk
 endif
 
-CC = $(TNP)gcc
-CFLAGS = -ggdb -O -Wall -DGBDKLIBDIR=\"$(SDCCLIB)\"
+CC = $(TOOLSPREFIX)gcc
+CFLAGS = -ggdb -O -Wall -DGBDKLIBDIR=\"$(TARGETDIR)\"
 OBJ = lcc.o gb.o
 BIN = lcc
 

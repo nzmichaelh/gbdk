@@ -3,34 +3,56 @@
 #
 
 SHELL		= /bin/sh
-AUTOCONF	= autoconf
 
 PRJDIR		= .
+
+include $(PRJDIR)/Makefile.common
+
 SDCC_MISC	= debugger/mcs51 sim/ucsim
-SDCC_LIBS	= support/cpp
+SDCC_LIBS	= support/cpp2 support/makebin
+SDCC_DOC        = doc
+
+# Parts that are not normally compiled but need to be cleaned
+SDCC_EXTRA      = support/regression
+
 SDCC_ASLINK	= as/mcs51 as link
+SDCC_PACKIHX	= packihx
 
-PKGS		= $(SDCC_MISC) $(SDCC_LIBS) $(SDCC_ASLINK) \
-		  src device/include device/lib
+TARGETS         = sdcc-libs sdcc-cc sdcc-aslink sdcc-doc
 
-PORTS		= mcs51 z80
+PKGS		= $(SDCC_LIBS) src $(SDCC_ASLINK) $(SDCC_DOC)
 
-srcdir          = .
+ifneq ($(OPT_ENABLE_UCSIM), no)
+TARGETS         += sdcc-misc 
+PKGS            += $(SDCC_MISC)
+endif
+
+ifneq ($(OPT_ENABLE_DEVICE_LIB_BUILD), no)
+TARGETS         += sdcc-device
+PKGS            += device/include device/lib
+endif
+
+ifneq ($(OPT_ENABLE_PACKIHX), no)
+TARGETS         += sdcc-packihx
+PKGS            += $(SDCC_PACKIHX)
+endif
+
+PKGS_TINI	= $(SDCC_LIBS) $(SDCC_ASLINK) \
+		  src device/include $(SDCC_PACKIHX)
+PORTS		= $(shell cat ports.build)
+ALLPORTS	= $(shell cat ports.all)
 
 # Compiling entire program or any subproject
 # ------------------------------------------
 all: checkconf sdcc
 
+tini: checkconf sdcc-tini
+
 sdcc-libs:
-ifeq ($(CROSS_LIBGC),1)
-	$(MAKE) -C support/gc -f Makefile.cross
-else
-	$(MAKE) -C support/gc
-endif
 	for lib in $(SDCC_LIBS); do $(MAKE) -C $$lib; done
 
 sdcc-cc: sdcc-libs
-	$(MAKE) -C src $(PASS_ON)
+	$(MAKE) -C src
 
 sdcc-aslink:
 	for as in $(SDCC_ASLINK); do $(MAKE) -C $$as; done
@@ -38,11 +60,23 @@ sdcc-aslink:
 sdcc-misc:
 	for misc in $(SDCC_MISC); do $(MAKE) -C $$misc; done
 
+sdcc-packihx:
+	$(MAKE) -C $(SDCC_PACKIHX)
+
 sdcc-device:
 	$(MAKE) -C device/include
 	$(MAKE) -C device/lib
 
-sdcc: sdcc-cc sdcc-aslink sdcc-misc sdcc-device
+sdcc-device-tini:
+	$(MAKE) -C device/include
+	$(MAKE) -C device/lib modelDS390
+
+# Empty for now, as doc depends on latex and latex2html
+sdcc-doc:
+
+sdcc: $(TARGETS)
+
+sdcc-tini: sdcc-cc sdcc-aslink sdcc-device-tini sdcc-packihx
 	$(MAKE) -f main.mk all
 
 # Some interesting sub rules
@@ -57,6 +91,14 @@ install:
 	@for pkg in $(PKGS); do\
 	  $(MAKE) -C $$pkg install ;\
 	done
+
+install-tini:
+	$(MAKE) -f main.mk install
+	@for pkg in $(PKGS_TINI); do\
+	  $(MAKE) -C $$pkg install ;\
+	done
+	$(MAKE) -C device/lib installDS390
+
 
 
 # Deleting all the installed files
@@ -75,9 +117,8 @@ clean:
 	$(MAKE) -f clean.mk clean
 	@echo "+ Cleaning packages in their directories..."
 	for pkg in $(PKGS); do\
-	  $(MAKE) PORTS="$(PORTS)" -C $$pkg clean ;\
+	  $(MAKE) PORTS="$(PORTS)" -C $$pkg -f clean.mk clean ;\
 	done
-
 
 # Deleting all files created by configuring or building the program
 # -----------------------------------------------------------------
@@ -86,9 +127,11 @@ distclean:
 	$(MAKE) -f clean.mk distclean
 	@echo "+ DistCleaning packages using clean.mk..."
 	for pkg in $(PKGS); do\
-	  $(MAKE) -C $$pkg -f clean.mk PORTS="$(PORTS)" distclean ;\
+	  $(MAKE) -C $$pkg PORTS="$(PORTS)" -f clean.mk distclean ;\
 	done
-
+	for pkg in $(SDCC_EXTRA); do \
+	  $(MAKE) -C $$pkg clean; \
+	done
 
 # Like clean but some files may still exist
 # -----------------------------------------

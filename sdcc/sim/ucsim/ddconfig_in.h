@@ -40,8 +40,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef HAVE_SYS_DIR_H
 #undef HAVE_SYS_SOCKET_H
 #undef HAVE_NDIR_H
+#undef HAVE_DLFCN_H
 
 #undef SOCKET_AVAIL
+#undef SOCKLEN_T
 
 #undef FD_NEED_TIME_H
 #undef FD_NEED_TYPES_H
@@ -93,6 +95,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef VERSIONHI
 #undef VERSIONLO
 #undef VERSIONP
+
+#undef ACCEPT_SOCKLEN_T
 
 #endif
 

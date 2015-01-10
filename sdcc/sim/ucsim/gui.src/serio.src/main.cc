@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <getopt.h>
 #include "fileio.hh"
 #include "frontend.hh"
 #include "posix_signal.hh"
@@ -44,7 +45,7 @@ int main(int argc, char **argv)
 	char *string = new char[MAX_SIZ];
 	extern char *optarg;
 	int errflg=0;
-	char c;
+	int c;
 	char *infile = DEF_INFILE;
 	char *outfile = DEF_OUTFILE;
 

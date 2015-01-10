@@ -12,6 +12,7 @@
 /*
  * Extensions: P. Felber
  */
+#include <limits.h>
 
 #define	VERSION	"V01.75"
 
@@ -84,12 +85,12 @@
 #endif /* SDK */
 /* #define	NCPS	32 */	/* characters per symbol */
 #define	NDATA	16		/* actual data */
-#define	NINPUT	128		/* Input buffer size */
+#define	NINPUT	PATH_MAX	/* Input buffer size */
 #define	NHASH	64		/* Buckets in hash table */
 #define	HMASK	077		/* Hash mask */
 #define	NLPP	60		/* Lines per page */
 #define	NTXT	16		/* T values */
-#define	FILSPC	80		/* File spec length */
+#define	FILSPC	PATH_MAX	/* File spec length */
 
 /*
  *	The "R_" relocation constants define values used in
@@ -149,6 +150,7 @@
 /*
  * File types
  */
+#define F_INV	0		/* invalid */
 #define	F_STD	1		/* stdin */
 #define	F_LNK	2		/* File.lnk */
 #define	F_REL	3		/* File.rel */
@@ -178,7 +180,7 @@ extern patch* patches;
 /*
  *	General assembler address type
  */
-typedef unsigned int addr_t;
+typedef unsigned int Addr_T;
 
 /*
  *	The structures of head, area, areax, and sym are created
@@ -224,8 +226,8 @@ struct	area
 {
 	struct	area	*a_ap;	/* Area link */
 	struct	areax	*a_axp;	/* Area extension link */
-	addr_t	a_addr;		/* Beginning address of area */
-	addr_t	a_size;		/* Total size of the area */
+	Addr_T	a_addr;		/* Beginning address of area */
+	Addr_T	a_size;		/* Total size of the area */
 	char	a_type;		/* Area subtype */
 	char	a_flag;		/* Flag byte */
 	char	a_id[NCPS];	/* Name */
@@ -251,8 +253,8 @@ struct	areax
 	struct	areax	*a_axp;	/* Area extension link */
 	struct	area	*a_bap;	/* Base area link */
 	struct	head	*a_bhp;	/* Base header link */
-	addr_t	a_addr;		/* Beginning address of section */
-	addr_t	a_size;		/* Size of the area in section */
+	Addr_T	a_addr;		/* Beginning address of section */
+	Addr_T	a_size;		/* Size of the area in section */
 };
 
 /*
@@ -273,7 +275,7 @@ struct	sym
 	struct	areax	*s_axp;	/* Symbol area link */
 	char	s_type;		/* Symbol subtype */
 	char	s_flag;		/* Flag byte */
-	addr_t	s_addr;		/* Address */
+	Addr_T	s_addr;		/* Address */
 	char	s_id[NCPS];	/* Name */
 };
 
@@ -322,7 +324,7 @@ struct	sdp
 {
 	struct	area  *s_area;	/* Paged Area link */
 	struct	areax *s_areax;	/* Paged Area Extension Link */
-	addr_t	s_addr;		/* Page address offset */
+	Addr_T	s_addr;		/* Page address offset */
 };
 
 /*
@@ -339,9 +341,9 @@ struct	rerr
 {
 	int	aindex;		/* Linking area */
 	int	mode;		/* Relocation mode */
-	addr_t	rtbase;		/* Base address in section */
+	Addr_T	rtbase;		/* Base address in section */
 	int	rindex;		/* Area/Symbol reloaction index */
-	addr_t	rval;		/* Area/Symbol offset value */
+	Addr_T	rval;		/* Area/Symbol offset value */
 };
 
 /*
@@ -571,7 +573,7 @@ extern	int	pass;		/*	linker pass number
 extern	int	rtcnt;		/*	count of elements in the
 				 *	rtval[] and rtflg[] arrays
 				 */
-extern	addr_t	rtval[];	/*	data associated with relocation
+extern	Addr_T	rtval[];	/*	data associated with relocation
 				 */
 extern	int	rtflg[];	/*	indicates if rtval[] value is
 				 *	to be sent to the output file.
@@ -659,14 +661,14 @@ extern	VOID		symdef();
 extern	int		symeq();
 extern	VOID		syminit();
 extern	VOID		symmod();
-extern	addr_t		symval();
+extern	Addr_T		symval();
 
 /* lkeval.c */
 extern	int		digit();
-extern	addr_t		eval();
-extern	addr_t		expr();
+extern	Addr_T		eval();
+extern	Addr_T		expr();
 extern	int		oprio();
-extern	addr_t		term();
+extern	Addr_T		term();
 
 /* lklist.c */
 extern	int		dgt();
@@ -678,13 +680,13 @@ extern	VOID		newpag();
 extern	VOID		slew();
 
 /* lkrloc.c */
-extern	addr_t		adb_b();
-extern	addr_t		adb_hi();
-extern	addr_t		adb_lo();
-extern	addr_t		adw_w();
-extern	addr_t		adw_hi();
-extern	addr_t		adw_lo();
-extern	addr_t		evword();
+extern	Addr_T		adb_b();
+extern	Addr_T		adb_hi();
+extern	Addr_T		adb_lo();
+extern	Addr_T		adw_w();
+extern	Addr_T		adw_hi();
+extern	Addr_T		adw_lo();
+extern	Addr_T		evword();
 extern	VOID		rele();
 extern	VOID		reloc();
 extern	VOID		relt();
@@ -711,3 +713,8 @@ extern	VOID		s19();
 
 /* lkihx.c */
 extern	VOID		ihx();
+
+/* lkgb.h */
+VOID gb(int in);
+VOID gg(int in);
+

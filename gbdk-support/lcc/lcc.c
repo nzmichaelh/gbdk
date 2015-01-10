@@ -2,7 +2,7 @@
  * lcc [ option ]... [ file | -llib ]...
  * front end for the ANSI C compiler
  */
-static char rcsid[] = "$Id: lcc.c,v 1.5 2000/03/27 00:56:12 michaelh Exp $";
+static char rcsid[] = "$Id: lcc.c,v 1.6 2001/10/28 18:38:13 michaelh Exp $";
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -686,8 +686,8 @@ static void opt(char *arg) {
 			    /* GBDK removed */
 				if (strcmp(basepath(cpp[0]), "gcc-cpp") == 0)
 					plist = append(arg, plist);
-#endif
 				clist = append(arg, clist);
+#endif
 				fprintf(stderr, "%s %s\n", progname, rcsid);
 			}
 			return;

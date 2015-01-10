@@ -1,5 +1,5 @@
 /*
- * Simulator of microcontrollers (optioncl.h)
+ * Simulator of microcontrollers (sim.src/optioncl.h)
  *
  * Copyright (C) 1999,99 Drotos Daniel, Talker Bt.
  * 
@@ -25,8 +25,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA. */
 /*@1@*/
 
-#ifndef OPTIONCL_HEADER
-#define OPTIONCL_HEADER
+#ifndef SIM_OPTIONCL_HEADER
+#define SIM_OPTIONCL_HEADER
 
 #include "ddconfig.h"
 
@@ -48,7 +48,7 @@ public:
   cl_option(void *opt, char *Iid, char *Ihelp);
   ~cl_option(void);
 
-  virtual void print(FILE *f)= 0;
+  virtual void print(class cl_console *con)= 0;
 
   virtual bool get_value(void)= 0;
 
@@ -62,7 +62,7 @@ class cl_bool_opt: public cl_option
 public:
   cl_bool_opt(bool *opt, char *Iid, char *Ihelp);
 
-  virtual void print(FILE *f);
+  virtual void print(class cl_console *con);
   virtual bool get_value(void);
   virtual void set_value(bool);
   virtual void set_value(char *s);
@@ -71,11 +71,11 @@ public:
 class cl_cons_debug_opt: public cl_option
 {
 public:
-  class cl_sim *sim;
+  class cl_app *app;
 public:
-  cl_cons_debug_opt(class cl_sim *Asim, char *Iid, char *Ihelp);
+  cl_cons_debug_opt(class cl_app *the_app, char *Iid, char *Ihelp);
 
-  virtual void print(FILE *f);
+  virtual void print(class cl_console *con);
 
   virtual bool get_value(void);
 

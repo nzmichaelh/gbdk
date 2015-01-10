@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include <alloc.h>
+#include <stdlib.h>
 #include "asm.h"
 
 /*)Module	aslist.c
@@ -477,6 +477,14 @@ int flag;
 	}
 }
 
+/* Used for qsort call in lstsym */
+static int _cmpSym(const void *p1, const void *p2)
+{
+    struct sym **s1 = (struct sym **)(p1);
+    struct sym **s2 = (struct sym **)(p2);
+    return strcmp((*s1)->s_id,(*s2)->s_id);
+}
+
 /*)Function	VOID	lstsym(fp)
  *
  *		FILE *	fp		file handle for output
@@ -573,6 +581,8 @@ FILE *fp;
 		}
 	}
 
+#if 0
+	/* BUBBLE SORT?? WTF??? */
 	/*
 	 * Bubble Sort on Symbol Table Array
 	 */
@@ -589,6 +599,10 @@ FILE *fp;
 			}
 		}
 	}
+#else
+
+	qsort(p, nmsym, sizeof(struct sym *), _cmpSym);
+#endif	
 
 	/*
 	 * Symbol Table Output

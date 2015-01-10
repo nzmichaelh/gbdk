@@ -3,7 +3,7 @@
 # Deleting all files created by building the program
 # --------------------------------------------------
 clean:
-	rm -f *core *[%~] *.[oa]
+	rm -f *core *[%~] *.[oa] *.map
 	rm -f .[a-z]*~
 	rm -f savr
 
@@ -13,6 +13,7 @@ clean:
 distclean: clean
 	rm -f config.cache config.log config.status
 	rm -f Makefile *.dep
+	rm -f *.obj *.list *.lst *.hex
 
 
 # Like clean but some files may still exist

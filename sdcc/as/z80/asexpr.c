@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include <alloc.h>
+
 #include "asm.h"
 
 /*)Module	asexpr.c
@@ -28,7 +28,7 @@
  *
  *	asexpr.c contains the following functions:
  *		VOID	abscheck()
- *		addr_t	absexpr()
+ *		Addr_T	absexpr()
  *		VOID	clrexpr()
  *		int	digit()
  *		VOID	expr()
@@ -84,7 +84,7 @@ expr(esp, n)
 register struct expr *esp;
 int n;
 {
-        register int c, d, p;
+        register int c, p;
         struct area *ap;
         struct expr re;
 
@@ -186,7 +186,7 @@ int n;
         unget(c);
 }
 
-/*)Function	addr_t	absexpr()
+/*)Function	Addr_T	absexpr()
  *
  *	The function absexpr() evaluates an expression, verifies it
  *	is absolute (i.e. not position dependent or relocatable), and
@@ -208,7 +208,7 @@ int n;
  *		a 'r' error is reported.
  */
 
-addr_t
+Addr_T
 absexpr()
 {
         struct expr e;
@@ -273,7 +273,7 @@ register struct expr *esp;
         char id[NCPS];
         struct sym  *sp;
         struct tsym *tp;
-        int r, v;
+        int r = 0, v;
 
         c = getnb();
 	/*
@@ -295,7 +295,7 @@ register struct expr *esp;
         if (c == '-') {
                 expr(esp, 100);
                 abscheck(esp);
-                esp->e_addr = -esp->e_addr;
+                esp->e_addr = 0 - esp->e_addr;
                 return;
         }
         if (c == '~') {
@@ -347,7 +347,7 @@ register struct expr *esp;
         if (ctype[c] & DIGIT) {
                 esp->e_mode = S_USER;
                 jp = ip;
-                 while (ctype[*jp] & RAD10) {
+                 while (ctype[(unsigned char)(*jp)] & RAD10) {
                         jp++;
                 }
                 if (*jp == '$') {

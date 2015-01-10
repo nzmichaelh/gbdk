@@ -1,7 +1,7 @@
 /*-------------------------------------------------------------------------
   Register Declarations for 8051 Processor    
   
-       Written By -  Sandeep Dutta . sandeep.dutta@usa.net (1998)
+   Written By -  Sandeep Dutta . sandeep.dutta@usa.net (1998)
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -24,6 +24,9 @@
 
 #ifndef REG51_H
 #define REG51_H
+
+#warning This file (reg51.h) is obsolete, depending on your harware
+#warning use include <8051.h>, or include <8052.h>!
 
 /*  BYTE Register  */
 sfr at 0x80 P0   ;
@@ -143,3 +146,13 @@ sfr at 0xCB RCAP2H;
 sfr at 0xCA RCAP2L;
 
 #endif
+
+
+
+
+
+
+
+
+
+

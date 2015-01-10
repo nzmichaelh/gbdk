@@ -75,8 +75,10 @@ struct cpu_entry
 #define CPU_51R		0x0010
 #define CPU_89C51R	0x0020
 #define CPU_251		0x0040
+#define CPU_DS390		0x0080
+#define CPU_DS390F		0x0100
 #define CPU_ALL_51	(CPU_51|CPU_31)
-#define CPU_ALL_52	(CPU_52|CPU_32|CPU_51R|CPU_89C51R|CPU_251)
+#define CPU_ALL_52	(CPU_52|CPU_32|CPU_51R|CPU_89C51R|CPU_251|CPU_DS390|CPU_DS390F)
 
 #define CPU_AVR		0x0001
 #define CPU_ALL_AVR	(CPU_AVR)
@@ -98,10 +100,11 @@ enum mem_class
 };
 
 // Flags of consoles
-#define CONS_NONE	0
-#define CONS_DEBUG	0x01	// Print debug messages on this console
-#define CONS_FROZEN	0x02	// Console is frozen (g command issued)
-#define CONS_PROMPT	0x04	// Prompt is out, waiting for input
+#define CONS_NONE	 0
+#define CONS_DEBUG	 0x01	// Print debug messages on this console
+#define CONS_FROZEN	 0x02	// Console is frozen (g command issued)
+#define CONS_PROMPT	 0x04	// Prompt is out, waiting for input
+#define CONS_INTERACTIVE 0x08	// Interactive console
 
 // States of simulator
 #define SIM_NONE	0
@@ -132,7 +135,13 @@ if (newbit) \
   (mem(MEM_SFR))->set_bit1((reg), (bitmask)); \
 else \
   (mem(MEM_SFR))->set_bit0((reg), (bitmask));
-#define GET_C (get_mem(MEM_SFR, PSW) & bmCY)
+#define SFR_SET_BIT(newbit, reg, bitmask) \
+if (newbit) \
+  sfr->set_bit1((reg), (bitmask)); \
+else \
+  sfr->set_bit0((reg), (bitmask));
+#define GET_C     (get_mem(MEM_SFR, PSW) & bmCY)
+#define SFR_GET_C (sfr->get(PSW) & bmCY)
 #define SET_C(newC) SET_BIT((newC), PSW, bmCY)
 
 #define IRAM_SIZE 256	  /* Size of Internal RAM */

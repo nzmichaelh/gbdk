@@ -2,6 +2,7 @@
   vprintf.c - formatted output conversion
  
              Written By - Martijn van Balen aed@iae.nl (1999)
+	     Added %f By - johan.knol@iduna.nl (2000)
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -22,18 +23,35 @@
    what you give them.   Help stamp out software-hoarding!  
 -------------------------------------------------------------------------*/
 
+/* this module uses some global variables instead function parameters, so: */
+#ifdef SDCC_STACK_AUTO
+#warning "this module cannot yet be use as a reentrant one"
+#endif
+
+#ifdef __ds390
+#define USE_FLOATS 1
+#endif
+
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
 
-extern void putchar(const char);
-
 #define PTR value.p 
+
+#ifdef SDCC_ds390
+#define NULL_STRING "<NULL>"
+#define NULL_STRING_LENGTH 6
+#endif
 
 /****************************************************************************/
 
-typedef char _generic *ptr_t;
+//typedef char * ptr_t;
+#define ptr_t char *
+
+#ifdef toupper
+#undef toupper
+#endif
 
 //#define toupper(c) ((c)&=~0x20)
 #define toupper(c) ((c)&=0xDF)
@@ -43,20 +61,25 @@ typedef union
   unsigned char  byte[5];
   long           l;
   unsigned long  ul;
-  char _generic *p;
+  float          f;
+  char           *p;
 } value_t;
 
 
 static code char memory_id[] = "IXCP-";
 
-ptr_t output_ptr;
-bit   output_to_string;
-bit   lower_case;
-bit   lsd;
+static ptr_t output_ptr;
+static bit   output_to_string;
+static bit   lower_case;
+static bit   lsd;
 
-data value_t        value;
+/* this one NEEDS to be in data */
+static data value_t value;
 
-     unsigned short radix;
+static unsigned char radix;
+
+// jwk: TODO: this makes the whole dammed thing nonreentrent
+static int charsOutputted;
 
 /****************************************************************************/
 
@@ -70,13 +93,15 @@ static void output_char( char c ) reentrant
   {
     putchar( c );
   }
+  charsOutputted++;
 }
 
 /*--------------------------------------------------------------------------*/
 
 static void output_digit( unsigned char n ) reentrant
 {
-  output_char( n <= 9 ? '0'+n : (lower_case ? n+(char)('a'-10) : n+(char)('A'-10)) );
+  output_char( n <= 9 ? '0'+n : 
+	       (lower_case ? n+(char)('a'-10) : n+(char)('A'-10)) );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -97,7 +122,7 @@ static void calculate_digit( void )
   {
 _asm
   clr  c
-  mov  a,_value+0
+  mov  a,_value+0  
   rlc  a
   mov  _value+0,a
   mov  a,_value+1
@@ -122,21 +147,131 @@ _endasm;
   }
 }
 
+#if USE_FLOATS
+
+/* This is a very inefficient but direct approach, since we have no math
+   library yet (e.g. log()).
+   It does most of the modifiers, but has some restrictions. E.g. the 
+   abs(float) shouldn't be bigger than an unsigned long (that's 
+   about 4294967295), but still makes it usefull for most real-life
+   applications.
+*/
+
+#define DEFAULT_FLOAT_PRECISION 6
+
+static void output_float (float f, unsigned char reqWidth, 
+			  signed char reqDecimals,
+			  bit left, bit zero, bit sign, bit space)
+{
+  char negative=0;
+  long integerPart;
+  float decimalPart;
+  char fpBuffer[128];
+  char fpBI=0, fpBD;
+  unsigned char minWidth, i;
+
+  // save the sign
+  if (f<0) {
+    negative=1;
+    f=-f;
+  }
+
+  // split the float
+  integerPart=f;
+  decimalPart=f-integerPart;
+
+  // fill the buffer with the integerPart (in reversed order!)
+  while (integerPart) {
+    fpBuffer[fpBI++]='0' + integerPart%10;
+    integerPart /= 10;
+  }
+  if (!fpBI) {
+    // we need at least a 0
+    fpBuffer[fpBI++]='0';
+  }
+
+  // display some decimals as default
+  if (reqDecimals==-1)
+    reqDecimals=DEFAULT_FLOAT_PRECISION;
+  
+  // fill buffer with the decimalPart (in normal order)
+  fpBD=fpBI;
+  if (i=reqDecimals /* that's an assignment */) {
+    do {
+      decimalPart *= 10.0;
+      // truncate the float
+      integerPart=decimalPart;
+      fpBuffer[fpBD++]='0' + integerPart;
+      decimalPart-=integerPart;
+    } while (--i);
+  }
+  
+  minWidth=fpBI; // we need at least these
+  minWidth+=reqDecimals?reqDecimals+1:0; // maybe these
+  if (negative || sign || space)
+    minWidth++; // and maybe even this :)
+  
+  if (!left && reqWidth>i) {
+    if (zero) {
+      if (negative) output_char('-');
+      else if (sign) output_char('+');
+      else if (space) output_char(' ');
+      while (reqWidth-->minWidth)
+	output_char ('0');
+    } else {
+      while (reqWidth-->minWidth)
+	output_char (' ');
+      if (negative) output_char('-');
+      else if (sign) output_char('+');
+      else if (space) output_char (' ');
+    }
+  } else {
+    if (negative) output_char('-');
+    else if (sign) output_char('+');
+    else if (space) output_char(' ');
+  }
+
+  // output the integer part
+  i=fpBI-1;
+  do {
+    output_char (fpBuffer[i]);
+  } while (i--);
+  
+  // ouput the decimal part
+  if (reqDecimals) {
+    output_char ('.');
+    i=fpBI;
+    while (reqDecimals--)
+      output_char (fpBuffer[i++]);
+  }
+
+  if (left && reqWidth>minWidth) {
+    while (reqWidth-->minWidth)
+      output_char(' ');
+  }
+}
+#endif
+
 /*--------------------------------------------------------------------------*/
 
 int vsprintf (const char *buf, const char *format, va_list ap)
 {
-  bit            left_justify;
-  bit            zero_padding;
-  bit            prefix_sign;
-  bit            prefix_space;
-  bit            signed_argument;
-  bit            char_argument;
-  bit            long_argument;
+  static bit            left_justify;
+  static bit            zero_padding;
+  static bit            prefix_sign;
+  static bit            prefix_space;
+  static bit            signed_argument;
+  static bit            char_argument;
+  static bit            long_argument;
+  static bit            float_argument;
 
   unsigned char  width;
+  signed char decimals;
   unsigned char  length;
   char           c;
+
+  // reset output chars
+  charsOutputted=0;
 
   output_ptr = buf;
   if ( !buf )
@@ -148,9 +283,15 @@ int vsprintf (const char *buf, const char *format, va_list ap)
     output_to_string = 1;
   }
 
+#ifdef SDCC_ds390
+  if (format==0) {
+    format=NULL_STRING;
+  }
+#endif
+ 
   while( c=*format++ )
   {
-    if ( c == '%' )
+    if ( c=='%' )
     {
       left_justify    = 0;
       zero_padding    = 0;
@@ -160,22 +301,37 @@ int vsprintf (const char *buf, const char *format, va_list ap)
       radix           = 0;
       char_argument   = 0;
       long_argument   = 0;
+      float_argument  = 0;
       width           = 0;
+      decimals        = -1;
 
 get_conversion_spec:
 
       c = *format++;
 
-      if (isdigit(c))
-      {
-        width = 10*width + (c - '0');
+      if (c=='%') {
+	output_char(c);
+	continue;
+      }
 
-	if (width == 0)
-	{
-	  /* first character of width is a zero */
-	  zero_padding = 1;
+      if (isdigit(c)) {
+	if (decimals==-1) {
+	  width = 10*width + (c - '0');
+	  if (width == 0) {
+	    /* first character of width is a zero */
+	    zero_padding = 1;
+	  }
+	} else {
+	  decimals = 10*decimals + (c-'0');
 	}
-        goto get_conversion_spec;
+	goto get_conversion_spec;
+      }
+
+      if (c=='.') {
+	if (decimals=-1) decimals=0;
+	else 
+	  ; // duplicate, ignore
+	goto get_conversion_spec;
       }
 
       lower_case = islower(c);
@@ -203,13 +359,22 @@ get_conversion_spec:
 	goto get_conversion_spec;
 
       case 'C':
-       	output_char( va_arg(ap,unsigned char) );
+       	output_char( va_arg(ap,int) );
 	break;
 
       case 'S':
 	PTR = va_arg(ap,ptr_t);
 
+#ifdef SDCC_ds390
+	if (PTR==0) {
+	  PTR=NULL_STRING;
+	  length=NULL_STRING_LENGTH;
+	} else {
+	  length = strlen(PTR);
+	}
+#else
 	length = strlen(PTR);
+#endif
 	if ( ( !left_justify ) && (length < width) )
 	{
 	  width -= length;
@@ -235,11 +400,24 @@ get_conversion_spec:
       case 'P':
 	PTR = va_arg(ap,ptr_t);
 
+#ifdef SDCC_ds390
+	output_char(memory_id[(value.byte[3] > 3) ? 4 : value.byte[3]] );
+	output_char(':');
+	output_char('0');
+	output_char('x');
+	output_2digits(value.byte[2]);
+	output_2digits(value.byte[1]);
+	output_2digits(value.byte[0]);
+#else
 	output_char( memory_id[(value.byte[2] > 3) ? 4 : value.byte[2]] );
-	output_char( ':' );
-	if ((value.byte[2] != 0x00) && (value.byte[2] != 0x03))
+	output_char(':');
+	output_char('0');
+	output_char('x');
+	if ((value.byte[2] != 0x00 /* DSEG */) && 
+	    (value.byte[2] != 0x03 /* SSEG */))
 	  output_2digits( value.byte[1] );
 	output_2digits( value.byte[0] );
+#endif
 	break;
 
       case 'D':
@@ -260,13 +438,33 @@ get_conversion_spec:
 	radix = 16;
 	break;
 
+      case 'F':
+	float_argument=1;
+	break;
+	
       default:
 	// nothing special, just output the character
 	output_char( c );
 	break;
       }
 
-      if (radix != 0)
+      if (float_argument) {
+	value.f=va_arg(ap,float);
+#if !USE_FLOATS
+	PTR="<NO FLOAT>";
+	while (c=*PTR++)
+	  output_char (c);
+	// treat as long hex
+	//radix=16;
+	//long_argument=1;
+	//zero_padding=1;
+	//width=8;
+#else
+	// ignore b and l conversion spec for now
+	output_float(value.f, width, decimals, left_justify, zero_padding, 
+		     prefix_sign, prefix_space);
+#endif
+      } else if (radix != 0)
       {
 	// Apperently we have to output an integral type
         // with radix "radix"
@@ -286,7 +484,7 @@ get_conversion_spec:
 	{
 	  value.l = va_arg(ap,long);
 	}
-	else
+	else // must be int
 	{
 	  value.l = va_arg(ap,int);
 	  if (!signed_argument)
@@ -306,9 +504,9 @@ get_conversion_spec:
 
 	length=0;
         lsd = 1;
-	while( (value.byte[0] != 0) || (value.byte[1] != 0) ||
-	       (value.byte[2] != 0) || (value.byte[3] != 0) )
-	{
+
+	//jwk20000814: do this at least once, e.g.: printf ("%d", (int)0);
+	do {
           value.byte[4] = 0;
 	  calculate_digit();
 
@@ -328,8 +526,9 @@ _endasm;
 
 	  length++;
           lsd = ~lsd;
-	}
-
+	} while( (value.byte[0] != 0) || (value.byte[1] != 0) ||
+		 (value.byte[2] != 0) || (value.byte[3] != 0) );
+	
 	if (width == 0)
 	{
 	  // default width. We set it to 1 to output
@@ -410,7 +609,12 @@ _endasm;
        
   // Copy \0 to the end of buf
   // Modified by JB 17/12/99
-  if (output_to_string) output_char(0);
+  if (output_to_string) {
+    output_char(0);
+    return charsOutputted-1;
+  } else {
+    return charsOutputted;
+  }
 }
 
 /*--------------------------------------------------------------------------*/

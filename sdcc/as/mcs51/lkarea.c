@@ -15,7 +15,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <alloc.h>
 #include "aslink.h"
 
 /*)Module	lkarea.c
@@ -75,7 +74,7 @@
  *		int	lkerr		error flag
  *
  *	functions called:
- *		addr_t	eval()		lkeval.c
+ *		Addr_T	eval()		lkeval.c
  *		VOID	exit()		c_library
  *		int	fprintf()	c_library
  *		VOID	getid()		lklex.c
@@ -288,7 +287,7 @@ char *id;
  *	define the starting address and length of each area.
  *
  *	local variables:
- *		addr_t	rloc		;current relocation address
+ *		Addr_T	rloc		;current relocation address
  *		char	temp[]		;temporary string
  *		struct symbol	*sp	;symbol structure
  *
@@ -317,7 +316,7 @@ char *id;
 VOID
 lnkarea()
 {
-	addr_t rloc[4];
+	Addr_T rloc[4];
 	int  locIndex;
 	char temp[NCPS];
 	struct sym *sp;
@@ -391,8 +390,8 @@ lnkarea()
  *	function.
  *
  *	local variables:
- *		addr_t	size		size of area
- *		addr_t	addr		address of area
+ *		Addr_T	size		size of area
+ *		Addr_T	addr		address of area
  *		areax *	taxp		pointer to an areax structure
  *
  *	global variables:
@@ -410,7 +409,7 @@ VOID
 lnksect(tap)
 register struct area *tap;
 {
-	register addr_t size, addr;
+	register Addr_T size, addr;
 	register struct areax *taxp;
 
 	size = 0;

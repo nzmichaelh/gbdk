@@ -25,20 +25,26 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA. */
 /*@1@*/
 
-#include <stdio.h>
+// sim.src
+#include "appcl.h"
 
-#include "globals.h"
-
+// local
 #include "simz80cl.h"
 
 
 int
 main(int argc, char *argv[])
 {
-  simulator= new cl_simz80(0, argc, argv);
-  simulator->init();
-  simulator->main();
-  delete simulator;
+  class cl_app *app;
+  class cl_sim *sim;
+
+  app= new cl_app();
+  app->init(argc, argv);
+  sim= new cl_simz80(app);
+  sim->init();
+  app->set_simulator(sim);
+  app->run();
+  delete app;
   return(0);
 }
 

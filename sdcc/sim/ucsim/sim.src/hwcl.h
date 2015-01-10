@@ -1,5 +1,5 @@
 /*
- * Simulator of microcontrollers (hwcl.h)
+ * Simulator of microcontrollers (sim.src/hwcl.h)
  *
  * Copyright (C) 1999,99 Drotos Daniel, Talker Bt.
  * 
@@ -27,17 +27,18 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Abstract hw element. It can be a timer, serial line or whatever */
 
-#ifndef HWCL_HEADER
-#define HWCL_HEADER
+#ifndef SIM_HWCL_HEADER
+#define SIM_HWCL_HEADER
 
 #include "stypes.h"
 #include "pobjcl.h"
 #include "uccl.h"
+#include "guiobjcl.h"
 
 #include "newcmdcl.h"
 
 
-class cl_hw: public cl_base
+class cl_hw: public cl_guiobj
 {
 public:
   int flags;
@@ -50,11 +51,20 @@ public:
   cl_hw(class cl_uc *auc, enum hw_cath cath, int aid, char *aid_string);
   ~cl_hw(void);
 
-  virtual ulong read(class cl_mem *mem, long addr);
-  virtual void write(class cl_mem *mem, long addr, ulong *val);
+  virtual void adding(class cl_hw *new_hw) {}
+  virtual void added(class cl_hw *new_hw) {}
+  virtual t_mem read(class cl_mem *mem, t_addr addr);
+  virtual void write(class cl_mem *mem, t_addr addr, t_mem *val);
 
   virtual int tick(int cycles);
   virtual void print_info(class cl_console *con);
+};
+
+class cl_hws: public cl_list
+{
+public:
+  cl_hws(void): cl_list(2, 2) {}
+  virtual t_index add(void *item);
 };
 
 

@@ -15,9 +15,19 @@ static const ASM_MAPPING _asxxxx_gb_mapping[] = {
     { "enter", "" },
     { "enterx", 
       "lda sp,-%d(sp)" },
+    { "enterxl",
+                "ld hl,#-%d\n"
+                "\tadd\thl,sp\n"
+                "\tld\tsp,hl"
+    },
     { "leave", ""
     },
     { "leavex", "lda sp,%d(sp)"
+    },
+    { "leavexl",
+                "ld hl,#%d\n"
+                "\tadd\thl,sp\n"
+                "\tld\tsp,hl"
     },
     { "pusha", 
       "push af\n"
@@ -27,6 +37,14 @@ static const ASM_MAPPING _asxxxx_gb_mapping[] = {
     },
     { "adjustsp", "lda sp,-%d(sp)" },
     { "fileprelude", "" },
+    { "profileenter",
+                "ld a,#3\n"
+                "\trst\t0x08"
+    },
+    { "profileexit",
+                "ld a,#4\n"
+                "\trst\t0x08"
+    },
     { NULL, NULL }
 };
 
@@ -62,7 +80,8 @@ static const ASM_MAPPING _asxxxx_z80_mapping[] = {
 		"\tadd\tix,sp\n"
 		"\tld\thl,#-%d\n"
 		"\tadd\thl,sp\n"
-		"\tld\tsp,hl" },
+		"\tld\tsp,hl\n" 
+        },
     { "leave", 
 		"pop\tix\n"
     },
@@ -77,6 +96,14 @@ static const ASM_MAPPING _asxxxx_z80_mapping[] = {
       		"\tpush\thl"
     },
     { "adjustsp", "lda sp,-%d(sp)" },
+    { "profileenter",
+                "ld a,#3\n"
+                "\trst\t0x08"
+    },
+    { "profileexit",
+                "ld a,#4\n"
+                "\trst\t0x08"
+    },
     { NULL, NULL }
 };
 

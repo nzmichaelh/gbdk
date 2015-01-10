@@ -11,9 +11,9 @@ SDCCLIB = $(BUILD)
 CVSFLAGS = -z5
 CVS = cvs
 DIR = .
-VER = 2.95-2
+VER = 2.95-3
 # Used as a branch name.
-SHORTVER = 295-2
+SHORTVER = 295-3
 
 # Options:
 # linux-linux	 Building on Linux, targeting Linux
@@ -89,7 +89,8 @@ tidy:
 	-$(TNP)strip $(BUILD)/bin/*
 
 sdcc-bin: sdcc/sdccconf.h
-	make -C sdcc sdcc-cc sdcc-aslink CROSS_LIBGC=$(CROSS_LIBGC)
+	make -C sdcc sdcc-cc sdcc-aslink CROSS_LIBGC=$(CROSS_LIBGC) \
+	PASS_ON=SDCC_SUB_VERSION=$(SDCC_OR_GBDK)-$(VER)
 	mkdir -p $(BUILD)/bin
 	for i in \
 	sdcc sdcpp link-gbz80 as-gbz80; \

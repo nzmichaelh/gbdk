@@ -14,11 +14,15 @@
  *           - use a_type == 0 as "virgin area" flag: set == 1 if -b
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <alloc.h>
 #include "aslink.h"
 
+/* yuck - but including unistd.h causes problems on Cygwin by redefining
+ * Addr_T.
+ */
+extern int unlink(const char *);
 
 /*)Module	lkmain.c
  *
@@ -32,7 +36,7 @@
  *		FILE *	afile(fn,ft,wf)
  *		VOID	bassav()
  *		VOID	gblsav()
-  *		VOID	link()
+  *		VOID	link_main()
  *		VOID	lkexit()
  *		VOID	main(argc,argv)
  *		VOID	map()
@@ -111,7 +115,7 @@
  *		int	fprintf()	c_library
  *		int	getline()	lklex.c
  *		VOID	library()	lklibr.c
- *		VOID	link()		lkmain.c
+ *		VOID	link_main()	lkmain.c
  *		VOID	lkexit()	lkmain.c
  *		VOID	lnkarea()	lkarea.c
  *		VOID	map()		lkmain.c
@@ -137,8 +141,6 @@ char *argv[];
 {
 	register char *p;
 	register int c, i;
-
-	fprintf(stdout, "\n");
 
 	startp = (struct lfile *) new (sizeof (struct lfile));
 
@@ -227,7 +229,7 @@ char *argv[];
                         if ((ip[0] == ';') && (ip[1] == '!') && jfp) {
                         	fprintf( jfp, "%s\n", &ip[2] );
                         }
-			link();
+			link_main();
 		}
 		if (pass == 0) {
 			/*
@@ -348,9 +350,9 @@ int i;
 	exit(i);
 }
 
-/*)Function	link()
+/*)Function	link_main()
  *
- *	The function link() evaluates the directives for each line of
+ *	The function link_main() evaluates the directives for each line of
  *	text read from the .rel file(s).  The valid directives processed
  *	are:
  *		X, D, Q, H, M, A, S, T, R, and P.
@@ -380,7 +382,7 @@ int i;
  */
 
 VOID
-link()
+link_main()
 {
 	register int c;
 
@@ -412,7 +414,7 @@ link()
 		sdp.s_area = NULL;
 		sdp.s_areax = NULL;
 		sdp.s_addr = 0;
-		lastExtendedAddress = -1;
+		// jwk lastExtendedAddress = -1;
 		break;
 
 	case 'M':
@@ -839,7 +841,7 @@ bassav()
  *		int	lkerr		error flag
  *
  *	 functions called:
- *		addr_t	expr()		lkeval.c
+ *		Addr_T	expr()		lkeval.c
  *		int	fprintf()	c_library
  *		VOID	getid()		lklex.c
  *		char	getnb()		lklex.c
@@ -948,7 +950,7 @@ gblsav()
  *		int	lkerr		error flag
  *
  *	 functions called:
- *		addr_t	expr()		lkeval.c
+ *		Addr_T	expr()		lkeval.c
  *		int	fprintf()	c_library
  *		VOID	getid()		lklex.c
  *		char	getnb()		lklex.c
@@ -1041,14 +1043,14 @@ char *ft;
 	register char *p1, *p2, *p3;
 	register int c;
 	FILE *fp;
-	char fb[FILSPC];
+	char fb[PATH_MAX];
 	char *omode = (wf ? (wf == 2 ? "a" : "w") : "r");
 
 	p1 = fn;
 	p2 = fb;
 	p3 = ft;
 	while ((c = *p1++) != 0 && c != FSEPX) {
-		if (p2 < &fb[FILSPC-4])
+		if (p2 < &fb[PATH_MAX-4])
 			*p2++ = c;
 	}
 	*p2++ = FSEPX;
@@ -1060,7 +1062,7 @@ char *ft;
 		}
 	}
 	while ((c = *p3++) != 0) {
-		if (p2 < &fb[FILSPC-1])
+		if (p2 < &fb[PATH_MAX-1])
 			*p2++ = c;
 	}
 	*p2++ = 0;	
@@ -1092,7 +1094,7 @@ char *ft;
  *	 functions called:
  *		char	getnb()		lklex.c
  *		VOID	unget()		lklex.c
- *		addr_t	expr()		lkeval.c
+ *		Addr_T	expr()		lkeval.c
  *
  *	side effects:
  *		The iram_size may be modified.

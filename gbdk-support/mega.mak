@@ -15,7 +15,12 @@ CROSS = linux-mingw32
 NATIVE_DIST = linux-glibc2
 CROSS_DIST = win32
 
-VER = 2.95-2
+# Files that need CR/LF converted
+FIX_DIRS = doc include libc
+FIX_SPECIAL = ChangeLog README build.mak mega.mak
+FIX_PAT = *.c *.h Makefile* *.s *.bat
+
+VER = 2.95-3
 
 all: spawn
 
@@ -30,7 +35,7 @@ dist:
 	cd $(NATIVE)/build; tar czf ../../$(DIST)-$(VER)-$(NATIVE_DIST).tar.gz $(DIST)
 ifeq ($(CROSS_DIST), win32)
 	rm -f $(DIST)-$(VER)-$(CROSS_DIST).zip
-	cd $(CROSS)/build; zip -rlq9 ../../$(DIST)-$(VER)-$(CROSS_DIST).zip $(DIST)
+	cd $(CROSS)/build; zip -rq9 ../../$(DIST)-$(VER)-$(CROSS_DIST).zip $(DIST)
 else
 	cd $(CROSS)/build; tar czf ../../$(DIST)-$(VER)-$(CROSS_DIST).tar.gz $(DIST)
 endif
@@ -73,4 +78,16 @@ cross-mix:
 	rm -rf $(CROSS)/build/$(DIST)/bin
 	mv $(CROSS)/build/$(DIST)/bin.1 $(CROSS)/build/$(DIST)/bin
 
-cross: cross-bin cross-mix
+# Fix up CR/LF on all interesting files
+cross-fix:
+	for i in $(FIX_DIRS); do \
+	for j in `find $(CROSS)/build/$(DIST)/$$i -type f -name "*"`; do \
+	unix2dos $$j; done; done
+	for i in $(FIX_SPECIAL); do \
+	unix2dos $(CROSS)/build/$(DIST)/$$i; done
+	for i in $(FIX_PAT); do \
+	for j in `find $(CROSS)/build/$(DIST) -type f -name "$$i"`; do \
+	echo $$j; unix2dos $$j; done; done
+
+cross: cross-bin cross-mix cross-fix
+

@@ -1,32 +1,30 @@
 # Simple Makefile for dhrystone and sdcc
+TOPDIR = ../../..
 
 PROC = z80
-PORT = consolez80
 
-CC = /home/michaelh/projects/gbdk-support/lcc/lcc
+CC = $(TOPDIR)/bin/sdcc
+
 # -DNOENUM is here to make the results more predictable
-CFLAGS = -Wl-m -mz80/consolez80 -Wf--dumpall -v --prefix=/home/michaelh/projects/gbdk-current/
-CFLAGS += -DREG= -DNOSTRUCTASSIGN -DNOENUM
-LIBDIR = /home/michaelh/projects/gbdk-lib/build/
-LD = link-$(PROC)
-LDFLAGS = -v
-AS = as-$(PROC)
+CFLAGS += -DREG= -DNOSTRUCTASSIGN -DNOENUM -V -m$(PROC) --profile --dumpall --stack-auto
 
 OBJ = dhry.o
 
-all: dhry
+all: dhry.bin
 
-dhry: dhry.s $(OBJ)
-	-$(CC) $(CFLAGS) -o dhry.gb dhry.o
-	cat dhry.ihx | ../../makebin/makebin  > dhry.rom
+dhry.ihx: dhry.c
+	$(CC) $(CFLAGS) dhry.c
 
-dhry.s: dhry.c
-	$(CC) $(CFLAGS) -S -o dhry.s dhry.c
+dhry.gb: dhry.c
+	$(CC) $(CFLAGS) dhry.c
+
+dhry.c: dhry.h
+
+dhry.bin: dhry.ihx
+	cat $< | $(TOPDIR)/bin/makebin > $@
 
 native:
 	gcc -g -O2 -DREG= -DNOSTRUCTASSIGN -DNOENUM -o dhry dhry.c
 
-dhry.c:
-
 clean:
-	rm -f *~ dhry *.o *.gb
+	rm -f *~ dhry *.o *.gb *.ihx *.rel *.dump* *.lst *.sym *.map *.asm *.bin *.gb

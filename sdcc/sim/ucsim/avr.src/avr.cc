@@ -53,6 +53,7 @@ cl_avr::cl_avr(class cl_sim *asim):
   cl_uc(asim)
 {
   type= CPU_AVR;
+  sleep_executed= 0;
 }
 
 int
@@ -84,7 +85,8 @@ cl_avr::get_mem_size(enum mem_class type)
     case MEM_IRAM: return(0x10000);
     default: return(0);
     }
- return(cl_uc::get_mem_size(type));
+  //return(0);
+  //return(cl_uc::get_mem_size(type));
 }
 
 int
@@ -129,7 +131,7 @@ cl_avr::bit_tbl(void)
 }
 
 char *
-cl_avr::disass(uint addr, char *sep)
+cl_avr::disass(t_addr addr, char *sep)
 {
   char work[256], temp[20];
   char *buf, *p, *b, *t;
@@ -266,32 +268,6 @@ cl_avr::disass(uint addr, char *sep)
   return(buf);
 }
 
-void
-cl_avr::print_disass(uint addr, class cl_console *con)
-{
-  char *dis;
-  class cl_brk *b;
-  int i;
-
-  b  = fbrk_at(addr);
-  dis= disass(addr, NULL);
-  if (b)
-    con->printf("%c", (b->perm == brkFIX)?'F':'D');
-  else
-    con->printf(" ");
-  con->printf("%c %06x %04x",
-	      inst_at(addr)?' ':'*',
-	      addr, get_mem(MEM_ROM, addr));
-  for (i= 1; i < inst_length(get_mem(MEM_ROM, addr)); i++)
-    con->printf(" %04x", get_mem(MEM_ROM, addr+i));
-  while (i < 2)
-    {
-      con->printf("     ");
-      i++;
-    }
-  con->printf(" %s\n", dis);
-  free(dis);
-}
 
 void
 cl_avr::print_regs(class cl_console *con)
@@ -471,6 +447,8 @@ cl_avr::exec_inst(void)
 	return(ijmp(code));
       if ((code & 0xff00) == 0x9600)
 	return(adiw_Rdl_K(code));
+      if ((code & 0xff00) == 0x9700)
+	return(sbiw_Rdl_K(code));
       switch (code & 0xfc00)
 	{
 	case 0x9000:
@@ -568,6 +546,91 @@ cl_avr::exec_inst(void)
   //tick(-clock_per_cycle());
   sim->stop(resINV_INST);
   return(resINV_INST);
+}
+
+
+/*
+ */
+
+int
+cl_avr::push_data(t_mem data)
+{
+  t_addr sp;
+  t_mem spl, sph;
+  
+  spl= ram->read(SPL);
+  sph= ram->read(SPH);
+  sp= 0xffff & (256*sph + spl);
+  ram->write(sp, &data);
+  sp= 0xffff & (sp-1);
+  spl= sp & 0xff;
+  sph= (sp>>8) & 0xff;
+  ram->write(SPL, &spl);
+  ram->write(SPH, &sph);
+  return(resGO);
+}
+
+int
+cl_avr::push_addr(t_addr addr)
+{
+  t_addr sp;
+  t_mem spl, sph, al, ah;
+  
+  spl= ram->read(SPL);
+  sph= ram->read(SPH);
+  sp= 0xffff & (256*sph + spl);
+  al= addr & 0xff;
+  ah= (addr>>8) & 0xff;
+  ram->write(sp, &ah);
+  sp= 0xffff & (sp-1);
+  ram->write(sp, &al);
+  sp= 0xffff & (sp-1);
+  spl= sp & 0xff;
+  sph= (sp>>8) & 0xff;
+  ram->write(SPL, &spl);
+  ram->write(SPH, &sph);
+  return(resGO);
+}
+
+int
+cl_avr::pop_data(t_mem *data)
+{
+  t_addr sp;
+  t_mem spl, sph;
+
+  spl= ram->read(SPL);
+  sph= ram->read(SPH);
+  sp= 256*sph + spl;
+  sp= 0xffff & (sp+1);
+  *data= ram->read(sp);
+  spl= sp & 0xff;
+  sph= (sp>>8) & 0xff;
+  ram->write(SPL, &spl);
+  ram->write(SPH, &sph);
+
+  return(resGO);
+}
+
+int
+cl_avr::pop_addr(t_addr *addr)
+{
+  t_addr sp;
+  t_mem spl, sph, al, ah;
+
+  spl= ram->read(SPL);
+  sph= ram->read(SPH);
+  sp= 256*sph + spl;
+  sp= 0xffff & (sp+1);
+  al= ram->read(sp);
+  sp= 0xffff & (sp+1);
+  ah= ram->read(sp);
+  *addr= ah*256 + al;
+  spl= sp & 0xff;
+  sph= (sp>>8) & 0xff;
+  ram->write(SPL, &spl);
+  ram->write(SPH, &sph);
+  
+  return(resGO);
 }
 
 

@@ -15,9 +15,14 @@
  *
  */
 
+#if defined(__APPLE__) && defined(__MACH__)
+#include <sys/types.h>
+#include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
 #include <stdio.h>
 #include <string.h>
-#include <alloc.h>
 #include "aslink.h"
 
 /*)Module	lklibr.c
@@ -182,7 +187,7 @@ char *libfil;
 	if (libfil[0] == '/') { libfil++; }
 #endif
 	strcat(str,libfil);
-	if(strchr(str,FSEPX) == NULL) {
+	if(strchr(libfil,FSEPX) == NULL) {
 		sprintf(&str[strlen(str)], "%clib", FSEPX);
 	}
 	if ((fp = fopen(str, "r")) != NULL) {
@@ -202,7 +207,6 @@ char *libfil;
 		lbnh->libfil = (char *) new (strlen(libfil) + 1);
 		strcpy(lbnh->libfil,libfil);
 		lbnh->libspc = str;
-		fprintf(stderr,"library file %s\n",str);
 	} else {
 		free(str);
 	}
@@ -381,7 +385,7 @@ char *name;
 
 /*2*/		while (fgets(relfil, NINPUT, libfp) != NULL) {
 		    relfil[NINPUT+1] = '\0';
-		    relfil[strlen(relfil) - 1] = '\0';
+		    chop_crlf(relfil);
 		    if (path != NULL) {
 			str = (char *) new (strlen(path)+strlen(relfil)+6);
 			strcpy(str,path);
@@ -398,7 +402,7 @@ char *name;
 		    } else {
 			strcat(str,relfil);
 		    }
-		    if(strchr(str,FSEPX) == NULL) {
+		    if(strchr(relfil,FSEPX) == NULL) {
 			sprintf(&str[strlen(str)], "%crel", FSEPX);
 		    }
 /*3*/		    if ((fp = fopen(str, "r")) != NULL) {
@@ -414,7 +418,7 @@ char *name;
 /*4*/			while (fgets(buf, NINPUT, fp) != NULL) {
 
 			buf[NINPUT+1] = '\0';
-			buf[strlen(buf) - 1] = '\0';
+			chop_crlf(buf);
 
 			/*
 			 * Skip everything that's not a symbol record.
@@ -524,7 +528,7 @@ library()
  *		int	fclose()	c_library
  *		int	fgets()		c_library
  *		FILE *	fopen()		c_library
- *		VOID	link()		lkmain.c
+ *		VOID	link_main()	lkmain.c
  *		int	strlen()	c_library
  *
  *	side effects:
@@ -537,16 +541,13 @@ char *filspc;
 {
 	FILE *fp;
 	char str[NINPUT+2];
-	int i;
 
 	if ((fp = fopen(filspc,"r")) != NULL) {
 		while (fgets(str, NINPUT, fp) != NULL) {
 			str[NINPUT+1] = '\0';
-			i = strlen(str) - 1;
-			if (str[i] == '\n')
-				str[i] = '\0';
+			chop_crlf(str);
 			ip = str;
-			link();
+			link_main();
 		}
 		fclose(fp);
 	}

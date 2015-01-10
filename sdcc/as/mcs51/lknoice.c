@@ -11,17 +11,16 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include <alloc.h>
 #include "aslink.h"
 
-static void DefineGlobal( char *name, addr_t value, int page );
-static void DefineScoped( char *name, addr_t value, int page );
-static void DefineFile( char *name, addr_t value, int page );
-static void DefineFunction( char *name, addr_t value, int page );
-static void DefineStaticFunction( char *name, addr_t value, int page );
-static void DefineEndFunction( addr_t value, int page );
-static void DefineLine( char *lineString, addr_t value, int page );
-static void PagedAddress( addr_t value, int page );
+static void DefineGlobal( char *name, Addr_T value, int page );
+static void DefineScoped( char *name, Addr_T value, int page );
+static void DefineFile( char *name, Addr_T value, int page );
+static void DefineFunction( char *name, Addr_T value, int page );
+static void DefineStaticFunction( char *name, Addr_T value, int page );
+static void DefineEndFunction( Addr_T value, int page );
+static void DefineLine( char *lineString, Addr_T value, int page );
+static void PagedAddress( Addr_T value, int page );
 
 /*
  * Called from lstarea in lklist.c for each symbol.
@@ -29,7 +28,7 @@ static void PagedAddress( addr_t value, int page );
  * Generates appropriate NoICE commands into output file, if any is open
  *
  */
-void DefineNoICE( char *name, addr_t value, int page )
+void DefineNoICE( char *name, Addr_T value, int page )
 {
 	char token1[NCPS];			/* parse for file.function.symbol */
 	char token2[NCPS];
@@ -119,7 +118,7 @@ static char currentFunction[NCPS];
  * static function:
  * Define "name" as a global symbol
  */
-void DefineGlobal( char *name, addr_t value, int page )
+void DefineGlobal( char *name, Addr_T value, int page )
 {
 	fprintf( jfp, "DEF %s ", name );
 	PagedAddress( value, page );
@@ -129,7 +128,7 @@ void DefineGlobal( char *name, addr_t value, int page )
  * static function:
  * Define "name" as a static (scoped) symbol
  */
-void DefineScoped( char *name, addr_t value, int page )
+void DefineScoped( char *name, Addr_T value, int page )
 {
 	fprintf( jfp, "DEFS %s ", name );
 	PagedAddress( value, page );
@@ -139,7 +138,7 @@ void DefineScoped( char *name, addr_t value, int page )
  * static function:
  * Define "name" as the current file
  */
-void DefineFile( char *name, addr_t value, int page )
+void DefineFile( char *name, Addr_T value, int page )
 {
 	if (strcmpi( name, currentFile ) != 0)
 	{
@@ -160,7 +159,7 @@ void DefineFile( char *name, addr_t value, int page )
  * static function:
  * Define "name" as the current function
  */
-void DefineFunction( char *name, addr_t value, int page )
+void DefineFunction( char *name, Addr_T value, int page )
 {
 	if (strcmpi( name, currentFunction ) != 0)
 	{
@@ -183,7 +182,7 @@ void DefineFunction( char *name, addr_t value, int page )
  * static function:
  * Define "name" as the current static (scoped) function
  */
-void DefineStaticFunction( char *name, addr_t value, int page )
+void DefineStaticFunction( char *name, Addr_T value, int page )
 {
 	if (strcmpi( name, currentFunction ) != 0)
 	{
@@ -206,7 +205,7 @@ void DefineStaticFunction( char *name, addr_t value, int page )
  * static function:
  * Define the end of the current function
  */
-void DefineEndFunction( addr_t value, int page )
+void DefineEndFunction( Addr_T value, int page )
 {
 	if (currentFunction[0] != 0)
 	{
@@ -228,7 +227,7 @@ void DefineEndFunction( addr_t value, int page )
  * static function:
  * Define "lineNumber" as a line in the current file
  */
-void DefineLine( char *lineString, addr_t value, int page )
+void DefineLine( char *lineString, Addr_T value, int page )
 {
 	int indigit, lineNumber = 0;
 
@@ -240,7 +239,7 @@ void DefineLine( char *lineString, addr_t value, int page )
         PagedAddress( value, page );
 }
 
-void PagedAddress( addr_t value, int page )
+void PagedAddress( Addr_T value, int page )
 {
 	fprintf( jfp, "%X:0x%X\n", page, value );
 }

@@ -27,16 +27,24 @@
 
 #include <stdarg.h>
 
-extern printf_small (char *,...) reentrant;
-extern printf (const char *,...) reentrant;
-extern int vprintf (const char *, va_list);
-extern int sprintf (const char *, const char *, ...) reentrant;
-extern int vsprintf (const char *, const char *, va_list);
-extern int puts(const char *);
+#ifdef __ds390
+#include <tinibios.h>
 #endif
 
+#include <sdcc-lib.h>
 
+extern void printf_small (char *,...) _REENTRANT;
+extern int printf (const char *,...) _REENTRANT;
+extern int vprintf (const char *, va_list);
+extern int sprintf (const char *, const char *, ...) _REENTRANT;
+extern int vsprintf (const char *, const char *, va_list);
+extern int puts(const char *);
+extern char *gets(char *);
+extern char getchar(void);
+extern void putchar(char);
 
+#ifdef __mcs51
+extern void printf_fast(code char *fmt, ...) _REENTRANT;
+#endif
 
-
-
+#endif /* __SDC51_STDIO_H */

@@ -40,6 +40,7 @@ class cl_avr: public cl_uc
 public:
   cl_mem *ram;
   cl_mem *rom;
+  int sleep_executed;
 public:
   cl_avr(class cl_sim *asim);
   virtual int init(void);
@@ -52,11 +53,15 @@ public:
   virtual struct dis_entry *dis_tbl(void);
   virtual struct name_entry *sfr_tbl(void);
   virtual struct name_entry *bit_tbl(void);
-  virtual char *disass(uint addr, char *sep);
-  virtual void print_disass(uint addr, class cl_console *con);
+  virtual char *disass(t_addr addr, char *sep);
   virtual void print_regs(class cl_console *con);
 
   virtual int exec_inst(void);
+
+  virtual int push_data(t_mem data);
+  virtual int push_addr(t_addr addr);
+  virtual int pop_data(t_mem *data);
+  virtual int pop_addr(t_addr *addr);
 
   void set_zn0s(t_mem data);
 #include "arith_cl.h"

@@ -16,13 +16,14 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include <alloc.h>
+
 #ifdef SDK
 #include <stdlib.h>
 #include <math.h>
 #undef HUGE
 #endif
 #include "asm.h"
+#include "z80.h"
 
 /*)Module	asmain.c
  *
@@ -87,7 +88,7 @@
  *		int	fflag		-f(f), relocations flagged flag
  *		int	flevel		IF-ELSE-ENDIF flag will be non
  *					zero for false conditional case
- *		addr_t	fuzz		tracks pass to pass changes in the
+ *		Addr_T	fuzz		tracks pass to pass changes in the
  *					address of symbols caused by
  *					variable length instruction formats
  *		int	gflag		-g, make undefined symbols global flag
@@ -319,7 +320,7 @@ main(int argc, char **argv)
 	if (lflag) {
 		lstsym(lfp);
 	}
-	asexit(aserr);
+	asexit(aserr != 0);
 	/* Never reached */
 	return 0;
 }
@@ -401,7 +402,7 @@ int i;
  *					ASCII character
  *		int	flevel		IF-ELSE-ENDIF flag will be non
  *					zero for false conditional case
- *		addr_t	fuzz		tracks pass to pass changes in the
+ *		Addr_T	fuzz		tracks pass to pass changes in the
  *					address of symbols caused by
  *					variable length instruction formats
  *		int	ifcnd[]		array of IF statement condition
@@ -413,7 +414,7 @@ int i;
  *		int	incline[]	current include file line
  *		int	incfil		current file handle index
  *					for include files
- *		addr_t	laddr		address of current assembler line
+ *		Addr_T	laddr		address of current assembler line
  *					or value of .if argument
  *		int	lmode		listing mode
  *		int	lop		current line number on page
@@ -428,7 +429,7 @@ int i;
  *		int	tlevel		current conditional level
  *
  *	functions called:
- *		addr_t	absexpr()	asexpr.c
+ *		Addr_T	absexpr()	asexpr.c
  *		area *	alookup()	assym.c
  *		VOID	clrexpr()	asexpr.c
  *		int	digit()		asexpr.c
@@ -442,7 +443,7 @@ int i;
  *		char	getnb()		aslex.c
  *		VOID	getst()		aslex.c
  *		sym *	lookup()	assym.c
- *		VOID	machin()	___mch.c
+ *		VOID	machine()	___mch.c
  *		mne *	mlookup()	assym.c
  *		int	more()		aslex.c
  *		VOID *	new()		assym.c
@@ -555,12 +556,13 @@ loop:
 	 * symbol, assembler directive, or assembler mnemonic is
 	 * being processed.
 	 */
-	if ((ctype[c] & LETTER) == 0)
-		if (flevel) {
-			return;
-		} else {
+	if ((ctype[c] & LETTER) == 0) {
+            	if (flevel) {
+                        return;
+                } else {
 			qerr();
 		}
+        }
 	getid(id, c);
 	c = getnb();
 	/*
@@ -755,9 +757,9 @@ loop:
 			  {
 				  
 				  f2 = floor(log(fabs(f1))/log(2))+1;
-				  mantissa = (0x1000000*fabs(f1))/exp(f2*log(2));
+				  mantissa = (unsigned int) ((0x1000000*fabs(f1))/exp(f2*log(2))) ;
 				  mantissa &=0xffffff;
-				  exponent = f2 + 0x40;
+				  exponent = (unsigned int) (f2 + 0x40) ;
 				  if (f1<0)
 				      exponent |=0x80;
 			  }
@@ -1022,30 +1024,36 @@ char *fn;
 char *ft;
 int wf;
 {
-	register char *p1, *p2, *p3;
+	register char *p2, *p3;
 	register int c;
 	FILE *fp;
 
-	p1 = fn;
 	p2 = afn;
 	p3 = ft;
-	while ((c = *p1++) != 0 && c != FSEPX) {
-		if (p2 < &afn[FILSPC-4])
-			*p2++ = c;
-	}
+
+	strcpy (afn, fn);
+	p2 = strrchr (afn, FSEPX);		// search last '.'
+	if (!p2)
+		p2 = afn + strlen (afn);
+	if (p2 > &afn[FILSPC-4])		// truncate filename, if it's too long
+		p2 = &afn[FILSPC-4];
 	*p2++ = FSEPX;
-	if (*p3 == 0) {
-		if (c == FSEPX) {
-			p3 = p1;
-		} else {
-			p3 = dsft;
-		}
+
+	// choose a file-extension
+	if (*p3 == 0) {					// extension supplied?
+		p3 = strrchr (fn, FSEPX);	// no: extension in fn?
+		if (p3)
+			++p3;
+		else
+			p3 = dsft;					// no: default extension
 	}
-	while ((c = *p3++) != 0) {
+
+	while ((c = *p3++) != 0) {		// strncpy
 		if (p2 < &afn[FILSPC-1])
 			*p2++ = c;
 	}
 	*p2++ = 0;
+
 	if ((fp = fopen(afn, wf?"w":"r")) == NULL) {
 		fprintf(stderr, "%s: cannot %s.\n", afn, wf?"create":"open");
 		asexit(1);
@@ -1070,7 +1078,7 @@ int wf;
  *
  *	global variables:
  *		sym	dot		defined as sym[0]
- *		addr_t	fuzz		tracks pass to pass changes in the
+ *		Addr_T	fuzz		tracks pass to pass changes in the
  *					address of symbols caused by
  *					variable length instruction formats
  *
@@ -1099,7 +1107,7 @@ register struct area *nap;
 /*)Function	VOID	phase(ap, a)
  *
  *		area *	ap		pointer to area
- *		addr_t	a		address in area
+ *		Addr_T	a		address in area
  *
  *	Function phase() compares the area ap and address a
  *	with the current area dot.s_area and address dot.s_addr
@@ -1123,7 +1131,7 @@ register struct area *nap;
 VOID
 phase(ap, a)
 struct area *ap;
-addr_t a;
+Addr_T a;
 {
 	if (ap != dot.s_area || a != dot.s_addr)
 		err('p');

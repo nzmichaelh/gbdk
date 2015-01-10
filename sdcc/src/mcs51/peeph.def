@@ -70,7 +70,6 @@ replace {
         mov  dptr,#%2
         movx @dptr,a
 }
-
 replace {
 	mov  a,acc
 } by {
@@ -245,7 +244,7 @@ replace {
         cjne %1,%2,%3
         setb %4
 %3:
-}
+} if labelRefCount %3 1
 
 replace {
         clr  a
@@ -262,7 +261,7 @@ replace {
         cjne %10,%11,%3
         setb %4
 %3:
-}
+} if labelRefCount %3 2
 
 replace {
         clr  a
@@ -275,7 +274,7 @@ replace {
         cjne %1,%2,%3
         sjmp %4
 %3:
-}
+} if labelRefCount %3 1
 
 replace {
         clr  a
@@ -290,7 +289,7 @@ replace {
         cjne %9,%10,%3
         sjmp %4
 %3:
-}
+} if labelRefCount %3 2
 
 replace {
         clr  a
@@ -307,7 +306,7 @@ replace {
         cjne %11,%12,%3
         sjmp %4
 %3:
-}
+} if labelRefCount %3 3
 
 replace {
         clr  a
@@ -326,7 +325,8 @@ replace {
         cjne %13,%14,%3
         sjmp %4
 %3:
-}
+} if labelRefCount %3 4
+
 replace {
         mov  a,#0x01
         cjne %1,%2,%3
@@ -337,7 +337,7 @@ replace {
         ; Peephole 119   jump optimization
         cjne %1,%2,%4
 %3:
-}
+} if labelRefCount %3 1
 
 replace {
         mov  a,#0x01
@@ -351,7 +351,8 @@ replace {
         cjne %1,%2,%4
         cjne %10,%11,%4
 %3:
-}
+} if labelRefCount %3 2
+
 replace {
         mov  a,#0x01
         cjne %1,%2,%3
@@ -366,7 +367,7 @@ replace {
         cjne %10,%11,%4
         cjne %12,%13,%4
 %3:
-}
+} if labelRefCount %3 3
 
 replace {
         mov  a,#0x01
@@ -384,7 +385,7 @@ replace {
         cjne %12,%13,%4
         cjne %14,%15,%4
 %3:
-}
+} if labelRefCount %3 4
 
 replace {
         mov  a,#0x01
@@ -397,7 +398,8 @@ replace {
         cjne %1,%2,%3
         smp  %4
 %3:
-}
+} if labelRefCount %3 1
+
 replace {
         mov  a,#0x01
         cjne %1,%2,%3
@@ -409,9 +411,9 @@ replace {
         ; Peephole 124   jump optimization
         cjne %1,%2,%3
         cjne %10,%11,%3
-        smp  %4
+        sjmp  %4
 %3:
-}
+} if labelRefCount %3 2
 
 replace {
         mov  a,#0x01
@@ -428,7 +430,7 @@ replace {
         cjne %12,%13,%3
         sjmp %4
 %3:
-}
+} if labelRefCount %3 3
 
 replace {
         mov  a,#0x01
@@ -447,7 +449,7 @@ replace {
         cjne %14,%15,%3
         sjmp %4
 %3:
-}
+} if labelRefCount %3 4
 
 replace {
         push psw
@@ -462,7 +464,7 @@ replace {
 } by {
         ; Peephole 127   removed misc sequence
         ret
-}
+} if labelRefCount %3 0
 
 replace {
         clr  a
@@ -540,20 +542,6 @@ replace {
         mov  %1,a
         mov  dpl,%2
         mov  dph,%3
-	mov  dpx,%4
-        mov  a,%1
-} by {
-        ; Peephole 136a   removed redundant moves
-        mov  %1,a
-        mov  dpl,%2
-        mov  dph,%3
-	mov  dpx,%4
-} if 24bitMode
-
-replace {
-        mov  %1,a
-        mov  dpl,%2
-        mov  dph,%3
         mov  a,%1
 } by {
         ; Peephole 136   removed redundant moves
@@ -562,36 +550,37 @@ replace {
         mov  dph,%3
 }
 
-replace {
-        mov  b,#0x00
-        mov  a,%1
-        cjne %2,%3,%4
-        mov  b,#0x01
-%4:
-        mov  a,b
-        jz   %5
-} by {
-        ; Peephole 137   optimized misc jump sequence
-        mov  a,%1
-        cjne %2,%3,%5
-%4:
-}
-
-replace {
-        mov  b,#0x00
-        mov  a,%1
-        cjne %2,%3,%4
-        mov  b,#0x01
-%4:
-        mov  a,b
-        jnz  %5
-} by {
-        ; Peephole 138   optimized misc jump sequence
-        mov  a,%1
-        cjne %2,%3,%4
-        sjmp %5
-%4:
-}
+// WTF? Doesn't look sensible to me...
+//replace {
+//        mov  b,#0x00
+//        mov  a,%1
+//        cjne %2,%3,%4
+//        mov  b,#0x01
+//%4:
+//        mov  a,b
+//        jz   %5
+//} by {
+//        ; Peephole 137   optimized misc jump sequence
+//        mov  a,%1
+//        cjne %2,%3,%5
+//%4:
+//} if labelRefCount %4 1
+//
+//replace {
+//        mov  b,#0x00
+//        mov  a,%1
+//        cjne %2,%3,%4
+//        mov  b,#0x01
+//%4:
+//        mov  a,b
+//        jnz  %5
+//} by {
+//        ; Peephole 138   optimized misc jump sequence
+//        mov  a,%1
+//        cjne %2,%3,%4
+//        sjmp %5
+//%4:
+//} if labelRefCount %4 1
 
 replace {
         mov  r%1,a
@@ -915,7 +904,8 @@ replace {
 } by {
         ; Peephole 170   jump optimization
         cjne %1,%2,%4
-%3:}
+%3:
+} if labelRefCount %3 1
 
 replace {
         clr  a
@@ -928,7 +918,8 @@ replace {
         ; Peephole 171   jump optimization
         cjne %1,%2,%4
         cjne %9,%10,%4
-%3:}
+%3:
+} if labelRefCount %3 2
 
 replace {
         clr  a
@@ -943,7 +934,8 @@ replace {
         cjne %1,%2,%4
         cjne %9,%10,%4
         cjne %11,%12,%4
-%3:}
+%3:
+} if labelRefCount %3 3
 
 replace {
         clr  a
@@ -960,7 +952,8 @@ replace {
         cjne %9,%10,%4
         cjne %11,%12,%4
         cjne %13,%14,%4
-%3:}
+%3:
+} if labelRefCount %3 4
 
 replace {
         mov  r%1,%2
@@ -996,13 +989,14 @@ replace {
         mov  %1,@r%2
 }
 
-replace {
-        mov  %1,%2
-        mov  %2,%1
-} by {
-        ; Peephole 177   removed redundant mov
-        mov  %1,%2
-}
+// this one will screw assignes to volatile/sfr's
+//replace {
+//        mov  %1,%2
+//        mov  %2,%1
+//} by {
+//        ; Peephole 177   removed redundant mov
+//        mov  %1,%2
+//}
 
 replace {
         mov  a,%1
@@ -1033,15 +1027,6 @@ replace {
         clr  a
 }
 
-replace {
-        mov  dpl,#0x00
-        mov  dph,#0x00
- 	mov  dpx,#0x00
-} by {
-        ; Peephole 181a   used 24 bit load of dptr
-        mov  dptr,#0x0000
-} if 24bitMode
-
 // saving 3 byte, 2 cycles, return(NULL) profits here
 replace {
         mov  dpl,#0x00
@@ -1051,15 +1036,15 @@ replace {
         mov  dptr,#0x0000
 }
 
-// saves 2 bytes, ?? cycles.
+// saving 3 bytes, 2 cycles
+// provided by Bernhard Held <bernhard.held@de.westinghouse.com>
 replace {
-        mov  dpl,#%1
-        mov  dph,#(%1 >> 8)
-	mov  dpx,#(%1 >> 16)
+	mov dpl,#%1
+	mov dph,#(%1 >> 8)
 } by {
-        ; Peephole 182a   used 24 bit load of dptr
-        mov  dptr,#%1
-} if 24bitMode
+	; Peephole 182a use 16 bit load of DPTR
+	mov dptr,#%1
+}
 
 // saving 3 byte, 2 cycles, return(float_constant) profits here
 replace {
@@ -1287,8 +1272,8 @@ replace {
         mov  a,%12
         cjne %13,%14,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 4
 
 replace {
         cjne %1,%2,%3
@@ -1311,8 +1296,8 @@ replace {
         mov  a,%12
         cjne %13,%14,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 4
 
 replace {
         cjne @%1,%2,%3
@@ -1335,8 +1320,8 @@ replace {
         inc  %1
         cjne @%1,%14,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 4
 
 replace {
         cjne %1,%2,%3
@@ -1353,8 +1338,8 @@ replace {
         cjne %10,%11,%8
         cjne %13,%14,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 4
 
 replace {
         jnz  %3
@@ -1373,8 +1358,8 @@ replace {
         mov  a,%9
         cjne %10,%11,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 3
 
 replace {
         cjne %1,%2,%3
@@ -1393,8 +1378,8 @@ replace {
         mov  a,%9
         cjne %10,%11,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 3
 
 replace {
         cjne @%1,%2,%3
@@ -1413,8 +1398,8 @@ replace {
         inc  %1
         cjne @%1,%11,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 3
 
 replace {
         cjne %1,%2,%3
@@ -1429,8 +1414,8 @@ replace {
         cjne %5,%6,%8
         cjne %10,%11,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 3
 
 replace {
         jnz  %3
@@ -1445,8 +1430,8 @@ replace {
         mov  a,%4
         cjne %5,%6,%8
         sjmp %7
-%3:     
-}
+;%3:     
+} if labelRefCount %3 2
 
 replace {
         cjne %1,%2,%3
@@ -1461,8 +1446,8 @@ replace {
         mov  a,%4
         cjne %5,%6,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 2
 
 replace {
         cjne @%1,%2,%3
@@ -1477,8 +1462,8 @@ replace {
         inc   %1
         cjne @%1,%6,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 2
 
 replace {
         cjne %1,%2,%3
@@ -1491,8 +1476,8 @@ replace {
         cjne %1,%2,%8
         cjne %5,%6,%8
         sjmp %7
-%3:
-}
+;%3:
+} if labelRefCount %3 2
 
 replace {
         cjne %1,%2,%3
@@ -1503,8 +1488,8 @@ replace {
         ; Peephole 199   optimized misc jump sequence
         cjne %1,%2,%5
         sjmp %4
-%3:
-}
+;%3:
+} if labelRefCount %3 1
 
 replace {
         sjmp %1
@@ -1563,7 +1548,7 @@ replace {
         djnz %1,%4
 %2:
 %3:
-}
+} if labelRefCount %2 1
 
 replace {
         mov  %1,%1
@@ -1599,13 +1584,6 @@ replace {
         mov  %1,_bp
         inc  %1
 }
-
-replace {
-        mov  dptr,#((((%1 >> 16)) <<16) + (((%1 >> 8)) <<8) + %1)
-} by {
-        ; Peephole 210a   simplified expression
-        mov  dptr,#%1
-} if 24bitMode
 
 replace {
         mov  dptr,#((((%1 >> 8)) <<8) + %1)
@@ -1794,3 +1772,160 @@ replace {
 } by {
 	; removed dec/inc pair
 }
+
+replace {
+        mov     %1,dpl
+        mov     %2,dph
+        mov     dpl,%1
+        mov     dph,%2
+} by {
+        ; Peephole 223   removed redundant dph/dpl moves
+        mov     %1,dpl
+        mov     %2,dph
+}
+
+replace {
+        mov     %1,dpl
+        mov     (%1 + 1),dph
+        mov     dpl,%1
+        mov     dph,(%1 + 1)
+} by {
+        ; Peephole 224   removed redundant dph/dpl moves
+        mov     %1,dpl
+        mov     (%1 + 1),dph
+}
+
+replace {
+        mov     a,%1
+        movx    @dptr,a
+        mov     dpl,%2
+        mov     dph,%3
+        mov     b,%4
+        mov     a,%1
+} by {
+        ; Peephole 225   removed redundant move to acc
+        mov     a,%1
+        movx    @dptr,a
+        mov     dpl,%2
+        mov     dph,%3
+        mov     b,%4
+}
+
+replace {
+        clr  a
+        movx @dptr,a
+        inc  dptr
+        movx @dptr,a
+        inc     dptr
+        clr  a
+} by {
+        ; Peephole 226   removed unnecessary clr
+        clr     a
+        movx    @dptr,a
+        inc     dptr
+        movx    @dptr,a
+        inc     dptr
+}
+
+replace {
+        mov     dptr,#%1
+        clr     a
+        inc     dptr
+        inc     dptr
+        inc     dptr
+        movx    @dptr,a
+        lcall   __decdptr
+        movx    @dptr,a
+        lcall   __decdptr
+        movx    @dptr,a
+        lcall   __decdptr
+        movx    @dptr,a
+} by {
+        ; Peephole 227   replaced inefficient 32 bit clear
+        mov     dptr,#%1
+        clr     a
+        movx    @dptr,a
+        inc     dptr
+        movx    @dptr,a
+        inc     dptr
+        movx    @dptr,a
+        inc     dptr
+        movx    @dptr,a
+        mov     dptr,#%1
+}
+
+replace {
+        mov     dptr,#%1
+        clr     a
+        inc     dptr
+        inc     dptr
+        inc     dptr
+        movx    @dptr,a
+        lcall   __decdptr
+        movx    @dptr,a
+        lcall   __decdptr
+        movx    @dptr,a
+        lcall   __decdptr
+        mov     a,#%2
+        movx    @dptr,a
+} by {
+        ; Peephole 228   replaced inefficient 32 constant
+        mov     dptr,#%1
+        mov     a, #%2
+        movx    @dptr,a
+        inc     dptr
+        clr     a
+        movx    @dptr,a
+        inc     dptr
+        movx    @dptr,a
+        inc     dptr
+        movx    @dptr,a
+        mov     dptr,#%1
+}
+
+replace {
+        mov     dptr,#%1
+        clr     a
+        inc     dptr
+        movx    @dptr,a
+        lcall   __decdptr
+        movx    @dptr,a
+} by {
+        ; Peephole 229   replaced inefficient 16 bit clear
+        mov     dptr,#%1
+        clr     a
+        movx    @dptr,a
+        inc     dptr
+        movx    @dptr,a
+        mov     dptr,#%1
+}
+
+replace {
+        mov     dptr,#%1
+        clr     a
+        inc     dptr
+        movx    @dptr,a
+        lcall   __decdptr
+        mov     a,#%2
+        movx    @dptr,a
+} by {
+        ; Peephole 230   replaced inefficient 16 constant
+        mov     dptr,#%1
+        mov     a,#%2
+        movx    @dptr,a
+        inc     dptr
+        clr     a
+        movx    @dptr,a
+        mov     dptr,#%1
+}
+
+// this last peephole often removes the last mov from 227-230
+replace {
+        mov     dptr,#%1
+        mov     dptr,#%2
+} by {
+        ; Peephole 231   removed redundant mov to dptr
+        mov     dptr,#%2
+}
+
+

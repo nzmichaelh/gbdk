@@ -11,7 +11,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <alloc.h>
 #include "aslink.h"
 
 /*)Module	lklex.c
@@ -24,6 +23,7 @@
  *		char	get()
  *		VOID	getfid()
  *		VOID	getid()
+ *		VOID	getSid()
  *		int	getline()
  *		int	getmap()
  *		char	getnb()
@@ -95,10 +95,68 @@ char *id;
 		*p++ = 0;
 }
 
+/*)Function	VOID	getSid (char *id)
+ *
+ *		char *	id		a pointer to a string of
+ *					maximum length NCPS
+ *
+ *  getSid is derived from getid. It is called from newsym()
+ *  in lksym.c, when an S-record has to be scanned. getSid accepts
+ *  much more characters than getid, which is necessary for SDCC.
+ * 
+ *	The function getSid() scans the current input text line
+ *	from the current position copying the next string
+ *	into the external string buffer (id).  The string ends when a space
+ *  character (space, tab, \0) is found. The maximum number of
+ *	characters copied is NCPS.  If the input string is larger than
+ *	NCPS characters then the string is truncated, if the input string
+ *	is shorter than NCPS characters then the string is NULL filled.
+ *	Intervening white space (SPACES and TABS) are skipped.
+ *
+ *	local variables:
+ *		char *	p		pointer to external string buffer
+ *		int	c		current character value
+ *
+ *	global variables:
+ *		char	ctype[]		a character array which defines the
+ *					type of character being processed.
+ *					This index is the character
+ *					being processed.
+ *
+ *	called functions:
+ *		char	get()		lklex.c
+ *		char	getnb()		lklex.c
+ *		VOID	unget()		lklex.c
+ *
+ *	side effects:
+ *		use of getnb(), get(), and unget() updates the
+ *		global pointer ip the position in the current
+ *		input text line.
+ */
+
+VOID
+getSid (id)
+char *id;
+{
+  register int c;
+	register char *p;
+
+  c = getnb();
+	p = id;
+	do {
+		if (p < &id[NCPS])
+			*p++ = c;
+		c = get();
+	} while (c != '\0' && c != ' ' && c != '\t');
+	unget(c);
+	while (p < &id[NCPS])
+		*p++ = 0;
+}
+
 /*)Function	VOID	getfid(fid,c)
  *
  *		char *	str		a pointer to a string of
- *					maximum length FILSPC
+ *					maximum length PATH_MAX
  *		int	c		this is first character to
  *					copy to the string buffer
  *
@@ -106,9 +164,9 @@ char *id;
  *	from the current position copying the next string
  *	into the external string buffer (str).  The string ends when a
  *	non SPACE type character is found. The maximum number of
- *	characters copied is FILSPC. If the input string is larger than
- *	FILSPC characters then the string is truncated, if the input string
- *	is shorter than FILSPC characters then the string is NULL filled.
+ *	characters copied is PATH_MAX. If the input string is larger than
+ *	PATH_MAX characters then the string is truncated, if the input string
+ *	is shorter than PATH_MAX characters then the string is NULL filled.
  *
  *	local variables:
  *		char *	p		pointer to external string buffer
@@ -137,11 +195,11 @@ char *str;
 
 	p = str;
 	do {
-		if (p < &str[FILSPC-1])
+		if (p < &str[PATH_MAX-1])
 			*p++ = c;
 		c = get();
-	} while (c && (ctype[c] != SPACE));
-	while (p < &str[FILSPC])
+	} while (c && ((ctype[c] != SPACE)||(c == ':')||(c == '\\')));
+	while (p < &str[PATH_MAX])
 		*p++ = 0;
 }
 
@@ -415,7 +473,7 @@ getmap(d)
 int
 getline()
 {
-	register int i, ftype;
+	register int ftype;
 	register char *fid;
 
 loop:	if (pflag && cfp && cfp->f_type == F_STD)
@@ -473,9 +531,7 @@ loop:	if (pflag && cfp && cfp->f_type == F_STD)
 			return(0);
 		}
 	}
-	i = strlen(ib) - 1;
-	if (ib[i] == '\n')
-		ib[i] = 0;
+	chop_crlf(ib);
 	return (1);
 }
 
@@ -541,4 +597,35 @@ endline()
 
 	c = getnb();
 	return( (c == '\0' || c == ';') ? 0 : c );
+}
+
+/*)Function	VOID	chop_crlf(str)
+ *
+ *		char	*str		string to chop
+ *
+ *	The function chop_crlf() removes trailing LF or CR/LF from
+ *	str, if present.
+ *
+ *	local variables:
+ *		int	i		string length
+ *
+ *	global variables:
+ *		none
+ *
+ *	functions called:
+ *		none
+ *
+ *	side effects:
+ *		none
+ */
+
+VOID
+chop_crlf(str)
+char *str;
+{
+	register int i;
+
+	i = strlen(str);
+	if (i >= 1 && str[i-1] == '\n') str[i-1] = 0;
+	if (i >= 2 && str[i-2] == '\r') str[i-2] = 0;
 }

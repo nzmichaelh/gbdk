@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include <alloc.h>
 #include "asm.h"
 
 /* Return basic file name without path or extension */
@@ -18,7 +17,7 @@ static char* BaseFileName( int fileNumber );
 char* BaseFileName( int fileNumber )
 {
 	static int prevFile = -1;
-        static char baseName[ FILSPC ];
+        static char baseName[ PATH_MAX ];
 
         char *p1, *p2;
 
@@ -33,6 +32,7 @@ char* BaseFileName( int fileNumber )
 
 		/* Name starts after any colon or backslash (DOS) */
 		p2 = strrchr( p1, '\\' );
+		if (p2 == NULL) p2 = strrchr( p1, '/' );
 		if (p2 == NULL) p2 = strrchr( p1, ':' );
 		if (p2 == NULL) p2 = p1-1;
                 strcpy( baseName, p2+1 );
@@ -85,7 +85,7 @@ void DefineNoICE_Line()
 {
         static int prevFile = -1;
         static struct area *pPrevArea = NULL;
-        static char baseName[ FILSPC ];
+        static char baseName[ PATH_MAX ];
 
         int j;
         char *p1, *p2;

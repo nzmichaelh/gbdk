@@ -29,6 +29,10 @@
 
 #define	VERSION	"V01.70 + NoICE + SDCC mods + Flat24 Feb-1999"
 
+#if !defined(__BORLANDC__) && !defined(_MSC_VER)
+#include <unistd.h>
+#endif
+
 /*
  * Case Sensitivity Flag
  */
@@ -73,6 +77,14 @@
 #endif
 
 /*
+ * PATH_MAX
+ */
+#include <limits.h>
+#ifndef PATH_MAX		/* POSIX, but not required   */
+#define PATH_MAX		/* define a reasonable value */
+#endif
+
+/*
  * Assembler definitions.
  */
 #define	LFTERM	'('		/* Left expression delimeter */
@@ -81,7 +93,7 @@
 #define NCPS	80		/* Chars. per symbol (JLH: change from 8) */
 #define	HUGE	1000		/* A huge number */
 #define NERR	3		/* Errors per line */
-#define NINPUT	128		/* Input buffer size */
+#define	NINPUT	PATH_MAX	/* Input buffer size (BH: change from 128) */
 #define NCODE	128		/* Listing code buffer size */
 #define NTITL	64		/* Title buffer size */
 #define	NSBTL	64		/* SubTitle buffer size */
@@ -91,7 +103,6 @@
 #define	MAXFIL	6		/* Maximum command line input files */
 #define	MAXINC	6		/* Maximum nesting of include files */
 #define	MAXIF	10		/* Maximum nesting of if/else/endif */
-#define	FILSPC	80		/* Chars. in filespec */
 
 #define NLIST	0		/* No listing */
 #define SLIST	1		/* Source only */
@@ -104,11 +115,11 @@
 #define	dca	area[0]		/* Dca, default code area */
 
 
-/* NB: for Flat24 extentions to work, addr_t must be at least 24
+/* NB: for Flat24 extentions to work, Addr_T must be at least 24
  * bits. This is checked at runtime when the .flat24 directive 
  * is processed.
  */
-typedef	unsigned int addr_t;
+typedef	unsigned int Addr_T;
 
 /*
  *	The area structure contains the parameter values for a
@@ -129,8 +140,8 @@ struct	area
 	struct	area *a_ap;	/* Area link */
 	char	a_id[NCPS];	/* Area Name */
 	int	a_ref;		/* Ref. number */
-	addr_t	a_size;		/* Area size */
-	addr_t	a_fuzz;		/* Area fuzz */
+	Addr_T	a_size;		/* Area size */
+	Addr_T	a_fuzz;		/* Area fuzz */
 	int	a_flag;		/* Area flags */
 };
 
@@ -250,7 +261,7 @@ struct	mne
 	char	*m_id;		/* Mnemonic JLH: change from [NCPS] */
 	char	m_type;		/* Mnemonic subtype */
 	char	m_flag;		/* Mnemonic flags */
-	addr_t	m_valu;		/* Value */
+	Addr_T	m_valu;		/* Value */
 };
 
 /*
@@ -275,7 +286,7 @@ struct	sym
 	char	s_flag;		/* Symbol flags */
 	struct	area *s_area;	/* Area line, 0 if absolute */
 	int	s_ref;		/* Ref. number */
-	addr_t	s_addr;		/* Address */
+	Addr_T	s_addr;		/* Address */
 };
 
 #define	S_GBL		01	/* Global */
@@ -334,7 +345,7 @@ struct	tsym
 	int t_flg;		/* flags */
 
 	struct	area *t_area;	/* Area */
-	addr_t	t_addr;		/* Address */
+	Addr_T	t_addr;		/* Address */
 };
 
 /*
@@ -367,16 +378,16 @@ extern	int	iflvl[MAXIF+1];	/*	array of IF-ELSE-ENDIF flevel
 				 *	values indexed by tlevel
 				 */
 extern	char
-	afn[FILSPC];		/*	afile() temporary filespec
+	afn[PATH_MAX];		/*	afile() temporary filespec
 				 */
 extern	char
-	srcfn[MAXFIL][FILSPC];	/*	array of source file names
+	srcfn[MAXFIL][PATH_MAX];	/*	array of source file names
 				 */
 extern	int
 	srcline[MAXFIL];	/*	current source file line
 				 */
 extern	char
-	incfn[MAXINC][FILSPC];	/*	array of include file names
+	incfn[MAXINC][PATH_MAX];	/*	array of include file names
 				 */
 extern	int
 	incline[MAXINC];	/*	current include file line
@@ -414,10 +425,10 @@ extern	int	xflag;		/*	-x, listing radix flag
 				 */
 extern	int	fflag;		/*	-f(f), relocations flagged flag
 				 */
-extern	addr_t	laddr;		/*	address of current assembler line
+extern	Addr_T	laddr;		/*	address of current assembler line
 				 *	or value of .if argument
 				 */
-extern	addr_t	fuzz;		/*	tracks pass to pass changes in the
+extern	Addr_T	fuzz;		/*	tracks pass to pass changes in the
 				 *	address of symbols caused by
 				 *	variable length instruction formats
 				 */
@@ -527,7 +538,7 @@ struct	expr
 {
 	char	e_mode;		/* Address mode */
 	char	e_flag;		/* Symbol flag */
-	addr_t	e_addr;		/* Address */
+	Addr_T	e_addr;		/* Address */
 	union	{
 		struct area *e_ap;
 		struct sym  *e_sp;
@@ -575,6 +586,7 @@ extern	char		getnb();
 extern	VOID		getst();
 extern	int		more();
 extern	VOID		unget();
+extern	VOID		chop_crlf();
 
 /* assym.c */
 extern	struct	area *	alookup();
@@ -598,7 +610,7 @@ extern	VOID		rerr();
 
 /* asexpr.c */
 extern	VOID		abscheck();
-extern	addr_t		absexpr();
+extern	Addr_T		absexpr();
 extern	VOID		clrexpr();
 extern	int		digit();
 extern	int		is_abs();
@@ -655,8 +667,8 @@ extern	struct	mne	mne[];
 
 /* Machine dependent functions */
 
-extern	VOID		machin();
 extern	VOID		minit();
+extern VOID machine(struct mne *);
 
 /* SD added THIS define to change
    strcmpi --> strcmp (strcmpi is NOT ANSI) */

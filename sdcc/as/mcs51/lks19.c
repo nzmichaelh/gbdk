@@ -11,7 +11,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <alloc.h>
 #include "aslink.h"
 
 /*)Module	lks19.c
@@ -78,14 +77,14 @@
  *	in the standard Motorola S19 format.
  *
  *	local variables:
- *		addr_t	chksum		byte checksum
+ *		Addr_T	chksum		byte checksum
  *
  *	global variables:
  *		int	hilo		byte order
  *		FILE *	ofp		output file handle
  *		int	rtcnt		count of data words
  *		int	rtflg[]		output the data flag
- *		addr_t	rtval[]		relocated data
+ *		Addr_T	rtval[]		relocated data
  *
  *	functions called:
  *		int	fprintf()	c_library
@@ -97,7 +96,7 @@
 VOID
 s19(i)
 {
-	register addr_t chksum;
+	register Addr_T chksum;
 
 	if (i) {
 		if (hilo == 0) {
@@ -116,7 +115,7 @@ s19(i)
 				chksum += rtval[i];
 			}
 		}
-		fprintf(ofp, "%02X\n", (-chksum-1) & 0xff);
+		fprintf(ofp, "%02X\n", (0-chksum-1) & 0xff);
 	} else {
 		fprintf(ofp, "S9030000FC\n");
 	}

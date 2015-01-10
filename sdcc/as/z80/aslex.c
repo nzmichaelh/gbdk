@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include <alloc.h>
+
 #include "asm.h"
 
 /*)Module	aslex.c
@@ -432,6 +432,8 @@ loop:	if (incfil >= 0) {
 	i = strlen(ib) - 1;
 	if (ib[i] == '\n')
 		ib[i] = 0;
+	if (i >= 1 && ib[i-1] == '\r')
+		ib[i-1] = 0;
 	return (1);
 }
 

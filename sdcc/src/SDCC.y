@@ -31,10 +31,12 @@
 #include "SDCCval.h"
 #include "SDCCmem.h"
 #include "SDCCast.h"
+#include "port.h"
+#include "newalloc.h"
+#include "SDCCerr.h"
 
 extern int yyerror (char *);
 extern FILE	*yyin;
-extern char srcLstFname[];
 int NestLevel = 0 ;     /* current NestLevel       */
 int stackPtr  = 1 ;     /* stack pointer           */
 int xstackPtr = 0 ;     /* xstack pointer          */
@@ -56,15 +58,17 @@ STACK_DCL(blockNum,int,MAX_NEST_LEVEL*3)
 value *cenum = NULL  ;  /* current enumeration  type chain*/
 
 %}
+%expect 6
+
 %union {
     symbol     *sym ;      /* symbol table pointer       */
     structdef  *sdef;      /* structure definition       */
     char       yychar[SDCC_NAME_MAX+1];
-    link       *lnk ;      /* declarator  or specifier   */
+    sym_link       *lnk ;      /* declarator  or specifier   */
     int        yyint;      /* integer value returned     */
     value      *val ;      /* for integer constant       */
     initList   *ilist;     /* initial list               */
-    char       yyinline[MAX_INLINEASM]; /* inlined assembler code */
+    char       *yyinline; /* inlined assembler code */
     ast       *asts;     /* expression tree            */
 }
 
@@ -79,13 +83,14 @@ value *cenum = NULL  ;  /* current enumeration  type chain*/
 %token TYPEDEF EXTERN STATIC AUTO REGISTER CODE EEPROM INTERRUPT SFR AT SBIT
 %token REENTRANT USING  XDATA DATA IDATA PDATA VAR_ARGS CRITICAL NONBANKED BANKED
 %token CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOLATILE VOID BIT
-%token STRUCT UNION ENUM ELIPSIS RANGE FAR _XDATA _CODE _GENERIC _NEAR _PDATA _IDATA _EEPROM
-%token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN 
+%token STRUCT UNION ENUM ELIPSIS RANGE FAR
+%token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
+%token NAKED
 %token <yyinline> INLINEASM
 %token IFX ADDRESS_OF GET_VALUE_AT_ADDRESS SPIL UNSPIL GETHBIT
 %token BITWISEAND UNARYMINUS IPUSH IPOP PCALL  ENDFUNCTION JUMPTABLE
 %token RRC RLC 
-%token CAST CALL PARAM NULLOP BLOCK LABEL RECEIVE SEND
+%token CAST CALL PARAM NULLOP BLOCK LABEL RECEIVE SEND ARRAYINIT
 
 %type <yyint>  Interrupt_storage
 %type <sym> identifier  declarator  declarator2 enumerator_list enumerator
@@ -93,12 +98,12 @@ value *cenum = NULL  ;  /* current enumeration  type chain*/
 %type <sym> struct_declarator_list  struct_declaration   struct_declaration_list
 %type <sym> declaration init_declarator_list init_declarator
 %type <sym> declaration_list identifier_list parameter_identifier_list
-%type <sym> declarator2_using_reentrant while do for
+%type <sym> declarator2_function_attributes while do for
 %type <lnk> pointer type_specifier_list type_specifier type_name
 %type <lnk> storage_class_specifier struct_or_union_specifier
 %type <lnk> declaration_specifiers  sfr_reg_bit type_specifier2
-%type <lnk> using_reentrant using_reentrant_interrupt enum_specifier
-%type <lnk> abstract_declarator abstract_declarator2 far_near_pointer far_near
+%type <lnk> function_attribute function_attributes enum_specifier
+%type <lnk> abstract_declarator abstract_declarator2 unqualified_pointer
 %type <val> parameter_type_list parameter_list parameter_declaration opt_assign_expr
 %type <sdef> stag opt_stag
 %type <asts> primary_expr
@@ -123,8 +128,27 @@ file
    ;
 
 external_definition
-   : function_definition     { blockNo=0;}
+   : function_definition     { 
+                               blockNo=0;
+                             }
    | declaration             { 
+			       if ($1 && $1->type
+				&& IS_FUNC($1->type))
+			       {
+ 				   /* The only legal storage classes for 
+				    * a function prototype (declaration)
+				    * are extern and static. extern is the
+				    * default. Thus, if this function isn't
+				    * explicitly marked static, mark it
+				    * extern.
+				    */
+				   if ($1->etype 
+				    && IS_SPEC($1->etype)
+				    && !SPEC_STAT($1->etype))
+				   {
+				   	SPEC_EXTR($1->etype) = 1;
+				   }
+			       }
                                addSymChain ($1);
                                allocVariables ($1) ;
 			       cleanUpLevel (SymbolTab,1);
@@ -145,37 +169,40 @@ function_definition
 				}
    ;
 
-using_reentrant
-   : using_reentrant_interrupt
-   | using_reentrant_interrupt using_reentrant { $$ = mergeSpec($1,$2); }
+function_attribute
+   : function_attributes
+   | function_attributes function_attribute { $$ = mergeSpec($1,$2,"function_attribute"); }
    ;
 
-using_reentrant_interrupt
+function_attributes
    :  USING CONSTANT {
                         $$ = newLink() ;
                         $$->class = SPECIFIER   ;
-                        SPEC_BNKF($$) = 1;
-                        SPEC_BANK($$) = (int) floatFromVal($2);                       
+			FUNC_REGBANK($$) = (int) floatFromVal($2);
                      }
    |  REENTRANT      {  $$ = newLink ();
                         $$->class = SPECIFIER   ;
-                        SPEC_RENT($$) = 1;
+			FUNC_ISREENT($$)=1;
                      }
    |  CRITICAL       {  $$ = newLink ();
                         $$->class = SPECIFIER   ;
-                        SPEC_CRTCL($$) = 1;
+			FUNC_ISCRITICAL($$) = 1;
+                     }
+   |  NAKED          {  $$ = newLink ();
+                        $$->class = SPECIFIER   ;
+			FUNC_ISNAKED($$)=1;
                      }
    |  NONBANKED      {$$ = newLink ();
                         $$->class = SPECIFIER   ;
-                        SPEC_NONBANKED($$) = 1;
-			if (SPEC_BANKED($$)) {
+                        FUNC_NONBANKED($$) = 1;
+			if (FUNC_BANKED($$)) {
 			    werror(W_BANKED_WITH_NONBANKED);
 			}
                      }
    |  BANKED         {$$ = newLink ();
                         $$->class = SPECIFIER   ;
-                        SPEC_BANKED($$) = 1;
-			if (SPEC_NONBANKED($$)) {
+                        FUNC_BANKED($$) = 1;
+			if (FUNC_NONBANKED($$)) {
 			    werror(W_BANKED_WITH_NONBANKED);
 			}
 			if (SPEC_STAT($$)) {
@@ -186,8 +213,8 @@ using_reentrant_interrupt
                      {
                         $$ = newLink () ;
                         $$->class = SPECIFIER ;
-                        SPEC_INTN($$) = $1 ;
-                        SPEC_INTRTN($$) = 1;
+                        FUNC_INTNO($$) = $1 ;
+                        FUNC_ISISR($$) = 1;
                      }
    ;
 
@@ -201,14 +228,14 @@ function_body
    ;
 
 primary_expr
-   : identifier      {  $$ = newAst(EX_VALUE,symbolVal($1));  }
-   | CONSTANT        {  $$ = newAst(EX_VALUE,$1);  }
+   : identifier      {  $$ = newAst_VALUE(symbolVal($1));  }
+   | CONSTANT        {  $$ = newAst_VALUE($1);  }
    | string_literal  
    | '(' expr ')'    {  $$ = $2 ;                   }
    ;
          
 string_literal
-    : STRING_LITERAL			{ $$ = newAst(EX_VALUE,$1); }
+    : STRING_LITERAL			{ $$ = newAst_VALUE($1); }
     ;
 
 postfix_expr
@@ -224,14 +251,14 @@ postfix_expr
 		      {    
 			$3 = newSymbol($3->name,NestLevel);
 			$3->implicit = 1;
-			$$ = newNode(PTR_OP,newNode('&',$1,NULL),newAst(EX_VALUE,symbolVal($3)));
+			$$ = newNode(PTR_OP,newNode('&',$1,NULL),newAst_VALUE(symbolVal($3)));
 /* 			$$ = newNode('.',$1,newAst(EX_VALUE,symbolVal($3))) ;		        */
 		      }
    | postfix_expr PTR_OP identifier    
                       { 
 			$3 = newSymbol($3->name,NestLevel);
 			$3->implicit = 1;			
-			$$ = newNode(PTR_OP,$1,newAst(EX_VALUE,symbolVal($3)));
+			$$ = newNode(PTR_OP,$1,newAst_VALUE(symbolVal($3)));
 		      }
    | postfix_expr INC_OP   
                       {	$$ = newNode(INC_OP,$1,NULL);}
@@ -250,7 +277,7 @@ unary_expr
    | DEC_OP unary_expr        { $$ = newNode(DEC_OP,NULL,$2);  }
    | unary_operator cast_expr { $$ = newNode($1,$2,NULL)    ;  }
    | SIZEOF unary_expr        { $$ = newNode(SIZEOF,NULL,$2);  }
-   | SIZEOF '(' type_name ')' { $$ = newAst(EX_VALUE,sizeofOp($3)); }
+   | SIZEOF '(' type_name ')' { $$ = newAst_VALUE(sizeofOp($3)); }
    ;
               
 unary_operator
@@ -264,7 +291,7 @@ unary_operator
 
 cast_expr
    : unary_expr
-   | '(' type_name ')' cast_expr { $$ = newNode(CAST,newAst(EX_LINK,$2),$4); }
+   | '(' type_name ')' cast_expr { $$ = newNode(CAST,newAst_LINK($2),$4); }
    ;
 
 multiplicative_expr
@@ -288,41 +315,40 @@ shift_expr
 
 relational_expr
    : shift_expr
-   | relational_expr '<' shift_expr    { $$ = newNode('<',$1,$3); }
-   | relational_expr '>' shift_expr    { $$ = newNode('>',$1,$3); }
+   | relational_expr '<' shift_expr    { 
+	$$ = (port->lt_nge ? 
+	      newNode('!',newNode(GE_OP,$1,$3),NULL) :
+	      newNode('<', $1,$3));
+   }
+   | relational_expr '>' shift_expr    { 
+	   $$ = (port->gt_nle ? 
+		 newNode('!',newNode(LE_OP,$1,$3),NULL) :
+		 newNode('>',$1,$3));
+   }
    | relational_expr LE_OP shift_expr  { 
-       /* $$ = newNode(LE_OP,$1,$3); */
-       /* getting 8051 specific here : will change
-	  LE_OP operation to "not greater than" i.e.
-	  ( a <= b ) === ( ! ( a > b )) */
-       $$ = newNode('!', 
-		    newNode('>', $1 , $3 ),
-		    NULL);
+	   $$ = (port->le_ngt ? 
+		 newNode('!', newNode('>', $1 , $3 ), NULL) :
+		 newNode(LE_OP,$1,$3));
    }
    | relational_expr GE_OP shift_expr  { 
-       /* $$ = newNode(GE_OP,$1,$3) ; */
-       /* getting 8051 specific here : will change
-	  GE_OP operation to "not less than" i.e.
-	  ( a >= b ) === ( ! ( a < b )) */
-       $$ = newNode('!',
-		    newNode('<', $1 , $3 ),
-		    NULL);
+	   $$ = (port->ge_nlt ? 
+		 newNode('!', newNode('<', $1 , $3 ), NULL) :
+		 newNode(GE_OP,$1,$3));
    }
    ;
 
 equality_expr
    : relational_expr
-   | equality_expr EQ_OP relational_expr  { $$ = newNode(EQ_OP,$1,$3);}
-   | equality_expr NE_OP relational_expr  
-          { 
-              /* $$ = newNode(NE_OP,$1,$3); */
-	      /* NE_OP changed :            
-		 expr1 != expr2 is equivalent to
-		 (! expr1 == expr2) */
-	      $$ = newNode('!',
-			   newNode(EQ_OP,$1,$3),
-			   NULL);
-	  }       
+   | equality_expr EQ_OP relational_expr  { 
+    $$ = (port->eq_nne ? 
+	  newNode('!',newNode(NE_OP,$1,$3),NULL) : 
+	  newNode(EQ_OP,$1,$3));
+   }
+   | equality_expr NE_OP relational_expr { 
+       $$ = (port->ne_neq ? 
+	     newNode('!', newNode(EQ_OP,$1,$3), NULL) : 
+	     newNode(NE_OP,$1,$3));
+   }       
    ;
 
 and_expr
@@ -438,7 +464,7 @@ declaration
          symbol *sym , *sym1;
 
          for (sym1 = sym = reverseSyms($2);sym != NULL;sym = sym->next) {
-	     link *lnk = copyLinkChain($1);
+	     sym_link *lnk = copyLinkChain($1);
 	     /* do the pointer stuff */
 	     pointerTypes(sym->type,lnk);
 	     addDecl (sym,0,lnk) ;
@@ -454,28 +480,28 @@ declaration_specifiers
      /* if the decl $2 is not a specifier */
      /* find the spec and replace it      */
      if ( !IS_SPEC($2)) {
-       link *lnk = $2 ;
+       sym_link *lnk = $2 ;
        while (lnk && !IS_SPEC(lnk->next))
 	 lnk = lnk->next;
-       lnk->next = mergeSpec($1,lnk->next);
+       lnk->next = mergeSpec($1,lnk->next, yytext);
        $$ = $2 ;
      }
      else
-       $$ = mergeSpec($1,$2); 
+       $$ = mergeSpec($1,$2, yytext);
    }
    | type_specifier				    { $$ = $1; }
    | type_specifier declaration_specifiers          { 
      /* if the decl $2 is not a specifier */
      /* find the spec and replace it      */
      if ( !IS_SPEC($2)) {
-       link *lnk = $2 ;
+       sym_link *lnk = $2 ;
        while (lnk && !IS_SPEC(lnk->next))
 	 lnk = lnk->next;
-       lnk->next = mergeSpec($1,lnk->next);
+       lnk->next = mergeSpec($1,lnk->next, yytext);
        $$ = $2 ;
      }
      else
-       $$ = mergeSpec($1,$2); 
+       $$ = mergeSpec($1,$2, yytext);
    }
    ;
 
@@ -524,12 +550,12 @@ Interrupt_storage
 
 type_specifier
    : type_specifier2
-   | type_specifier2 AT CONSTANT
+   | type_specifier2 AT constant_expr
         {
            /* add this to the storage class specifier  */
            SPEC_ABSA($1) = 1;   /* set the absolute addr flag */
            /* now get the abs addr from value */
-           SPEC_ADDR($1) = (int) floatFromVal ($3) ;
+           SPEC_ADDR($1) = (int) floatFromVal(constExprValue($3,TRUE)) ;
         }
    ;
 
@@ -542,8 +568,7 @@ type_specifier2
    | SHORT  {
                $$=newLink();
                $$->class = SPECIFIER   ;
-               SPEC_LONG($$) = 0      ;
-	       SPEC_SHORT($$) = 1	 ;
+	       $$->select.s._short = 1 ;
             }
    | INT    {
                $$=newLink();
@@ -553,18 +578,17 @@ type_specifier2
    | LONG   {
                $$=newLink();
                $$->class = SPECIFIER   ;
-               SPEC_LONG($$) = 1       ;
-	       SPEC_SHORT($$) = 0;
+	       SPEC_LONG($$) = 1       ;
             }
    | SIGNED {
                $$=newLink();
                $$->class = SPECIFIER   ;
-               SPEC_USIGN($$) = 0       ;
+               $$->select.s._signed = 1;
             }
    | UNSIGNED  {
                $$=newLink();
                $$->class = SPECIFIER   ;
-               SPEC_USIGN($$) = 1       ;
+               SPEC_USIGN($$) = 1      ;
             }
    | VOID   {
                $$=newLink();
@@ -574,7 +598,6 @@ type_specifier2
    | CONST  {
                $$=newLink();
 	       $$->class = SPECIFIER ;
-	       SPEC_SCLS($$) = S_CONSTANT ;
 	       SPEC_CONST($$) = 1;
             }
    | VOLATILE  {
@@ -634,8 +657,7 @@ type_specifier2
    | TYPE_NAME    
          {
             symbol *sym;
-            link   *p  ;
-
+            sym_link   *p  ;
             sym = findSym(TypedefTab,NULL,$1) ;
             $$ = p = copyLinkChain(sym->type);
 	    SPEC_TYPEDEF(getSpec(p)) = 0;
@@ -690,24 +712,23 @@ struct_or_union
    ;
 
 opt_stag
-   : stag
-   |  {  /* synthesize a name add to structtable */
-         $$ = newStruct(genSymName(NestLevel)) ;
-         $$->level = NestLevel ;
-         addSym (StructTab, $$, $$->tag,$$->level,currBlockno) ;
-      }
-   ;
+: stag
+|  {  /* synthesize a name add to structtable */
+     $$ = newStruct(genSymName(NestLevel)) ;
+     $$->level = NestLevel ;
+     addSym (StructTab, $$, $$->tag,$$->level,currBlockno, 0);
+};
 
 stag
-   :  identifier  {  /* add name to structure table */
-                     $$ = findSymWithBlock (StructTab,$1,currBlockno);
-                     if (! $$ ) {
-                        $$ = newStruct($1->name) ;
-                        $$->level = NestLevel ;
-                        addSym (StructTab, $$, $$->tag,$$->level,currBlockno) ;			 
-                     }
-                  }
-   ;
+:  identifier  {  /* add name to structure table */
+     $$ = findSymWithBlock (StructTab,$1,currBlockno);
+     if (! $$ ) {
+       $$ = newStruct($1->name) ;
+       $$->level = NestLevel ;
+       addSym (StructTab, $$, $$->tag,$$->level,currBlockno,0);
+     }
+};
+
 
 struct_declaration_list
    : struct_declaration
@@ -729,6 +750,9 @@ struct_declaration
            symbol *sym ;
            for ( sym = $2 ; sym != NULL ; sym = sym->next ) {
 	       
+	       /* make the symbol one level up */
+	       sym->level-- ;
+
 	       pointerTypes(sym->type,copyLinkChain($1));
 	       if (!sym->type) {
 		   sym->type = copyLinkChain($1);
@@ -736,7 +760,8 @@ struct_declaration
 	       }
 	       else
 		   addDecl (sym,0,cloneSpec($1));   	       
-	       
+	       /* make sure the type is complete and sane */
+	       checkTypeSanity(sym->etype, sym->name);
 	   }
            $$ = $2;
        }
@@ -752,7 +777,7 @@ struct_declarator_list
    ;
 
 struct_declarator
-   : declarator
+   : declarator 
    | ':' constant_expr  {  
                            $$ = newSymbol (genSymName(NestLevel),NestLevel) ; 
                            $$->bitVar = (int) floatFromVal(constExprValue($2,TRUE));
@@ -779,7 +804,7 @@ enum_specifier
 						    (csym && csym->level == $2->level))
                                                    werror(E_DUPLICATE_TYPEDEF,csym->name);
 
-                                                addSym ( enumTab,$2,$2->name,$2->level,$2->block);
+                                                addSym ( enumTab,$2,$2->name,$2->level,$2->block, 0);
 						addSymChain ($4);
                                                 allocVariables (reverseSyms($4));
                                                 $$ = copyLinkChain(cenum->type);
@@ -803,6 +828,8 @@ enum_specifier
 
 enumerator_list
    : enumerator
+   | enumerator_list ',' {
+                         }
    | enumerator_list ',' enumerator {
                                        $3->next = $1 ;
                                        $$ = $3  ;
@@ -841,17 +868,34 @@ opt_assign_expr
    ;
 
 declarator
-   : declarator2_using_reentrant	{ $$ = $1; }
-   | pointer declarator2_using_reentrant
+   : declarator2_function_attributes	{ $$ = $1; }
+   | pointer declarator2_function_attributes
          {
 	     addDecl ($2,0,reverseLink($1));
 	     $$ = $2 ;
          }
    ;
 
-declarator2_using_reentrant
+declarator2_function_attributes
    : declarator2		  { $$ = $1 ; } 
-   | declarator2 using_reentrant  { addDecl ($1,0,$2); }     
+   | declarator2 function_attribute  { 
+       // copy the functionAttributes (not the args and hasVargs !!)
+       sym_link *funcType=$1->etype;
+       struct value *args=FUNC_ARGS(funcType);
+       unsigned hasVargs=FUNC_HASVARARGS(funcType);
+
+       memcpy (&funcType->funcAttrs, &$2->funcAttrs, 
+	       sizeof($2->funcAttrs));
+
+       FUNC_ARGS(funcType)=args;
+       FUNC_HASVARARGS(funcType)=hasVargs;
+
+       // just to be sure
+       memset (&$2->funcAttrs, 0,
+	       sizeof($2->funcAttrs));
+       
+       addDecl ($1,0,$2); 
+   }     
    ;
 
 declarator2
@@ -859,7 +903,7 @@ declarator2
    | '(' declarator ')'     { $$ = $2; }
    | declarator2 '[' ']'
          {
-            link   *p;
+            sym_link   *p;
 
             p = newLink ();
             DCL_TYPE(p) = ARRAY ;
@@ -868,7 +912,7 @@ declarator2
          }
    | declarator2 '[' constant_expr ']'
          {
-            link   *p ;
+            sym_link   *p ;
 			value *tval;
 			
             p = (tval = constExprValue($3,TRUE))->etype;
@@ -888,37 +932,50 @@ declarator2
 	   
 	     addDecl ($1,FUNCTION,NULL) ;
 	   
-	     $1->hasVargs = IS_VARG($4);
-	     $1->args = reverseVal($4)  ;
+	     FUNC_HASVARARGS($1->type) = IS_VARG($4);
+	     FUNC_ARGS($1->type) = reverseVal($4);
 	     
 	     /* nest level was incremented to take care of the parms  */
 	     NestLevel-- ;
 	     currBlockno--;
+
+	     // if this was a pointer (to a function)
+	     if (IS_PTR($1->type)) {
+	       // move the args and hasVargs to the function
+	       FUNC_ARGS($1->etype)=FUNC_ARGS($1->type);
+	       FUNC_HASVARARGS($1->etype)=FUNC_HASVARARGS($1->type);
+	       memset (&$1->type->funcAttrs, 0,
+		       sizeof($1->type->funcAttrs));
+	       // remove the symbol args (if any)
+	       cleanUpLevel(SymbolTab,NestLevel+1);
+	     }
+	     
 	     $$ = $1;
          }
    | declarator2 '(' parameter_identifier_list ')'
          {	   
 	   werror(E_OLD_STYLE,$1->name) ;	  
 	   
-	   /* assume it returns an it */
+	   /* assume it returns an int */
 	   $1->type = $1->etype = newIntLink();
 	   $$ = $1 ;
          }
    ;
 
 pointer
-   : far_near_pointer { $$ = $1 ;}
-   | far_near_pointer type_specifier_list   
+   : unqualified_pointer { $$ = $1 ;}
+   | unqualified_pointer type_specifier_list   
          {
 	     $$ = $1  ;		
 	     DCL_TSPEC($1) = $2;
 	 }
-   | far_near_pointer pointer         
+   | unqualified_pointer pointer         
          {
 	     $$ = $1 ;		
 	     $$->next = $2 ;
+	     DCL_TYPE($2)=GPOINTER;
 	 }
-   | far_near_pointer type_specifier_list pointer
+   | unqualified_pointer type_specifier_list pointer
          {
 	     $$ = $1 ;  	     
 	     if (IS_SPEC($2) && DCL_TYPE($3) == UPOINTER) {
@@ -940,11 +997,13 @@ pointer
 		 case S_CODE:
 		     DCL_PTR_CONST($3) = 1;
 		     DCL_TYPE($3) = CPOINTER ;
+		     break;
 		 case S_EEPROM:
 		     DCL_TYPE($3) = EEPPOINTER;
 		     break;
 		 default:
-		     werror(W_PTR_TYPE_INVALID);
+		   // this could be just "constant" 
+		   // werror(W_PTR_TYPE_INVALID);
 		 }
 	     }
 	     else 
@@ -953,31 +1012,30 @@ pointer
 	 }
    ;
 
-far_near_pointer
-   :  far_near '*'   {
-                        if ($1 == NULL) {
-                           $$ = newLink();
-                           DCL_TYPE($$) = POINTER ;
-                        }
-                        else
-                           $$ = $1 ;
+unqualified_pointer
+   :  '*'   
+      {
+	$$ = newLink();
+	DCL_TYPE($$)=UPOINTER;
       }
-   ;
-
-far_near
-   : _XDATA    { $$ = newLink() ; DCL_TYPE($$) = FPOINTER ; }
-   | _CODE     { $$ = newLink() ; DCL_TYPE($$) = CPOINTER ;  DCL_PTR_CONST($$) = 1;}
-   | _PDATA    { $$ = newLink() ; DCL_TYPE($$) = PPOINTER ; } 
-   | _IDATA    { $$ = newLink() ; DCL_TYPE($$) = IPOINTER ; }
-   | _NEAR     { $$ = NULL ; }
-   | _GENERIC  { $$ = newLink() ; DCL_TYPE($$) = GPOINTER ; } 
-   | _EEPROM   { $$ = newLink() ; DCL_TYPE($$) = EEPPOINTER ;} 
-   |           { $$ = newLink() ; DCL_TYPE($$) = UPOINTER ; }
    ;
 
 type_specifier_list
    : type_specifier
-   | type_specifier_list type_specifier         {  $$ = mergeSpec ($1,$2); }
+   //| type_specifier_list type_specifier         {  $$ = mergeSpec ($1,$2, "type_specifier_list"); }
+   | type_specifier_list type_specifier {
+     /* if the decl $2 is not a specifier */
+     /* find the spec and replace it      */
+     if ( !IS_SPEC($2)) {
+       sym_link *lnk = $2 ;
+       while (lnk && !IS_SPEC(lnk->next))
+	 lnk = lnk->next;
+       lnk->next = mergeSpec($1,lnk->next, "type_specifier_list");
+       $$ = $2 ;
+     }
+     else
+       $$ = mergeSpec($1,$2, "type_specifier_list");
+   }
    ;
 
 parameter_identifier_list
@@ -1030,7 +1088,7 @@ type_name
    | type_specifier_list abstract_declarator 
                {
 		 /* go to the end of the list */
-		 link *p;
+		 sym_link *p;
 		 pointerTypes($2,$1);
 		 for ( p = $2 ; p->next ; p=p->next);
                   p->next = $1 ;
@@ -1073,9 +1131,23 @@ abstract_declarator2
                                     }
    | '(' ')'                        { $$ = NULL;}
    | '(' parameter_type_list ')'    { $$ = NULL;}   
-   | abstract_declarator2 '(' ')'
-   | abstract_declarator2 '(' parameter_type_list ')'
-   ;
+   | abstract_declarator2 '(' ')' {
+     // $1 must be a pointer to a function
+     sym_link *p=newLink();
+     DCL_TYPE(p) = FUNCTION;
+     $1->next=p;
+   }
+   | abstract_declarator2 '(' parameter_type_list ')' {
+     if (!IS_VOID($3->type)) {
+       // this is nonsense, so let's just burp something
+       werror(E_TOO_FEW_PARMS);
+     } else {
+       // $1 must be a pointer to a function
+       sym_link *p=newLink();
+       DCL_TYPE(p) = FUNCTION;
+       $1->next=p;
+     }
+   }
 
 initializer
    : assignment_expr                { $$ = newiList(INIT_NODE,$1); }
@@ -1097,14 +1169,15 @@ statement
    | jump_statement
    | INLINEASM  ';'      {
                             ast *ex = newNode(INLINEASM,NULL,NULL);
-			    ALLOC_ATOMIC(ex->values.inlineasm,strlen($1));
+			    ex->values.inlineasm = malloc(strlen($1)+1);
 			    strcpy(ex->values.inlineasm,$1);			    
 			    $$ = ex;
-                         }   
+                         } 
    ;
 
 labeled_statement
-   : identifier ':' statement          {  $$ = createLabel($1,$3);  }   
+//   : identifier ':' statement          {  $$ = createLabel($1,$3);  }   
+   : identifier ':'                    {  $$ = createLabel($1,NULL);  }   
    | CASE constant_expr ':' statement  {  $$ = createCase(STACK_PEEK(swStk),$2,$4); }
    | DEFAULT ':' statement             {  $$ = createDefault(STACK_PEEK(swStk),$3); }
    ;
@@ -1299,7 +1372,7 @@ expr_opt
 jump_statement          
    : GOTO identifier ';'   { 
                               $2->islbl = 1;
-                              $$ = newAst(EX_VALUE,symbolVal($2)); 
+                              $$ = newAst_VALUE(symbolVal($2)); 
                               $$ = newNode(GOTO,$$,NULL);
                            }
    | CONTINUE ';'          {  
@@ -1309,7 +1382,7 @@ jump_statement
 	   $$ = NULL;
        }
        else {
-	   $$ = newAst(EX_VALUE,symbolVal(STACK_PEEK(continueStack)));      
+	   $$ = newAst_VALUE(symbolVal(STACK_PEEK(continueStack)));      
 	   $$ = newNode(GOTO,$$,NULL);
 	   /* mark the continue label as referenced */
 	   STACK_PEEK(continueStack)->isref = 1;
@@ -1320,7 +1393,7 @@ jump_statement
 	   werror(E_BREAK_CONTEXT);
 	   $$ = NULL;
        } else {
-	   $$ = newAst(EX_VALUE,symbolVal(STACK_PEEK(breakStack)));
+	   $$ = newAst_VALUE(symbolVal(STACK_PEEK(breakStack)));
 	   $$ = newNode(GOTO,$$,NULL);
 	   STACK_PEEK(breakStack)->isref = 1;
        }
@@ -1333,21 +1406,4 @@ identifier
    : IDENTIFIER   { $$ = newSymbol ($1,NestLevel) ; }
    ;
 %%
-
-extern unsigned char *yytext;
-extern int column;
-extern char *filename;
-extern int fatalError;
-
-int yyerror(char *s)
-{
-   fflush(stdout);
-
-   if ( yylineno )
-	fprintf(stderr,"\n%s(%d) %s: token -> '%s' ; column %d\n",
-		filename,yylineno,
-		s,yytext,column);
-   fatalError++;
-   return 0;
-}
 

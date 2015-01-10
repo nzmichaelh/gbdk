@@ -22,27 +22,28 @@
    what you give them.   Help stamp out software-hoarding!  
 -------------------------------------------------------------------------*/
 
-#ifndef SDCCGEN51_H
-#define SDCCGEN51_H
+#ifndef Z80GEN_H
+#define Z80GEN_H
 
-typedef enum {
+typedef enum
+  {
     AOP_INVALID,
     /* Is a literal */
     AOP_LIT = 1,
     /* Is in a register */
-    AOP_REG, 
+    AOP_REG,
     /* Is in direct space */
     AOP_DIR,
     /* SFR space ($FF00 and above) */
     AOP_SFR,
     /* Is on the stack */
-    AOP_STK ,
+    AOP_STK,
     /* Is an immediate value */
-    AOP_IMMD, 
+    AOP_IMMD,
     /* Is a string (?) */
     AOP_STR,
     /* Is in the carry register */
-    AOP_CRY, 
+    AOP_CRY,
     /* Is pointed to by IY */
     AOP_IY,
     /* Is pointed to by HL */
@@ -50,28 +51,41 @@ typedef enum {
     /* Is in A */
     AOP_ACC,
     /* Is in H and L */
-    AOP_HLREG
-} AOP_TYPE;
+    AOP_HLREG,
+    /* Simple literal. */
+    AOP_SIMPLELIT,
+    /* Is in the extended stack pointer (IY on the Z80) */
+    AOP_EXSTK,
+    /* Is referenced by a pointer in a register pair. */
+    AOP_PAIRPTR
+  }
+AOP_TYPE;
 
 /* type asmop : a homogenised type for 
    all the different spaces an operand can be
    in */
-typedef struct asmop {
+typedef struct asmop
+  {
     AOP_TYPE type;
-    short coff ;  /* current offset */
-    short size ;  /* total size */
-    unsigned code :1 ;         /* is in Code space */
-    unsigned paged:1 ;         /* in paged memory  */
-    unsigned freed:1 ;         /* already freed    */
-    union {
-	value *aop_lit ;       /* if literal */
-	regs  *aop_reg[4];     /* array of registers */
-	char  *aop_dir ;       /* if direct  */
-	char  *aop_immd;       /* if immediate others are implied */	
-	int    aop_stk ;       /* stack offset when AOP_STK */
-	char  *aop_str[4];     /* just a string array containing the location */
-    } aopu;
-} asmop;
+    short coff;                 /* current offset */
+    short size;                 /* total size */
+    bool code;                  /* is in Code space */
+    bool paged;                 /* in paged memory  */
+    bool freed;                 /* already freed    */
+    union
+      {
+        value *aop_lit;         /* if literal */
+        regs *aop_reg[4];       /* array of registers */
+        char *aop_dir;          /* if direct  */
+        char *aop_immd;         /* if immediate others are implied */
+        int aop_stk;            /* stack offset when AOP_STK */
+        const char *aop_str[4]; /* just a string array containing the location */
+        unsigned long aop_simplelit; /* Just the value. */
+        int aop_pairId;		/* The pair ID */
+      }
+    aopu;
+  }
+asmop;
 
 void genZ80Code (iCode *);
 
