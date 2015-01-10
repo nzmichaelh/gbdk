@@ -1,3 +1,17 @@
+gbdk3-2.95-2
+	* Added model switching support
+	   --model-medium uses near (16 bit) pointers for data, and
+	   banked calls for anything not declared as 'nonbanked'
+	   --model-small uses near (16 bit) pointers for data and
+	   calls.  Nothing uses banked calls.  'nonbanked' functions
+	   are still placed in HOME.  Libraries are under lib/medium
+	   and lib/small.
+	* Added the gbdk version to 'sdcc --version'
+	* Changed the ways globals are exported, reducing the amount
+	  of extra junk linked in.
+	* Turned on the optimisations in flex.  Large constant arrays
+	  like tile data should compile a bit faster.
+	
 gbdk3-2.95
 	* Fixed 'a >> c' for c = [9..15]
 	* Fixed 'a << c' for c = [9..15]

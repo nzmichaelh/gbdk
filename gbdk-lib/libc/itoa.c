@@ -2,7 +2,7 @@
 #include <types.h>
 #include <string.h>
 
-char *itoa(int n, char *s) BANKED
+char *itoa(int n, char *s)
 {
   UINT8 i, sign;
 

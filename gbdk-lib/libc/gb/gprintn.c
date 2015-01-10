@@ -4,7 +4,7 @@
 
 extern char *digits;
 
-void gprintn(BYTE number, BYTE radix, BYTE signed_value) BANKED
+void gprintn(BYTE number, BYTE radix, BYTE signed_value)
 {
   UBYTE i;
 

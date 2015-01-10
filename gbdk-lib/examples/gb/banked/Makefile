@@ -2,7 +2,7 @@ SRC = main.c bank2.c bank3.c
 BIN = banked.gb
 
 TOPDIR = ../../..
-GBLIB = $(TOPDIR)/lib/rgbds
+GBLIB = $(TOPDIR)/lib/medium/rgbds
 
 LIB = $(GBLIB)/gbz80/gbz80.lib $(GBLIB)/gb/gb.lib
 CRT0 = $(GBLIB)/gb/crt0.o

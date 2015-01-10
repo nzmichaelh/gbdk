@@ -9,6 +9,7 @@
 #endif
 
 #define NONBANKED	nonbanked
+#define BANKED		banked
 
 /** Signed eight bit.
  */

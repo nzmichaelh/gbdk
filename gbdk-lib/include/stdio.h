@@ -7,10 +7,10 @@
 #include <types.h>
 
 #if STRICT_ANSI
-void putchar(int c) BANKED;
+void putchar(int c);
 #else
 /** Put the character 'c' to stdout. */
-void putchar(char c) BANKED;
+void putchar(char c);
 #endif
 
 /** Print the string and arguments given by format to stdout.
@@ -39,10 +39,10 @@ void puts(const char *s) NONBANKED;
     either a terminating newline or EOF, which it replaces with '\0'.  No
     check for buffer overrun is per­ formed.
 */
-char *gets(char *s) BANKED;
+char *gets(char *s);
 
 /** getchar() gets a single character from stdin.
  */
-char getchar(void) BANKED;
+char getchar(void);
 
 #endif

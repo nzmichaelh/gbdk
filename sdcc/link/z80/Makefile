@@ -31,4 +31,3 @@ _link-z80:
 
 _link-gbz80:
 	$(MAKE) EXT=-gbz80$(E) OPTS=-DGAMEBOY PORT=z80
-

@@ -3,6 +3,10 @@ ifndef ASM
 ASM = 	asxxxx
 endif
 
+ifndef MODEL
+MODEL =	small
+endif
+
 ifndef PORTS
 PORTS = gbz80 z80
 endif
@@ -26,12 +30,8 @@ endif
 
 CLEANSPEC = *.o *.cdb *.sym *.lst *~ *.asm
 
-# Maccer rule
-%.s: %.ms
-	maccer -o $@ $<
-
-CFLAGS = -I$(TOPDIR)/include
+CFLAGS = -I$(TOPDIR)/include --model-$(MODEL)
 CFLAGS += -m$(PORT)
 CC = 	$(SCC)
-BUILD = $(TOPDIR)/build/$(ASM)/$(THIS)
+BUILD = $(TOPDIR)/build/$(MODEL)/$(ASM)/$(THIS)
 LIB = 	$(BUILD)/$(THIS).lib

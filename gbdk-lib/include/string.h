@@ -38,7 +38,7 @@ void *memcpy(void *dest, const void *src, size_t len) NONBANKED;
     For example 'abcdefg' will become 'gfedcba'.  Banked as the string
     must be modifiable.
 */
-char *reverse(char *s) BANKED;
+char *reverse(char *s);
 
 char *strcat(char *s1, const char *s2) NONBANKED;
 

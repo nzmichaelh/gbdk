@@ -1,14 +1,14 @@
-/Makefile/1.1/Mon May  8 03:13:10 2000//Tgbdk-295
-/ctype.h/1.4/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/gbdk-lib.h/1.2/Sun May  7 19:32:59 2000//Tgbdk-295
-/rand.h/1.5/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/stdarg.h/1.1/Mon Feb 21 02:04:36 2000//Tgbdk-295
-/stdio.h/1.7/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/stdlib.h/1.3/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/string.h/1.5/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/time.h/1.5/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/types.h/1.5/Sun May  7 19:32:59 2000//Tgbdk-295
+/Makefile/1.1/Mon May  8 03:13:10 2000//Tgbdk-295-2
+/ctype.h/1.5/Tue Aug  1 03:22:55 2000//Tgbdk-295-2
+/gbdk-lib.h/1.2/Sun May  7 19:32:59 2000//Tgbdk-295-2
+/libc.dox/1.2/Sun Jul 30 00:59:26 2000//Tgbdk-295-2
+/rand.h/1.6/Tue Aug  1 03:22:55 2000//Tgbdk-295-2
+/stdarg.h/1.1/Mon Feb 21 02:04:36 2000//Tgbdk-295-2
+/stdio.h/1.8/Tue Aug  1 03:22:55 2000//Tgbdk-295-2
+/stdlib.h/1.4/Tue Aug  1 03:22:55 2000//Tgbdk-295-2
+/string.h/1.6/Tue Aug  1 03:22:55 2000//Tgbdk-295-2
+/time.h/1.6/Tue Aug  1 03:22:55 2000//Tgbdk-295-2
+/types.h/1.5/Sun May  7 19:32:59 2000//Tgbdk-295-2
 D/asm////
 D/consolez80////
 D/gb////
-/libc.dox/1.1.4.1/Sat Jul 22 17:59:31 2000//Tgbdk-295

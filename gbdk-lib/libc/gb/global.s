@@ -1,7 +1,7 @@
-	;; BANKED: checked
-
+	.NEAR_CALLS = 0
 	;; Changed by astorgb.pl to 1
 	__RGBDS__	= 0
+
 	
 	;;  Screen dimensions 
 	.MAXCURSPOSX	= 0x13	; In tiles
@@ -110,7 +110,15 @@
 	;; C related
 	;; Overheap of a banked call.  Used for parameters
 	;;  = ret + real ret + bank
+
+	.if .NEAR_CALLS
+	.BANKOV		= 2
+
+	.else
 	.BANKOV		= 6
+
+	.endif
+	
 	.globl	banked_call
 	.globl	banked_ret
 	

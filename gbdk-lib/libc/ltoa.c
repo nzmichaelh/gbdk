@@ -2,7 +2,7 @@
 #include <types.h>
 #include <string.h>
 
-char *ltoa(long n, char *s) BANKED
+char *ltoa(long n, char *s)
 {
   UINT8 i, sign;
 

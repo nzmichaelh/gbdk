@@ -94,16 +94,29 @@ Banked function support
 
   will be put into HOME.
 
+* Any function with the 'banked' attribute can be called from any bank
+  A banked call has four extra bytes of stack overhead and adds 56
+  m-cycles to each call.  If anyone can suggest a faster method, I'd
+  love to hear it.
+
 * Any static function will be treated as 'near' and not have the
   overhead of a banked call.
 
-* All other functions are banked.  A banked call has four extra bytes
-  of stack overhead and adds 56 m-cycles to each call.  If anyone can
-  suggest a faster method, I'd love to hear it.
+* If you specify 'banked' with either static or nonbanked, the function
+  will be non-banked.
 
-* types.h defines BANKED and NONBANKED to an empty string and
-  'nonbanked' respectively.  I recommend using these for future
-  compatibility and for portability.
+* The model used sets whether 'normal' functions (without the banked,
+  nonbanked, or static modifiers) are banked or not.  The currently supported
+  options are:
+	--model-medium	Functions are by default banked
+	--model-small	Functions are by default nonbanked
+  The default is model is small.  The compiler defines SDCC_MODEL_SMALL
+  or SDCC_MODEL_MEDIUM depending on the current model.  Libraries for both
+  models are provided in lib/small and lib/medium
+
+* types.h defines BANKED and NONBANKED to 'banked' and 'nonbanked'
+  respectively.  I recommend using these for future compatibility and
+  for portability.
 
 Some notes:
   * Currently only works with rgbds and isas.  asxxxx doesn't support
@@ -140,10 +153,6 @@ Some notes:
 I have made some of the library functions banked.  More will follow.
 Using the banked attribute under asxxxx will cause no harm, but you
 are limited to being in the first two banks (32k)
-
-There is currently no way to build a set of libs that are completely
-non-banked, for example for 32k images where speed is important.  This
-will be added.
 
 #pragma bank=[xx] has been extended.  Using [xx] = a number (1, 2..)
 is assembler independent.  The special banks HOME and BASE are also

@@ -89,8 +89,7 @@ tidy:
 	-$(TNP)strip $(BUILD)/bin/*
 
 sdcc-bin: sdcc/sdccconf.h
-	make -C sdcc sdcc-cc sdcc-aslink CROSS_LIBGC=$(CROSS_LIBGC) \
-	PASS_ON="SDCC_SUB_VERSION=$(SDCC_OR_GBDK)-$(VER)"
+	make -C sdcc sdcc-cc sdcc-aslink CROSS_LIBGC=$(CROSS_LIBGC)
 	mkdir -p $(BUILD)/bin
 	for i in \
 	sdcc sdcpp link-gbz80 as-gbz80; \

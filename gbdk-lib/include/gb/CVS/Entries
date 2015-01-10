@@ -1,11 +1,11 @@
-/cgb.h/1.6/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/console.h/1.4/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/drawing.h/1.5/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/font.h/1.5/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/gb.dox/1.1/Fri Apr 28 04:47:42 2000//Tgbdk-295
-/gb.h/1.9/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/hardware.h/1.4/Fri Apr 28 04:47:42 2000//Tgbdk-295
-/malloc.h/1.3/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/sample.h/1.4/Thu Jul 20 04:19:30 2000//Tgbdk-295
-/sgb.h/1.4/Wed Jul 12 02:18:21 2000//Tgbdk-295
+/cgb.h/1.7/Tue Aug  1 03:23:08 2000//Tgbdk-295-2
+/console.h/1.5/Tue Aug  1 03:23:08 2000//Tgbdk-295-2
+/drawing.h/1.6/Tue Aug  1 03:23:08 2000//Tgbdk-295-2
+/font.h/1.5/Thu Jul 20 04:19:30 2000//Tgbdk-295-2
+/gb.dox/1.1/Fri Apr 28 04:47:42 2000//Tgbdk-295-2
+/gb.h/1.10/Tue Aug  1 03:23:08 2000//Tgbdk-295-2
+/hardware.h/1.4/Fri Apr 28 04:47:42 2000//Tgbdk-295-2
+/malloc.h/1.3/Thu Jul 20 04:19:30 2000//Tgbdk-295-2
+/sample.h/1.4/Thu Jul 20 04:19:30 2000//Tgbdk-295-2
+/sgb.h/1.5/Tue Aug  1 03:23:08 2000//Tgbdk-295-2
 D

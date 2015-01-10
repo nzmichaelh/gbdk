@@ -2,6 +2,16 @@ ifndef PORT
 PORT = gbz80
 endif
 
+# Maccer rule
+%.s: %.ms
+	maccer -o $@ $<
+
+ifeq ($(MODEL),small)
+NEAR_CALLS = 1
+else
+NEAR_CALLS = 0
+endif
+
 ifeq ($(ASM),rgbds)
 CFLAGS += --asm=rgbds
 # Override the default rule
@@ -17,7 +27,7 @@ ifdef CRT0
 	cp -f $(CRT0) $(BUILD)
 endif
 
-pre:
+pre: set-model
 	-astorgb.pl global.s > global.asm
 
 %.o: %.c
@@ -33,7 +43,7 @@ pre:
 	rgbasm -o$@ $<
 
 else
-$(LIB): $(OBJ) $(CRT0) dummy
+$(LIB): pre $(OBJ) $(CRT0)
 	mkdir -p $(BUILD)
 	cp -f $(OBJ) $(BUILD)
 ifneq ($(LIB_APPEND), 1)
@@ -45,9 +55,19 @@ ifdef CRT0
 	cp -f $(CRT0) $(BUILD)
 endif
 
+pre: set-model
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+
 endif
 
 clean:
 	rm -f $(OBJ) $(CLEANSPEC)
 
-dummy:
+set-model:
+	if [ -e global.s ]; then \
+	grep -v "^\W\.NEAR_CALLS" global.s > tmp1.txt; \
+	echo "	.NEAR_CALLS = $(NEAR_CALLS)" > tmp2.txt; \
+	cat tmp2.txt tmp1.txt > global.s; \
+	head global.s; fi

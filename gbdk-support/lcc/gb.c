@@ -34,16 +34,19 @@ static struct {
     { "plat",		"gb" },
     { "cpp",		"%bindir%sdcpp" },
     { "cppdefault", 	"-Wall -lang-c++ -DSDCC=1 -DSDCC_PORT=%port% "
-			"-DSDCC_PLAT=%plat%",
+			"-DSDCC_PLAT=%plat% -D%cppmodel%"
     },
+    { "cppmodel",	"SDCC_MODEL_SMALL" },
     { "includedefault",	"-I%includedir%" },
     { "includedir", 	"%prefix%include" },
     { "prefix",		GBDKLIBDIR },
     { "com",		"%bindir%sdcc" },
-    { "comdefault",	"-m%port% --c1mode" },
+    { "comdefault",	"-m%port% --model-%commodel% --c1mode" },
+    { "commodel", 	"small" },
     { "as",		"%bindir%as-%port%" },
     { "ld",		"%bindir%link-%port%" },
-    { "libdir",		"%prefix%lib/asxxxx/" },
+    { "libdir",		"%prefix%lib/%libmodel%/asxxxx/" },
+    { "libmodel",	"small" },
     { "bindir",		"%prefix%bin/" },
 };
 
@@ -243,6 +246,20 @@ int option(char *arg) {
 	    exit(-1);
 	}
 	return 1;
+    }
+    else if ((tail = starts_with(arg, "--model-"))) {
+	if (!strcmp(tail, "small")) {
+	    setTokenVal("commodel", "small");
+	    setTokenVal("libmodel", "small");
+	    setTokenVal("cppmodel", "SDCC_MODEL_SMALL");
+	    return 1;
+	}
+	else if (!strcmp(tail, "medium")) {
+	    setTokenVal("commodel", "medium");
+	    setTokenVal("libmodel", "medium");
+	    setTokenVal("cppmodel", "SDCC_MODEL_MEDIUM");
+	    return 1;
+	}
     }
     return 0;
 }

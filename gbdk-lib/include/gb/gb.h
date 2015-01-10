@@ -207,11 +207,11 @@ extern UINT16 sys_time;
 
 /** Send byte in _io_out to the serial port */
 void
-send_byte(void) BANKED;
+send_byte(void);
 
 /** Receive byte from the serial port in _io_in */
 void
-receive_byte(void) BANKED;
+receive_byte(void);
 
 /** An OR of IO_* */
 extern UINT8 _io_status;

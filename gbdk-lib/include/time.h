@@ -23,6 +23,6 @@ typedef UINT16	time_t;
 */
 clock_t clock(void) NONBANKED;
 
-time_t time(time_t *t) BANKED;
+time_t time(time_t *t);
 
 #endif

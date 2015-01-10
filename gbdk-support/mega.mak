@@ -15,7 +15,7 @@ CROSS = linux-mingw32
 NATIVE_DIST = linux-glibc2
 CROSS_DIST = win32
 
-VER = 2.21-pre1
+VER = 2.95-2
 
 all: spawn
 

@@ -52,11 +52,11 @@ void
    be set to SIGNED or UNSIGNED depending on whether the number is signed
    or not */
 void
-	gprintln(INT16 number, INT8 radix, INT8 signed_value) BANKED;
+	gprintln(INT16 number, INT8 radix, INT8 signed_value);
 
 /** Print the number 'number' as in 'gprintln' */
 void	
-	gprintn(INT8 number, INT8 radix, INT8 signed_value) BANKED;
+	gprintn(INT8 number, INT8 radix, INT8 signed_value);
 
 /** Print the formatted string 'fmt' with arguments '...' */
 INT8	
@@ -64,11 +64,11 @@ INT8
 
 /** Old style plot - try plot_point() */
 void
-	plot(UINT8 x, UINT8 y, UINT8 colour, UINT8 mode) BANKED;
+	plot(UINT8 x, UINT8 y, UINT8 colour, UINT8 mode);
 
 /** Plot a point in the current drawing mode and colour at (x,y) */
 void	
-	plot_point(UINT8 x, UINT8 y) BANKED;
+	plot_point(UINT8 x, UINT8 y);
 
 /** I (MLH) have no idea what switch_data does... */
 void
@@ -80,33 +80,33 @@ void
 
 /** Draw a line in the current drawing mode and colour from (x1,y1) to (x2,y2) */
 void	
-	line(UINT8 x1, UINT8 y1, UINT8 x2, UINT8 y2) BANKED;
+	line(UINT8 x1, UINT8 y1, UINT8 x2, UINT8 y2);
 
 /** Draw a box (rectangle) with corners (x1,y1) and (x2,y2) using fill mode
    'style' (one of NOFILL or FILL */
 void	
-	box(UINT8 x1, UINT8 y1, UINT8 x2, UINT8 y2, UINT8 style) BANKED;
+	box(UINT8 x1, UINT8 y1, UINT8 x2, UINT8 y2, UINT8 style);
 
 /** Draw a circle with centre at (x,y) and radius 'radius'.  'style' sets
    the fill mode */
 void	
-	circle(UINT8 x, UINT8 y, UINT8 radius, UINT8 style) BANKED;
+	circle(UINT8 x, UINT8 y, UINT8 radius, UINT8 style);
 
 /** Returns the current colour of the pixel at (x,y) */
 UINT8	
-	getpix(UINT8 x, UINT8 y) BANKED;
+	getpix(UINT8 x, UINT8 y);
 
 /** Prints the character 'chr' in the default font at the current position */
 void	
-	wrtchr(char chr) BANKED;
+	wrtchr(char chr);
 
 /** Sets the current text position to (x,y).  Note that x and y have units
    of cells (8 pixels) */
 void
-	gotogxy(UINT8 x, UINT8 y) BANKED;
+	gotogxy(UINT8 x, UINT8 y);
 
 /** Set the current foreground colour (for pixels), background colour, and
    draw mode */
-void	color(UINT8 forecolor, UINT8 backcolor, UINT8 mode) BANKED;
+void	color(UINT8 forecolor, UINT8 backcolor, UINT8 mode);
 
 #endif /* __DRAWING_H */

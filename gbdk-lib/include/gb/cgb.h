@@ -34,7 +34,6 @@
 #define RGB_ORANGE     RGB(30, 20,  0)
 #define RGB_TEAL       RGB(15, 15,  0)
 
-
 /** Set bkg palette(s).
  */
 void
@@ -54,31 +53,31 @@ set_sprite_palette(UINT8 first_palette,
 void
 set_bkg_palette_entry(UINT8 palette,
                       UINT8 entry,
-                      UINT16 rgb_data) BANKED;
+                      UINT16 rgb_data);
 
 /** Set a sprite palette entry.
  */
 void
 set_sprite_palette_entry(UINT8 palette,
                          UINT8 entry,
-                         UINT16 rgb_data) BANKED;
+                         UINT16 rgb_data);
 
 /** Set CPU speed to slow operation.
     Make sure interrupts are disabled before call.
 
     @see cpu_fast
  */
-void cpu_slow(void) BANKED;
+void cpu_slow(void);
 
 /** Set CPU speed to fast operation.
     Make sure interrupts are disabled before call.
 
     @see cpu_slow
 */
-void cpu_fast(void) BANKED;
+void cpu_fast(void);
 
 /** Set defaults compatible with normal GameBoy.
  */
-void cgb_compatibility(void) BANKED;
+void cgb_compatibility(void);
 
 #endif /* _CGB_H */

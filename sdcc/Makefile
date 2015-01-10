@@ -30,7 +30,7 @@ endif
 	for lib in $(SDCC_LIBS); do $(MAKE) -C $$lib; done
 
 sdcc-cc: sdcc-libs
-	$(MAKE) -C src
+	$(MAKE) -C src $(PASS_ON)
 
 sdcc-aslink:
 	for as in $(SDCC_ASLINK); do $(MAKE) -C $$as; done
@@ -47,6 +47,8 @@ sdcc: sdcc-cc sdcc-aslink sdcc-misc sdcc-device
 
 # Some interesting sub rules
 sdcc-bin: sdcc-cc sdcc-aslink sdcc-misc
+
+sdcc-base: sdcc-cc sdcc-aslink
 
 # Compiling and installing everything and runing test
 # ---------------------------------------------------

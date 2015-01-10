@@ -6,7 +6,7 @@
 /* clock() is in clock.s */
 #include <time.h>
 
-time_t time(time_t *t) BANKED
+time_t time(time_t *t)
 {
     UINT16 ret;
 
