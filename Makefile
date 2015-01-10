@@ -37,9 +37,9 @@ GBDKSUPPORTDIR = $(TOPDIR)/gbdk-support
 EXEEXTENSION = 
 # Host operating system identifier.  The one below should work for
 # most systems.
-HOSTOS = ppc-unknown-linux2.2
+HOSTOS := $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 # Target operating system identifier.  Used in the output zip name.
-TARGETOS = ppc-unknown-linux2.2
+TARGETOS = $(HOSTOS)
 
 # Directory that gbdk should finally end up in
 TARGETDIR = /opt/gbdk
@@ -53,9 +53,6 @@ all: native-build
 clean: sdcc-clean gbdk-support-clean gbdk-lib-clean
 
 distclean: clean build-dir-clean
-
-# Build rule for michaelh's machine to spin a release
-sapphire-full-build: native-build binary cross-clean cross-linux-mingw32-build
 
 # Cross-compilation targets
 FIXUPMASKS = *.c *.h .bat *.s ChangeLog README
