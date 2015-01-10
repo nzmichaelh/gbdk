@@ -1,0 +1,5 @@
+language: c
+install:
+  - sudo apt-get update -qq
+  - sudo make build-dep
+script: make
