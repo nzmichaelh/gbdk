@@ -9,9 +9,9 @@ TOPDIR = $(shell pwd)
 # Package name, used for tarballs and cvs
 PKG = gbdk
 # Version, used for tarballs
-VER = 2.96a
+VER = 2.96d
 # Short version, used for cvs tags
-SHORTVER = 296
+SHORTVER = 296d
 
 # Prefix to add to the standard tools.  Usefull for a standard gcc
 # cross-compile.
