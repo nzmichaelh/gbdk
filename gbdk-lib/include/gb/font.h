@@ -1,14 +1,15 @@
-/* font.h
-	Multiple font support for the GameBoy
-	Michael Hope, 1999
-	michaelh@earthling.net
-	Distrubuted under the Artistic License - see www.opensource.org
+/** @file gb/font.h
+    Multiple font support for the GameBoy
+    Michael Hope, 1999
+    michaelh@earthling.net
 */
 #ifndef __FONT_H
 #define __FONT_H
 
 #include <gb/gb.h>
 
+/** Various flags in the font header.
+ */
 #define	FONT_256ENCODING	0
 #define	FONT_128ENCODING	1
 #define	FONT_NOENCODING		2
@@ -17,32 +18,38 @@
 
 /* See gb.h/M_NO_SCROLL and gb.h/M_NO_INTERP */
 
-/* font_t is a handle to a font loaded by font_load() */
+/** font_t is a handle to a font loaded by font_load() */
 typedef UINT16 font_t;
 
-/* The default fonts */
+/** The default fonts */
 extern UINT8 font_spect[], font_italic[], font_ibm[], font_min[];
 
-/* Backwards compatible font */
-extern UINT8 fontibm_fixed[];
+/** Backwards compatible font */
+extern UINT8 font_ibm_fixed[];
 
-/* Init the font system */
+/** Init the font system.
+    Should be called first.
+ */
 void	font_init(void);
 
-/* Load the font 'font' */
+/** Load the font 'font'.
+    Sets the current font to the newly loaded font.
+ */
 font_t	font_load( void *font );
 
-/* Set the current font to 'font_handle', which was returned from an earlier
-   font_load().  Returns the previously used font handle.
+/** Set the current font to 'font_handle', which was returned 
+    from an earlier font_load().  
+    @return		The previously used font handle.
 */
 font_t	font_set( font_t font_handle );
 
-/* Print the same character 'show' 'num' times */
+/** Print the same character 'show' 'num' times */
 void print_repeat(char show, UINT8 num);
 
 /* Use mode() and color() to set the font modes and colours */
 
-/* Internal representation of a font.  What a font_t really is */
+/** Internal representation of a font.  
+    What a font_t really is */
 typedef struct sfont_handle mfont_handle;
 typedef struct sfont_handle *pmfont_handle;
 

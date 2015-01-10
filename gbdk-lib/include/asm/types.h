@@ -1,3 +1,6 @@
+/** @file asm/types.h
+    Shared types definitions.
+*/
 #ifndef ASM_TYPES_INCLUDE
 #define ASM_TYPES_INCLUDE
 
@@ -9,6 +12,8 @@
 #error Unrecognised port
 #endif
 
+/** TRUE or FALSE.
+ */
 typedef INT8		BOOLEAN;
 
 #if BYTE_IS_UNSIGNED
@@ -19,17 +24,26 @@ typedef UINT32		DWORD;
 
 #else
 
+/** Signed 8 bit.
+ */
 typedef INT8         	BYTE;
+/** Unsigned 8 bit.
+ */
 typedef UINT8        	UBYTE;
+/** Signed 16 bit */
 typedef INT16      	WORD;
+/** Unsigned 16 bit */
 typedef UINT16       	UWORD;
+/** Signed 32 bit */
 typedef INT32       	LWORD;
+/** Unsigned 32 bit */
 typedef UINT32      	ULWORD;
+/** Signed 32 bit */
 typedef INT32	   	DWORD;
+/** Unsigned 32 bit */
 typedef UINT32	   	UDWORD;
 
-/* Useful definition for fixed point values */
-
+/** Useful definition for fixed point values */
 typedef union _fixed {
   struct {
     UBYTE l;

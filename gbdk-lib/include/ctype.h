@@ -1,3 +1,6 @@
+/** @file ctype.h
+    Character type functions.
+*/
 #ifndef _CTYPE_H
 #define _CTYPE_H
 

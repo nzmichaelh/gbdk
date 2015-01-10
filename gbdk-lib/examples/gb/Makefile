@@ -1,4 +1,4 @@
-CC	= ../../bin/lcc -Wa-l -Wl-m -Wl-j --asm=rgbds
+CC	= ../../bin/lcc -Wa-l -Wl-m -Wl-j -DUSE_SFR_FOR_REG
 
 BINS	= galaxy.gb \
 	space.gb \
@@ -12,7 +12,7 @@ BINS	= galaxy.gb \
 	fonts.gb \
 	samptest.gb \
 	banks.gb
-	
+
 # sound.gb: Cant do bitfields
 OTHER = sound.gb \
 

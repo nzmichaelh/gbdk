@@ -18,7 +18,10 @@ static struct {
     bool fsetAsmType;
 } _G;
 
-static char *_keywords[] = { NULL };
+static char *_keywords[] = {
+    "sfr",
+    NULL 
+};
 
 extern PORT gbz80_port;
 extern PORT z80_port;
@@ -55,9 +58,28 @@ static int _reg_parm(link *l)
 
 }
 
+static bool _startsWith(const char *sz, const char *key)
+{
+    return !strncmp(sz, key, strlen(key));
+}
+
+static void _chomp(char *sz)
+{
+    char *nl;
+    while ((nl = strrchr(sz, '\n'))) 
+	*nl = '\0';
+}
+
 static int _process_pragma(const char *sz)
 {
-    printf("Got pragma \"%s\"\n", sz);
+    if (_startsWith(sz, "bank=")) {
+	char buffer[128];
+	sprintf(buffer, "%s", sz+5);
+	_chomp(buffer);
+	gbz80_port.mem.code_name = gc_strdup(buffer);
+	code->sname = gbz80_port.mem.code_name;
+	return 0;
+    }
     return 1;
 }
 
@@ -70,12 +92,12 @@ static bool _parseOptions(int *pargc, char **argv, int *i)
 	    switch (argv[*i][2]) {
 	    case 'o':
 		/* ROM bank */
-		sprintf(buffer, "_CODE_%u", bank);
+		sprintf(buffer, "CODE_%u", bank);
 		gbz80_port.mem.code_name = gc_strdup(buffer);
 		return TRUE;
 	    case 'a':
 		/* RAM bank */
-		sprintf(buffer, "_DATA_%u", bank);
+		sprintf(buffer, "DATA_%u", bank);
 		gbz80_port.mem.data_name = gc_strdup(buffer);
 		return TRUE;
 	    }
@@ -190,17 +212,17 @@ PORT z80_port = {
 	1, 1, 2, 4, 2, 2, 2, 1, 4, 4
     },
     {
-	"_XSEG",
-	"_STACK",
-	"_CODE",
-	"_DATA",
-	"_ISEG",
-	"_XSEG",
-	"_BSEG",
-	"_RSEG",
-	"_GSINIT",
-	"_OVERLAY",
-	"_GSFINAL",
+	"XSEG",
+	"STACK",
+	"CODE",
+	"DATA",
+	"ISEG",
+	"XSEG",
+	"BSEG",
+	"RSEG",
+	"GSINIT",
+	"OVERLAY",
+	"GSFINAL",
 	NULL,
 	NULL,
 	1
@@ -223,7 +245,8 @@ PORT z80_port = {
     0,	/* no assembler preamble */
     0,	/* no local IVT generation code */
     _reset_regparm,
-    _reg_parm
+    _reg_parm,
+    TRUE
 };
 
 /* Globals */
@@ -249,17 +272,17 @@ PORT gbz80_port = {
 	1, 1, 2, 4, 2, 2, 2, 1, 4, 4
     },
     {
-	"_XSEG",
-	"_STACK",
-	"_CODE",
-	"_DATA",
-	"_ISEG",
-	"_XSEG",
-	"_BSEG",
-	"_RSEG",
-	"_GSINIT",
-	"_OVERLAY",
-	"_GSFINAL",
+	"XSEG",
+	"STACK",
+	"CODE",
+	"DATA",
+	"ISEG",
+	"XSEG",
+	"BSEG",
+	"RSEG",
+	"GSINIT",
+	"OVERLAY",
+	"GSFINAL",
 	NULL,
 	NULL,
 	1
@@ -283,5 +306,6 @@ PORT gbz80_port = {
     0,	/* no local IVT generation code */
     _reset_regparm,
     _reg_parm,
-    _process_pragma
+    _process_pragma,
+    TRUE
 };

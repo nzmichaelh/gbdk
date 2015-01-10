@@ -11,9 +11,9 @@ SDCCLIB = $(BUILD)
 CVSFLAGS = -z5
 CVS = cvs
 DIR = .
-VER = 2.93
-# Used as a branch name.  Will be fixed for 2.94
-SHORTVER = 293
+VER = 2.94
+# Used as a branch name.
+SHORTVER = 294
 
 ROOT_GBDK = :pserver:anonymous@cvs.gbdk.sourceforge.net:/cvsroot/gbdk
 ROOT_SDCC = :pserver:anonymous@cvs.sdcc.sourceforge.net:/cvsroot/sdcc

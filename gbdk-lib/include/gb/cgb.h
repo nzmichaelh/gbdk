@@ -1,18 +1,16 @@
-/*
- * Support for Color GameBoy.
- */
+/** @file gb/cgb.h
+    Support for Color GameBoy.
+*/
 
 #ifndef _CGB_H
 #define _CGB_H
 
-/*
- * Macro to create a palette entry out of the color components.
+/** Macro to create a palette entry out of the color components.
  */
 #define RGB(r, g, b) \
   ((((UINT16)(b) & 0x1f) << 10) | (((UINT16)(g) & 0x1f) << 5) | (((UINT16)(r) & 0x1f) << 0))
 
-/*
- * Common colors based on the EGA default palette.
+/** Common colors based on the EGA default palette.
  */
 #define RGB_RED        RGB(31,  0,  0)
 #define RGB_DARKRED    RGB(15,  0,  0)
@@ -37,53 +35,50 @@
 #define RGB_TEAL       RGB(15, 15,  0)
 
 
-/*
- * Set bkg palette(s).
+/** Set bkg palette(s).
  */
 void
 set_bkg_palette(UINT8 first_palette,
                 UINT8 nb_palettes,
                 UINT16 *rgb_data);
 
-/*
- * Set sprite palette(s).
+/** Set sprite palette(s).
  */
 void
 set_sprite_palette(UINT8 first_palette,
                    UINT8 nb_palettes,
                    UINT16 *rgb_data);
 
-/*
- * Set a bkg palette entry.
+/** Set a bkg palette entry.
  */
 void
 set_bkg_palette_entry(UINT8 palette,
                       UINT8 entry,
                       UINT16 rgb_data);
 
-/*
- * Set a sprite palette entry.
+/** Set a sprite palette entry.
  */
 void
 set_sprite_palette_entry(UINT8 palette,
                          UINT8 entry,
                          UINT16 rgb_data);
 
-/*
- * Set CPU speed to slow operation.
- * (Make sure interrupts are disabled before call!)
+/** Set CPU speed to slow operation.
+    Make sure interrupts are disabled before call.
+
+    @see cpu_fast
  */
 void cpu_slow(void);
 
-/*
- * Set CPU speed to fast operation.
- * (Make sure interrupts are disabled before call!)
- */
+/** Set CPU speed to fast operation.
+    Make sure interrupts are disabled before call.
+
+    @see cpu_slow
+*/
 void cpu_fast(void);
 
 
-/*
- * Set defaults compatible with normal GameBoy.
+/** Set defaults compatible with normal GameBoy.
  */
 void cgb_compatibility(void);
 

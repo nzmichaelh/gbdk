@@ -31,6 +31,7 @@ symbol *interrupts[256];
 void printIval (symbol *, link *, initList *, FILE *);
 extern int noAlloc;
 set *publics = NULL;		/* public variables */
+set *externs = NULL;		/* Varibles that are declared as extern */
 
 /* TODO: this should be configurable (DS803C90 uses more than 6) */
 int maxInterrupts = 6;
@@ -152,9 +153,11 @@ static void emitRegularMap (memmap * map, bool addPublics, bool arFlag)
     for (sym = setFirstItem (map->syms); sym;
 	 sym = setNextItem (map->syms))  {
 	
-	/* if extern then do nothing */
-	if (IS_EXTERN (sym->etype))
+	/* if extern then add it into the extern list */
+	if (IS_EXTERN (sym->etype)) {
+	    addSetHead (&externs, sym);
 	    continue;
+	}
 	
 	/* if allocation required check is needed
 	   then check if the symbol really requires
@@ -207,7 +210,10 @@ static void emitRegularMap (memmap * map, bool addPublics, bool arFlag)
 	    /* allocate space */
 	    if ((options.debug || sym->level == 0) && !options.nodebug)
 		fprintf(map->oFile,"==.\n");
-	    tfprintf(map->oFile, "!labeldef\n", sym->rname);
+	    if (IS_STATIC(sym->etype))
+		tfprintf(map->oFile, "!slabeldef\n", sym->rname);
+	    else
+		tfprintf(map->oFile, "!labeldef\n", sym->rname);
 	    tfprintf(map->oFile, "\t!ds\n", (unsigned int)getSize (sym->type) & 0xffff);
 	}
 	
@@ -293,7 +299,21 @@ value *initPointer (initList *ilist)
 	    expr->left->opval.op == PTR_OP &&
 	    IS_ADDRESS_OF_OP(expr->left->left))
 		return valForStructElem(expr->left->left->left,
-					expr->left->right);	
+					expr->left->right);
+
+    }
+    /* case 3. (((char *) &a) +/- constant) */
+    if (IS_AST_OP(expr) && 
+	(expr->opval.op == '+' || expr->opval.op == '-') &&
+	IS_AST_OP(expr->left) && expr->left->opval.op == CAST &&
+	IS_AST_OP(expr->left->right) && 
+	expr->left->right->opval.op == '&' &&
+	IS_AST_LIT_VALUE(expr->right)) {
+	
+	return valForCastAggr(expr->left->right->left,
+			      expr->left->left->opval.lnk,
+			      expr->right,expr->opval.op);
+	
     }
 
  wrong:    
@@ -366,7 +386,7 @@ void printIvalType (link * type, initList * ilist, FILE * oFile)
 	break;
 
     case 2:
-	tfprintf(oFile, "\t!dws\n", aopLiteralLong(val, 0, 2));
+	fprintf(oFile, "\t.byte %s,%s\n", aopLiteral(val, 0),aopLiteral(val, 1));
 	break;
     case 4:
 	if (!val) {
@@ -509,13 +529,16 @@ void printIvalFuncPtr (link * type, initList * ilist, FILE * oFile)
     
     /* now generate the name */
     if (!val->sym) {
-	if (IS_LITERAL (val->etype))
-	    tfprintf(oFile, "\t!dws\n", aopLiteralLong(val, 0, 2));
-	else
-	    tfprintf(oFile, "\t!dws\n", val->name);
+        if (port->use_dw_for_init)
+	    tfprintf(oFile, "\t!dw %s\n", val->name);
+	else  
+	    fprintf(oFile, "\t.byte %s,(%s >> 8)\n", val->name,val->name);
     }
-    else 
-	tfprintf(oFile, "\t!dws\n", val->sym->rname);
+    else
+	if (port->use_dw_for_init)
+	    tfprintf(oFile, "\t!dws\n", val->sym->rname);
+	else 
+	    fprintf(oFile, "\t.byte %s,(%s >> 8)\n", val->sym->rname,val->sym->rname);
     
     return;
 }
@@ -540,14 +563,18 @@ int printIvalCharPtr (symbol * sym, link * type, value * val, FILE * oFile)
 		    "\t!dbs\n", val->name) ;
 	    break;
 	case 2:
-	    tfprintf(oFile, "\t!dws\n", val->name);
+	    if (port->use_dw_for_init)
+	    	tfprintf(oFile, "\t!dws\n", val->name);
+	    else
+	    	fprintf(oFile, "\t.byte %s,(%s >> 8)\n", val->name, val->name);
 	    break;
 	    /* PENDING: probably just 3 */
 	default:
 	    /* PENDING: 0x02 or 0x%02x, CDATA? */
 	    fprintf (oFile,
-		     "\t.byte %s,(%s >> 8),#0x02\n",
-		     val->name, val->name);
+		     "\t.byte %s,(%s >> 8),#0x%02x\n",
+		     val->name, val->name, (IS_PTR(val->type) ? DCL_TYPE(val->type) :
+					    PTR_TYPE(SPEC_OCLS(val->etype))));
 	}
     }
     else {
@@ -556,12 +583,12 @@ int printIvalCharPtr (symbol * sym, link * type, value * val, FILE * oFile)
 	    tfprintf(oFile, "\t!dbs\n", aopLiteral(val, 0));
 	    break;
 	case 2:
-	    tfprintf(oFile, "\t!dws\n", 
-		    aopLiteralLong(val, 0, 2));
+	    tfprintf(oFile, "\t.byte %s,%s\n", 
+		    aopLiteral(val, 0),aopLiteral(val, 1));
 	    break;
 	case 3:
 	    /* PENDING: 0x02 or 0x%02x, CDATA? */
-	    fprintf(oFile, "\t.byte %s,%s,0x02\n",
+	    fprintf(oFile, "\t.byte %s,%s,#0x02\n",
 		    aopLiteral (val, 0), aopLiteral (val, 1));
 	    break;
 	default:
@@ -612,11 +639,11 @@ void printIvalPtr (symbol * sym, link * type, initList * ilist, FILE * oFile)
 	    tfprintf(oFile, "\t!db\n", (unsigned int)floatFromVal(val) & 0xff);
 	    break;
 	case 2:
-	    tfprintf (oFile, "\t!dws\n", aopLiteralLong(val, 0, 2));
+	    tfprintf (oFile, "\t.byte %s,%s\n", aopLiteral(val, 0),aopLiteral(val, 1));
 	    break;
 	case 3:
-	    fprintf (oFile, "\t.byte %s,%s,0x%02x\n",
-		     aopLiteral (val, 0), aopLiteral (val, 1), CPOINTER);
+	    fprintf (oFile, "\t.byte %s,%s,#0x02\n",
+		     aopLiteral (val, 0), aopLiteral (val, 1));
 	}
 	return;
     }
@@ -631,8 +658,9 @@ void printIvalPtr (symbol * sym, link * type, initList * ilist, FILE * oFile)
 	break;
 	
     case 3:
-	fprintf (oFile, "\t.byte %s,(%s >> 8),0x%02x\n",
-		 val->name, val->name, DCL_TYPE(val->type));
+	fprintf (oFile, "\t.byte %s,(%s >> 8),#0x%02x\n",
+		 val->name, val->name,(IS_PTR(val->type) ? DCL_TYPE(val->type) :
+					    PTR_TYPE(SPEC_OCLS(val->etype))));
     }
     return;
 }
@@ -843,11 +871,27 @@ void printPublics (FILE * afile)
     symbol *sym;
     
     fprintf (afile, "%s", iComments2);
-    fprintf (afile, "; publics variables in this module\n");
+    fprintf (afile, "; Public variables in this module\n");
     fprintf (afile, "%s", iComments2);
     
     for (sym = setFirstItem (publics); sym;
 	 sym = setNextItem (publics))
+	tfprintf(afile, "\t!global\n", sym->rname);
+}
+
+/*-----------------------------------------------------------------*/
+/* printExterns - generates .global for externs                    */
+/*-----------------------------------------------------------------*/
+void printExterns (FILE * afile)
+{
+    symbol *sym;
+    
+    fprintf (afile, "%s", iComments2);
+    fprintf (afile, "; Externals used\n");
+    fprintf (afile, "%s", iComments2);
+    
+    for (sym = setFirstItem (externs); sym;
+	 sym = setNextItem (externs))
 	tfprintf(afile, "\t!global\n", sym->rname);
 }
 
@@ -879,8 +923,8 @@ static void emitOverlay(FILE *afile)
 	
 	for (sym = setFirstItem(ovrset); sym;
 	     sym = setNextItem(ovrset)) {
-	
-	    /* if extern then do nothing */
+
+	    /* if extern then add it to the publics tabledo nothing */
 	    if (IS_EXTERN (sym->etype))
 		continue;
 	    
@@ -1004,7 +1048,8 @@ void glue ()
     
     /* print the global variables in this module */
     printPublics (asmFile);
-    
+    printExterns (asmFile);
+
     /* copy the sfr segment */
     fprintf (asmFile, "%s", iComments2);
     fprintf (asmFile, "; special function registers\n");
@@ -1129,7 +1174,7 @@ void glue ()
          * This area is guaranteed to follow the static area
          * by the ugly shucking and jiving about 20 lines ago.
          */
-    	tfprintf(asmFile, "\t!area %s\n", port->mem.post_static_name);
+    	tfprintf(asmFile, "\t!area\n", port->mem.post_static_name);
 	fprintf (asmFile,"\tljmp\t__sdcc_program_startup\n");
     }
 	

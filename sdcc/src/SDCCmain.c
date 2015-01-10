@@ -148,7 +148,7 @@ static PORT *_ports[] = {
    &mcs51_port,
 #endif
 #if !OPT_DISABLE_GBZ80
-    &gbz80_port
+    &gbz80_port,
 #endif
 #if !OPT_DISABLE_Z80
     &z80_port,
@@ -1314,7 +1314,6 @@ int main ( int argc, char **argv , char **envp)
 	printUsage();
 	exit(0);
     }
-
 	
     if (srcFileName)
 	preProcess(envp) ;
@@ -1332,7 +1331,7 @@ int main ( int argc, char **argv , char **envp)
 	    if (!options.c1mode)
 		assemble(envp);
 	} else {
-	    exit(-1);
+	    return 1;
         }
 	
     }
@@ -1354,6 +1353,7 @@ int main ( int argc, char **argv , char **envp)
         unlink(preOutName);
         free(preOutName);
     }
+
     return 0;
     
 }

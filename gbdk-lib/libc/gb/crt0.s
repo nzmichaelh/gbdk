@@ -256,6 +256,8 @@ _exit::
 	;; ****************************************
 
 	;; Ordering of segments for the linker
+	;; Code that really needs to be in bank 0
+	.area	_HOME
 	;; Code
 	.area	_CODE
 	;; Constant data
@@ -321,6 +323,21 @@ gsinit::
 	JP	(HL)		; Jump to initialization routine
 
 	;; Add interrupt routine in BC to the interrupt list
+.remove_VBL::
+	LD	HL,#.int_0x40
+	JP	.remove_int
+.remove_LCD::
+	LD	HL,#.int_0x48
+	JP	.remove_int
+.remove_TIM::
+	LD	HL,#.int_0x50
+	JP	.remove_int
+.remove_SIO::
+	LD	HL,#.int_0x58
+	JP	.remove_int
+.remove_JOY::
+	LD	HL,#.int_0x60
+	JP	.remove_int
 .add_VBL::
 	LD	HL,#.int_0x40
 	JP	.add_int
@@ -359,7 +376,24 @@ gsinit::
 	LD	(HL-),A
 	LD	(HL),A
 	INC	A		; Clear Z flag
-	RET
+
+	;; Now do a memcpy from here until the end of the list
+	LD	D,H
+	LD	E,L
+	DEC	DE
+
+	INC	HL
+2$:
+	LD	A,(HL+)
+	LD	(DE),A
+	LD	B,A
+	INC	DE
+	LD	A,(HL+)
+	LD	(DE),A
+	INC	DE
+	OR	B
+	RET	Z
+	JR	2$
 	
 	;; Add interrupt routine in BC to the interrupt list in HL
 .add_int::
@@ -524,6 +558,56 @@ _set_interrupts::
 	EI			; Enable interrupts
 	RET
 
+_remove_VBL::
+	PUSH	BC
+	LDA	HL,4(SP)	; Skip return address and registers
+	LD	C,(HL)
+	INC	HL
+	LD	B,(HL)
+	CALL	.remove_VBL
+	POP	BC
+	RET
+
+_remove_LCD::
+	PUSH	BC
+	LDA	HL,4(SP)	; Skip return address and registers
+	LD	C,(HL)
+	INC	HL
+	LD	B,(HL)
+	CALL	.remove_LCD
+	POP	BC
+	RET
+
+_remove_TIM::
+	PUSH	BC
+	LDA	HL,4(SP)	; Skip return address and registers
+	LD	C,(HL)
+	INC	HL
+	LD	B,(HL)
+	CALL	.remove_TIM
+	POP	BC
+	RET
+
+_remove_SIO::
+	PUSH	BC
+	LDA	HL,4(SP)	; Skip return address and registers
+	LD	C,(HL)
+	INC	HL
+	LD	B,(HL)
+	CALL	.remove_SIO
+	POP	BC
+	RET
+
+_remove_JOY::
+	PUSH	BC
+	LDA	HL,4(SP)	; Skip return address and registers
+	LD	C,(HL)
+	INC	HL
+	LD	B,(HL)
+	CALL	.remove_JOY
+	POP	BC
+	RET
+	
 _add_VBL::
 	PUSH	BC
 	LDA	HL,4(SP)	; Skip return address and registers

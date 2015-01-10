@@ -61,6 +61,30 @@ trailing slash.
 
 Changelog
 ---------
+gbdk3-2.94
+* Fixed 
+	#define BLAH  7  // Unterminated ' error
+  in sdcpp
+* Fixed
+	SCY_REG += 2, SCY_REG -= 5
+  (add and subtract in indirect space) as they were both quite broken.
+* externs and static's now work as expected.
+* You can now specify which bank code should be put into using a
+  #pragma e.g:
+	#pragma bank=HOME
+  Under rgbds and asxxxx putting code in the HOME bank will force
+  the code into bank 0 - useful for library functions.  The most recent
+  #pragma bank= will be the one used for the whole file.
+* Fixed an interesting bug in the caching of lit addresses
+* Added support for accessing high registers directly using the 'sfr'
+  directive.  See libc/gb/sfr.s and gb/hardware.h for an example.  It
+  should be possible with a bit of work to make high ram directly usable
+  by the compiler; at the moment it is experimental.
+  You can test sfr's by enabling USE_SFR_FOR_REG=1
+* Added remove_VBL etc funtions.
+* Documented the libs - see the gbdk-doc tarball distributed seperatly.
+* Two dimensional arrays seem to be broken.
+
 gbdk3-2.93
 * Added multi-bank support into the compiler
    - The old -Wf-boxx and -Wf-baxx options now work
@@ -120,10 +144,10 @@ Differences between this and gbdk-2.1.5
 	long		32 bits
 	long long	Doesnt exist
 * Float support is there but unconnected.
-* gbdk changes the basic typedefs to make it more normal.  You can
-  define GBDK_2_COMPAT=1 (lcc -DGBDK_2_COMPAT=1 ...) to use the old
+* gbdk has an alternitave set of typedefs for those who like me like
+  their WORDs to be unsigned.  Define BYTE_IS_UNSIGNED=1 to use the new
   typedefs.
-	Before		Now		Or		Size
+	Before		With		Or		Size
 	BYTE		INT8				8 signed
 	UBYTE		BYTE		UINT8		8 unsigned
 	WORD		INT16				16 signed

@@ -14,10 +14,12 @@ OBJ =	cgb.o cpy_data.o crt0.o drawing.o f_ibm_sh.o \
 	set_data.o set_prop.o set_spr.o set_wi_t.o set_xy_t.o \
 	sgb.o font.o delay.o \
 	gprint.o gprintf.o gprintn.o gprintln.o digits.o \
-	rand.o arand.o
+	rand.o arand.o sfr.o
 
 AS = $(AS_GBZ80)
-CFLAGS += -DGBDK_2_COMPAT
+ifdef SDCCLIB
+CFLAGS += --prefix=$(SDCCLIB)/
+endif
 CC = $(GBCC) -Wa-l
 
 include ../Makefile.platform

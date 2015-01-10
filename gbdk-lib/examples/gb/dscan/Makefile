@@ -1,4 +1,4 @@
-CC	= ../../../bin/lcc -Wa-l -Wl-m -DGBDK_2_COMPAT=1 -v
+CC	= ../../../bin/lcc -Wa-l -Wl-m -DUSE_SFR_FOR_REG
 
 BINS	= dscan.gb
 
