@@ -5,8 +5,12 @@
 #include <assert.h>
 #include <ctype.h>
 
+#ifdef __WIN32__
+#include <windows.h>
+#endif
+
 #ifndef GBDKLIBDIR
-#define GBDKLIBDIR "/home/michaelh/projects/gbdk-lib/"
+#define GBDKLIBDIR "\\gbdk\\"
 #endif
 
 extern char *progname;
@@ -77,6 +81,16 @@ static CLASS classes[] = {
       "%com% %comdefault% $1 $2 $3",
       "%as% -pog $1 $3 $2",
       "%ld% -n -- -z $1 -k%libdir%%port%/ -l%port%.lib "
+        "-k%libdir%%plat%/ -l%plat%.lib $3 %libdir%%plat%/crt0.o $2",
+    },
+    { "z80",
+      "afghan",
+      "afghan",
+      "%cpp% %cppdefault% $1 $2 $3",
+      "%includedefault%",
+      "%com% %comdefault% $1 $2 $3",
+      "%as% -pog $1 $3 $2",
+      "%ld% -n -- -i $1 -b_CODE=0x8100 -k%libdir%%port%/ -l%port%.lib "
         "-k%libdir%%plat%/ -l%plat%.lib $3 %libdir%%plat%/crt0.o $2",
     },
     { "z80",
@@ -243,4 +257,23 @@ void finalise(void)
     buildArgs(com, _class->com);
     buildArgs(as, _class->as);
     buildArgs(ld, _class->ld);
+}
+
+void set_gbdk_dir(void)
+{
+#ifdef __WIN32__
+    char buf[1024];
+    if (GetModuleFileName(NULL,buf, sizeof(buf)) != 0) {
+	/* Strip of the trailing bin/lcc.exe and use it as the prefix. */
+	char *p = strrchr(buf, '\\');
+	if (p) {
+	    *p = '\0';
+	    p = strrchr(buf, '\\');
+	    if (p) {
+		*++p = '\0';
+		setTokenVal("prefix", buf);
+	    }
+	}
+    }
+#endif
 }

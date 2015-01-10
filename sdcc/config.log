@@ -1,8 +1,0 @@
-This file contains any messages produced by compilers while
-running configure, to aid debugging if configure makes a mistake.
-
-configure:532: checking for mawk
-configure:563: checking version of the package
-configure:605: checking for gcc
-configure:718: checking whether the C compiler (gcc  ) works
-configure:734: gcc -o conftest    conftest.c  1>&5

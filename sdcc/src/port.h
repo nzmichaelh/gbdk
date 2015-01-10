@@ -72,6 +72,7 @@ typedef struct {
 	const char *post_static_name;
 	struct memmap *default_local_map ; /* default location for auto vars */
 	struct memmap *default_globl_map ; /* default location for globl vars*/
+	int         code_ro;               /* code space read-only 1=yes */
     } mem;
     
     /* stack related information */
@@ -86,14 +87,17 @@ typedef struct {
 	int call_overhead;
 	/** Re-enterant space */
 	int reent_overhead;
-	
     } stack;
+
     struct {
 	/** One more than the smallest 
 	    mul/div operation the processor can do nativley 
 	    Eg if the processor has an 8 bit mul, nativebelow is 2 */
 	int native_below;
     } muldiv;
+
+    /** Prefix to add to a C function (eg "_") */
+    const char *fun_prefix;
 
     /** Called once the processor target has been selected.
 	First chance to initalise and set any port specific varibles.
@@ -126,6 +130,17 @@ typedef struct {
      * will be used. 
      */
     int (*genIVT)(FILE *of, symbol **intTable, int intCount); 
+
+
+    /* parameter passing in register related functions */
+    void (*reset_regparms)();          /* reset the register count */
+    int  (*reg_parm)(struct link *);   /* will return 1 if can be passed in register */
+
+    /** Process the pragma string 'sz'.  Returns 0 if recognised and
+	processed, 1 otherwise.  May be NULL.
+    */
+    int (*process_pragma)(const char *sz);
+   
 } PORT;
 
 extern PORT *port;

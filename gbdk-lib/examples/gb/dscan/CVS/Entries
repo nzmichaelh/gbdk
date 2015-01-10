@@ -1,14 +1,14 @@
-/Makefile/1.2/Sun Mar  5 22:11:32 2000//
-/bkg.c/1.2/Sun Mar  5 22:11:32 2000//
-/bkg.gbr/1.1/Wed Feb 23 02:50:14 2000//
-/bkg.h/1.1/Wed Feb 23 02:50:14 2000//
-/bkg_c.c/1.2/Sun Mar  5 22:11:32 2000//
-/bkg_c.gbm/1.1/Wed Feb 23 02:50:14 2000//
-/bkg_m.c/1.2/Sun Mar  5 22:11:32 2000//
-/bkg_m.gbm/1.1/Wed Feb 23 02:50:14 2000//
-/dscan.c/1.2/Sun Mar  5 22:11:32 2000//
-/fore.c/1.2/Sun Mar  5 22:11:32 2000//
-/fore.gbr/1.1/Wed Feb 23 02:50:14 2000//
-/fore.h/1.1/Wed Feb 23 02:50:14 2000//
-/make.bat/1.1/Wed Feb 23 02:50:14 2000//
+/Makefile/1.3/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/bkg.c/1.2/Sun Mar  5 22:11:32 2000//Tgbdk-293
+/bkg.gbr/1.1/Wed Feb 23 02:50:14 2000//Tgbdk-293
+/bkg.h/1.1/Wed Feb 23 02:50:14 2000//Tgbdk-293
+/bkg_c.c/1.2/Sun Mar  5 22:11:32 2000//Tgbdk-293
+/bkg_c.gbm/1.1/Wed Feb 23 02:50:14 2000//Tgbdk-293
+/bkg_m.c/1.2/Sun Mar  5 22:11:32 2000//Tgbdk-293
+/bkg_m.gbm/1.1/Wed Feb 23 02:50:14 2000//Tgbdk-293
+/dscan.c/1.3/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/fore.c/1.2/Sun Mar  5 22:11:32 2000//Tgbdk-293
+/fore.gbr/1.1/Wed Feb 23 02:50:14 2000//Tgbdk-293
+/fore.h/1.1/Wed Feb 23 02:50:14 2000//Tgbdk-293
+/make.bat/1.1/Wed Feb 23 02:50:14 2000//Tgbdk-293
 D

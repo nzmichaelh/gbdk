@@ -44,6 +44,29 @@ static char *_mcs51_keywords[] =     {
 
 void mcs51_assignRegisters (eBBlock **ebbs, int count);
 
+static int regParmFlg = 0; /* determine if we can register a parameter */
+
+static void _mcs51_init(void)
+{
+    asm_addTree(&asm_asxxxx_mapping);
+}
+
+static void _mcs51_reset_regparm()
+{
+    regParmFlg = 0;
+}
+
+static int _mcs51_regparm( link *l)
+{
+    /* for this processor it is simple
+       can pass only the first parameter in a register */
+    if (regParmFlg)
+	return 0;
+
+    regParmFlg = 1;
+    return 1;
+}
+
 static bool _mcs51_parseOptions(int *pargc, char **argv, int *i)
 {
     /* TODO: allow port-specific command line options to specify
@@ -118,7 +141,10 @@ static void _mcs51_genAssemblerPreamble(FILE *of)
    {
        fputs(".flat24 on\t\t; 24 bit flat addressing\n", of);
        fputs("dpx = 0x93\t\t; dpx register unknown to assembler\n", of);
-
+       fputs("dps = 0x86\t\t; dps register unknown to assembler\n", of);
+       fputs("dpl1 = 0x84\t\t; dpl1 register unknown to assembler\n", of);
+       fputs("dph1 = 0x85\t\t; dph1 register unknown to assembler\n", of);
+       fputs("dpx1 = 0x95\t\t; dpx1 register unknown to assembler\n", of);
    }
 }
 
@@ -200,7 +226,8 @@ PORT mcs51_port = {
 	"OSEG    (OVR,DATA)",
 	"GSFINAL (CODE)",
 	NULL,
-	NULL
+	NULL,
+	1
     },
     { 
 	+1, 1, 4, 1, 1
@@ -209,7 +236,8 @@ PORT mcs51_port = {
     {
 	1
     },
-    NULL,
+    "_",
+    _mcs51_init,
     _mcs51_parseOptions,
     _mcs51_finaliseOptions,
     _mcs51_setDefaultOptions,
@@ -217,6 +245,9 @@ PORT mcs51_port = {
     _mcs51_getRegName ,
     _mcs51_keywords,
     _mcs51_genAssemblerPreamble,
-    _mcs51_genIVT
+    _mcs51_genIVT ,
+    _mcs51_reset_regparm,
+    _mcs51_regparm,
+    NULL
 };
 

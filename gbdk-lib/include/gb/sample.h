@@ -11,6 +11,6 @@
 #define _SAMPLE_H
 
 void
-play_sample(UBYTE *start, UWORD len);
+play_sample(UINT8 *start, UINT16 len);
 
 #endif /* _SAMPLE_H */

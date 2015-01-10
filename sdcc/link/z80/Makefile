@@ -5,9 +5,9 @@ include $(PRJDIR)/Makefile.common
 OBJS	= lkarea.o lkdata.o lkeval.o lkhead.o lkihx.o lklex.o \
 	  lklibr.o lklist.o lkmain.o lkrloc.o lks19.o lksym.o \
 	  lkgb.o lkgg.o
-BINS	= link 
+BINS	= $(BUILDDIR)/link$(EXT)
 
-CFLAGS	+= $(OPTS) -DINDEXLIB -DMLH_MAP -DUNIX -DSDK -DSDK_VERSION_STRING="\"3.0.0\"" -DTARGET_STRING="\"gbz80\""
+CFLAGS	+= $(OPTS) -DINDEXLIB -DMLH_MAP -DUNIX -DSDK
 CFLAGS	+= -funsigned-char -DUNIX
 
 all:	$(BINS)

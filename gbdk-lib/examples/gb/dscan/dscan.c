@@ -97,17 +97,18 @@ const UWORD obj_p[] =
 
 unsigned char msg_tile[64];
 
-const unsigned char *msg_1up   = "1UP";
-const unsigned char *msg_lv    = "LV";
+const unsigned char * const msg_1up   = "1UP";
+const unsigned char * const msg_lv    = "LV";
 
-const unsigned char *msg_gover = "GAMEOVER";
-const unsigned char *msg_pause = " PAUSE! ";
-const unsigned char *msg_start = "        ";
+const unsigned char * const msg_gover = "GAMEOVER";
+const unsigned char * const msg_pause = " PAUSE! ";
+const unsigned char * const msg_start = "        ";
 
 UBYTE pf, px, pp, pl;
 UWORD pw;
 UWORD ps;
-UBYTE tf[MAX_TT], tx[MAX_TT], ty[MAX_TT];
+UBYTE tf[MAX_TT];
+UBYTE tx[MAX_TT], ty[MAX_TT];
 UBYTE ef[MAX_ET], ex[MAX_ET], ey[MAX_ET];
 UBYTE kf[MAX_KT], kx[MAX_KT], ky[MAX_KT];
 UBYTE rnd_enemy, rnd_kirai;
@@ -429,9 +430,9 @@ void player()
 /* bombs */
 void bombs()
 {
-  UBYTE i;
+   volatile UBYTE i;
 
-  for( i=0; i<MAX_TT; i++ ) {
+   for( i=0; i<MAX_TT; i++ ) {
     if( tf[i] != 0 ) {
       ty[i]++;
       if( ty[i] > MAX_TY ) {

@@ -1,27 +1,33 @@
-/(c).1/1.1/Mon Feb  7 07:44:03 2000//
-/.version/1.2/Wed Mar  1 13:13:24 2000//
-/COPYING/1.1/Mon Feb  7 07:44:03 2000//
-/INSTALL/1.1/Mon Feb  7 07:44:03 2000//
-/Makefile/1.2/Wed Mar  1 13:13:24 2000//
-/README/1.2/Wed Mar  1 13:13:24 2000//
-/TODO/1.1/Mon Feb  7 07:44:03 2000//
-/clean.mk/1.1/Mon Feb  7 07:44:03 2000//
-/conf/1.1/Mon Feb  7 07:44:03 2000//
-/conf.mk/1.1/Mon Feb  7 07:44:03 2000//
-/configure/1.3/Wed Mar  1 13:16:54 2000//
-/configure.in/1.3/Wed Mar  1 13:16:54 2000//
-/ddconfig_in.h/1.1/Mon Feb  7 07:45:11 2000//
-/globals.cc/1.1/Mon Feb  7 07:45:11 2000//
-/globals.h/1.1/Mon Feb  7 07:45:11 2000//
-/i_string.h/1.1/Mon Feb  7 07:45:11 2000//
-/install-sh/1.1/Mon Feb  7 07:44:03 2000//
-/main_in.mk/1.1/Mon Feb  7 07:44:03 2000//
-/pobj.cc/1.1/Mon Feb  7 07:45:11 2000//
-/pobjcl.h/1.1/Mon Feb  7 07:45:11 2000//
-/pobjt.h/1.1/Mon Feb  7 07:45:11 2000//
-/pstr.h/1.1/Mon Feb  7 07:45:11 2000//
-/put(c)/1.1/Mon Feb  7 07:44:03 2000//
-/stypes.h/1.1/Mon Feb  7 07:45:11 2000//
-/utils.cc/1.1/Mon Feb  7 07:45:11 2000//
-/utils.h/1.1/Mon Feb  7 07:45:11 2000//
-D
+/(c).1/1.1/Mon Feb  7 07:44:03 2000//Tgbdk-293
+/.version/1.2/Wed Mar  1 13:13:24 2000//Tgbdk-293
+/COPYING/1.1/Mon Feb  7 07:44:03 2000//Tgbdk-293
+/INSTALL/1.1/Mon Feb  7 07:44:03 2000//Tgbdk-293
+/Makefile/1.2/Wed Mar  1 13:13:24 2000//Tgbdk-293
+/README/1.2/Wed Mar  1 13:13:24 2000//Tgbdk-293
+/TODO/1.1/Mon Feb  7 07:44:03 2000//Tgbdk-293
+/clean.mk/1.1/Mon Feb  7 07:44:03 2000//Tgbdk-293
+/conf/1.1/Mon Feb  7 07:44:03 2000//Tgbdk-293
+/conf.mk/1.1/Mon Feb  7 07:44:03 2000//Tgbdk-293
+/configure/1.3/Wed Mar  1 13:16:54 2000//Tgbdk-293
+/configure.in/1.3/Wed Mar  1 13:16:54 2000//Tgbdk-293
+/ddconfig_in.h/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+/globals.cc/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+/globals.h/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+/i_string.h/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+/install-sh/1.1/Mon Feb  7 07:44:03 2000//Tgbdk-293
+/main_in.mk/1.1/Mon Feb  7 07:44:03 2000//Tgbdk-293
+/pobj.cc/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+/pobjcl.h/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+/pobjt.h/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+/pstr.h/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+/put(c)/1.1/Mon Feb  7 07:44:03 2000//Tgbdk-293
+/stypes.h/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+/utils.cc/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+/utils.h/1.1/Mon Feb  7 07:45:11 2000//Tgbdk-293
+D/avr.src////
+D/cmd.src////
+D/doc////
+D/gui.src////
+D/s51.src////
+D/sim.src////
+D/z80.src////

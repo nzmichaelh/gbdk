@@ -4,13 +4,13 @@
 #include <types.h>
 
 void
-gotoxy(UBYTE x,
-	   UBYTE y);
+gotoxy(UINT8 x,
+	   UINT8 y);
 
-UBYTE
+UINT8
 posx(void);
 
-UBYTE
+UINT8
 posy(void);
 
 void

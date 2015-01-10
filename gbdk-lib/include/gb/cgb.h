@@ -9,7 +9,7 @@
  * Macro to create a palette entry out of the color components.
  */
 #define RGB(r, g, b) \
-  ((((UWORD)(b) & 0x1f) << 10) | (((UWORD)(g) & 0x1f) << 5) | (((UWORD)(r) & 0x1f) << 0))
+  ((((UINT16)(b) & 0x1f) << 10) | (((UINT16)(g) & 0x1f) << 5) | (((UINT16)(r) & 0x1f) << 0))
 
 /*
  * Common colors based on the EGA default palette.
@@ -41,33 +41,33 @@
  * Set bkg palette(s).
  */
 void
-set_bkg_palette(UBYTE first_palette,
-                UBYTE nb_palettes,
-                UWORD *rgb_data);
+set_bkg_palette(UINT8 first_palette,
+                UINT8 nb_palettes,
+                UINT16 *rgb_data);
 
 /*
  * Set sprite palette(s).
  */
 void
-set_sprite_palette(UBYTE first_palette,
-                   UBYTE nb_palettes,
-                   UWORD *rgb_data);
+set_sprite_palette(UINT8 first_palette,
+                   UINT8 nb_palettes,
+                   UINT16 *rgb_data);
 
 /*
  * Set a bkg palette entry.
  */
 void
-set_bkg_palette_entry(UBYTE palette,
-                      UBYTE entry,
-                      UWORD rgb_data);
+set_bkg_palette_entry(UINT8 palette,
+                      UINT8 entry,
+                      UINT16 rgb_data);
 
 /*
  * Set a sprite palette entry.
  */
 void
-set_sprite_palette_entry(UBYTE palette,
-                         UBYTE entry,
-                         UWORD rgb_data);
+set_sprite_palette_entry(UINT8 palette,
+                         UINT8 entry,
+                         UINT16 rgb_data);
 
 /*
  * Set CPU speed to slow operation.

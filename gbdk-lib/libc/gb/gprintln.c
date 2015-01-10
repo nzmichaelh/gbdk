@@ -4,15 +4,15 @@
 
 extern char *digits;
 
-void gprintln(WORD number, BYTE radix, BYTE signed_value)
+void gprintln(INT16 number, INT8 radix, INT8 signed_value)
 {
-  UWORD l;
+  UINT16 l;
 
   if(number < 0 && signed_value) {
     wrtchr('-');
     number = -number;
   }
-  if((l = (UWORD)number / (UWORD)radix) != 0)
+  if((l = (UINT16)number / (UINT16)radix) != 0)
     gprintln(l, radix, UNSIGNED);
-  wrtchr(digits[(UWORD)number % (UWORD)radix]);
+  wrtchr(digits[(UINT16)number % (UINT16)radix]);
 }

@@ -63,7 +63,7 @@ memmap *allocMap (char rspace,     /* sfr space            */
 	map->sname = name ;
 	map->dbName = dbName ;
 	map->ptrType= ptrType;
-	if (!(map->oFile = tmpfile())) {
+	if (!(map->oFile = tempfile())) {
 		werror(E_TMPFILE_FAILED);
 		exit (1);
 	} 
@@ -77,7 +77,6 @@ memmap *allocMap (char rspace,     /* sfr space            */
 /*-----------------------------------------------------------------*/
 void initMem ()
 {	
-	
 	/* allocate all the segments */
 	/* xternal stack segment ;   
 	           SFRSPACE       -   NO
@@ -246,7 +245,6 @@ void initMem ()
 void allocIntoSeg (symbol *sym) 
 {
     memmap *segment = SPEC_OCLS(sym->etype);
-
     addSet (&segment->syms,sym);
 }
 
@@ -256,7 +254,7 @@ void allocIntoSeg (symbol *sym)
 void allocGlobal ( symbol *sym )
 {
     /* symbol name is internal name  */
-    sprintf (sym->rname,"_%s",sym->name);
+    sprintf (sym->rname,"%s%s", port->fun_prefix, sym->name);
     
     /* add it to the operandKey reset */
     addSet(&operKeyReset,sym);
@@ -439,7 +437,7 @@ void allocParms ( value  *val )
 	}
 	else   {	/* allocate them in the automatic space */
 	    /* generate a unique name  */
-	    sprintf (lval->sym->rname,"_%s_PARM_%d",currFunc->name,pNum);
+	    sprintf (lval->sym->rname,"%s%s_PARM_%d", port->fun_prefix, currFunc->name,pNum);
 	    strcpy  (lval->name,lval->sym->rname);
 	    
 	    /* if declared in external storage */
@@ -510,7 +508,8 @@ void allocLocal ( symbol *sym  )
 {   
     
     /* generate an unique name */
-    sprintf(sym->rname,"_%s_%s_%d_%d",
+    sprintf(sym->rname,"%s%s_%s_%d_%d",
+	    port->fun_prefix,
 	    currFunc->name,sym->name,sym->level,sym->block);
     
     sym->islocal = 1;

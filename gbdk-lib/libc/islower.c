@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-BYTE islower(char c)
+BOOLEAN islower(char c)
 {
   if(c >= 'a' && c <= 'z')
     return 1;

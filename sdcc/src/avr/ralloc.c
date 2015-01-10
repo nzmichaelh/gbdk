@@ -1,6 +1,6 @@
 /*------------------------------------------------------------------------
 
-  SDCCralloc.c - source file for register allocation. (8051) specific
+  SDCCralloc.c - source file for register allocation. (ATMEL AVR) specific
 
                 Written By -  Sandeep Dutta . sandeep.dutta@usa.net (1998)
 
@@ -36,7 +36,7 @@
 /* since the pack the registers depending strictly on the MCU      */
 /*-----------------------------------------------------------------*/
 
-extern void gen51Code(iCode *);
+extern void genAVRCode(iCode *);
 
 /* Global data */
 static struct {
@@ -51,28 +51,49 @@ static struct {
 } _G;
 
 /* Shared with gen.c */
-int mcs51_ptrRegReq; /* one byte pointer register required */
+int avr_ptrRegReq; /* pointer register required */
 
-/* 8051 registers */
-regs regs8051[] = 
+/* AVR registers */
+regs regsAVR[] = 
 {
-
-    { REG_GPR  ,R2_IDX , REG_GPR , "r2",  "ar2", "0", 2, 1 },
-    { REG_GPR  ,R3_IDX , REG_GPR , "r3",  "ar3", "0", 3, 1 },
-    { REG_GPR  ,R4_IDX , REG_GPR , "r4",  "ar4", "0", 4, 1 },
-    { REG_GPR  ,R5_IDX , REG_GPR , "r5",  "ar5", "0", 5, 1 },
-    { REG_GPR  ,R6_IDX , REG_GPR , "r6",  "ar6", "0", 6, 1 },
-    { REG_GPR  ,R7_IDX , REG_GPR , "r7",  "ar7", "0", 7, 1 },
-    { REG_PTR  ,R0_IDX , REG_PTR , "r0" , "ar0", "0", 0, 1 },
-    { REG_PTR  ,R1_IDX , REG_PTR , "r1" , "ar1", "0", 1, 1 },    
-    { REG_GPR  ,X8_IDX , REG_GPR , "x8",  "x8" , "xreg", 0, 1 },
-    { REG_GPR  ,X9_IDX , REG_GPR , "x9",  "x9" , "xreg", 1, 1 },
-    { REG_GPR  ,X10_IDX,REG_GPR , "x10", "x10",  "xreg", 2, 1 },
-    { REG_GPR  ,X11_IDX,REG_GPR , "x11", "x11",  "xreg", 3, 1 },
-    { REG_GPR  ,X12_IDX,REG_GPR , "x12", "x12",  "xreg", 4, 1 },
-    { REG_CND  ,CND_IDX,REG_CND , "C"  , "C"  ,  "xreg", 0, 1 },  
+    { REG_GPR  ,R0_IDX , REG_GPR , "r0",  "r0" , "" , 0, 0, 0 }, /* used as scratch */
+    { REG_GPR  ,R1_IDX , REG_GPR , "r1",  "r1" , "" , 0, 0, 0 }, /* used as scratch */
+    { REG_GPR  ,R2_IDX , REG_GPR , "r2",  "r2" , "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R3_IDX , REG_GPR , "r3",  "r3" , "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R4_IDX , REG_GPR , "r4",  "r4" , "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R5_IDX , REG_GPR , "r5",  "r5" , "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R6_IDX , REG_GPR , "r6",  "r6" , "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R7_IDX , REG_GPR , "r7",  "r7" , "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R8_IDX , REG_GPR , "r8",  "r8" , "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R9_IDX , REG_GPR , "r9",  "r9" , "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R10_IDX, REG_GPR , "r10", "r10", "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R11_IDX, REG_GPR , "r11", "r11", "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R12_IDX, REG_GPR , "r12", "r12", "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R13_IDX, REG_GPR , "r13", "r13", "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R14_IDX, REG_GPR , "r14", "r14", "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R15_IDX, REG_GPR , "r15", "r15", "" , 0, 1, 1 }, /* gpr */
+    { REG_GPR  ,R16_IDX, REG_GPR , "r16", "r16", "" , 0, 1, 0 }, /* parm/gpr */
+    { REG_GPR  ,R17_IDX, REG_GPR , "r17", "r17", "" , 0, 1, 0 }, /* parm/gpr */
+    { REG_GPR  ,R18_IDX, REG_GPR , "r18", "r18", "" , 0, 1, 0 }, /* parm/gpr */
+    { REG_GPR  ,R19_IDX, REG_GPR , "r19", "r19", "" , 0, 1, 0 }, /* parm/gpr */
+    { REG_GPR  ,R20_IDX, REG_GPR , "r20", "r20", "" , 0, 1, 0 }, /* parm/gpr */
+    { REG_GPR  ,R21_IDX, REG_GPR , "r21", "r21", "" , 0, 1, 0 }, /* parm/gpr */
+    { REG_GPR  ,R22_IDX, REG_GPR , "r22", "r22", "" , 0, 1, 0 }, /* parm/gpr */
+    { REG_GPR  ,R23_IDX, REG_GPR , "r23", "r23", "" , 0, 1, 0 }, /* parm/gpr */
+    { REG_GPR  ,R24_IDX, REG_GPR , "r24", "r24", "" , 0, 0, 0 }, /* scratch  */
+    { REG_GPR  ,R25_IDX, REG_GPR , "r25", "r25", "" , 0, 0, 0 }, /* scratch */
+    { REG_GPR  ,R26_IDX, REG_GPR , "r26", "r26", "" , 0, 1, 1 }, /* used as pointer reg X */
+    { REG_GPR  ,R27_IDX, REG_GPR , "r27", "r27", "" , 0, 1, 1 }, /* used as pointer reg X */
+    { REG_GPR  ,R28_IDX, REG_GPR , "r28", "r28", "" , 0, 1, 0 }, /* stack frame Y */
+    { REG_GPR  ,R29_IDX, REG_GPR , "r29", "r29", "" , 0, 1, 0 }, /* stack frame Y */
+    { REG_GPR  ,R30_IDX, REG_GPR , "r30", "r30", "" , 0, 1, 1 }, /* used as pointer reg Z */
+    { REG_GPR  ,R31_IDX, REG_GPR , "r31", "r31", "" , 0, 1, 1 }, /* used as pointer reg Z */
+    { REG_PTR  ,X_IDX  , REG_PTR , "X"  , "X"  , "" , 0, 1, 0 },
+    { REG_PTR  ,Z_IDX  , REG_PTR , "Z"  , "Z"  , "" , 0, 1, 0 },
 };
-int mcs51_nRegs = 13;
+int avr_nRegs = 32;
+int avr_fReg  = 0; /* first allocatable register */
+
 static void spillThis (symbol *);
 
 /*-----------------------------------------------------------------*/
@@ -82,42 +103,42 @@ static regs *allocReg (short type)
 {
     int i;
 
-    for ( i = 0 ; i < mcs51_nRegs ; i++ ) {
+    for ( i = avr_fReg ; i < avr_nRegs ; i++ ) {
 
 	/* if type is given as 0 then any
 	   free register will do */
 	if (!type &&
-	    regs8051[i].isFree ) {
-	    regs8051[i].isFree = 0;
+	    regsAVR[i].isFree ) {
+	    regsAVR[i].isFree = 0;
 	    if (currFunc)
 		currFunc->regsUsed = 
 		    bitVectSetBit(currFunc->regsUsed,i);
-	    return &regs8051[i];
+	    return &regsAVR[i];
 	}
 	/* other wise look for specific type
 	   of register */
-	if (regs8051[i].isFree && 
-	    regs8051[i].type == type) {
-	    regs8051[i].isFree = 0;
+	if (regsAVR[i].isFree && 
+	    regsAVR[i].type == type) {
+	    regsAVR[i].isFree = 0;
 	    if (currFunc)
 		currFunc->regsUsed = 
 		    bitVectSetBit(currFunc->regsUsed,i);
-	    return &regs8051[i];
+	    return &regsAVR[i];
 	}
     }
     return NULL;
 }
 
 /*-----------------------------------------------------------------*/
-/* mcs51_regWithIdx - returns pointer to register wit index number       */
+/* avr_regWithIdx - returns pointer to register wit index number   */
 /*-----------------------------------------------------------------*/
-regs *mcs51_regWithIdx (int idx)
+regs *avr_regWithIdx (int idx)
 {
     int i ;
     
-    for (i=0;i < mcs51_nRegs;i++)
-	if (regs8051[i].rIdx == idx)
-	    return &regs8051[i];
+    for (i=0 ; i < avr_nRegs;i++)
+	if (regsAVR[i].rIdx == idx)
+	    return &regsAVR[i];
 
     werror(E_INTERNAL_ERROR,__FILE__,__LINE__,
 	   "regWithIdx not found");
@@ -141,8 +162,8 @@ static int nFreeRegs (int type)
     int i;
     int nfr=0;
     
-    for (i = 0 ; i < mcs51_nRegs; i++ )
-	if (regs8051[i].isFree && regs8051[i].type == type)
+    for (i = avr_fReg ; i < avr_nRegs; i++ )
+	if (regsAVR[i].isFree && regsAVR[i].type == type)
 	    nfr++;
     return nfr;
 }
@@ -228,18 +249,6 @@ static int hasSpilLoc (symbol *sym, eBBlock *ebp, iCode *ic)
 }
 
 /*-----------------------------------------------------------------*/
-/* directSpilLoc - will return 1 if the splilocation is in direct  */
-/*-----------------------------------------------------------------*/
-static int directSpilLoc (symbol *sym, eBBlock *ebp, iCode *ic)
-{
-    if ( sym->usl.spillLoc &&
-	 (IN_DIRSPACE(SPEC_OCLS(sym->usl.spillLoc->etype))))
-	return 1;
-    else
-	return 0;
-}
-
-/*-----------------------------------------------------------------*/
 /* hasSpilLocnoUptr - will return 1 if the symbol has spil location*/
 /*                    but is not used as a pointer                 */
 /*-----------------------------------------------------------------*/
@@ -263,7 +272,6 @@ static int notUsedInBlock (symbol *sym, eBBlock *ebp, iCode *ic)
 {   
     return (!bitVectBitsInCommon(sym->defs,ebp->usesDefs) &&
 	    allDefsOutOfRange (sym->defs,ebp->fSeq,ebp->lSeq));
-/*     return (!bitVectBitsInCommon(sym->defs,ebp->usesDefs)); */
 }
 
 /*-----------------------------------------------------------------*/
@@ -286,8 +294,9 @@ static int allLRs (symbol *sym, eBBlock *ebp, iCode *ic)
 /*-----------------------------------------------------------------*/
 /* liveRangesWith - applies function to a given set of live range  */
 /*-----------------------------------------------------------------*/
-static set *liveRangesWith (bitVect *lrs, int (func)(symbol *,eBBlock *, iCode *),
-		     eBBlock *ebp, iCode *ic)
+static set *liveRangesWith (bitVect *lrs, 
+			    int (func)(symbol *,eBBlock *, iCode *),
+			    eBBlock *ebp, iCode *ic)
 {
     set *rset = NULL;
     int i;
@@ -398,15 +407,15 @@ static DEFSETFUNC(isFree)
 static void spillLRWithPtrReg (symbol *forSym)
 {
     symbol *lrsym;
-    regs *r0,*r1;
+    regs *X,*Z;
     int k;
 
     if (!_G.regAssigned ||
 	bitVectIsZero(_G.regAssigned))
 	return;
 
-    r0 = mcs51_regWithIdx(R0_IDX);
-    r1 = mcs51_regWithIdx(R1_IDX);
+    X = avr_regWithIdx(X_IDX);
+    Z = avr_regWithIdx(Z_IDX);
 
     /* for all live ranges */
     for (lrsym = hTabFirstItem(liveRanges,&k) ; lrsym ; 
@@ -425,8 +434,7 @@ static void spillLRWithPtrReg (symbol *forSym)
 	/* go thru the registers : if it is either
 	   r0 or r1 then spil it */
 	for (j = 0 ; j < lrsym->nRegs ; j++ ) 
-	    if (lrsym->regs[j] == r0 ||
-		lrsym->regs[j] == r1 ) {
+	    if (lrsym->regs[j] == X || lrsym->regs[j] == Z ) {
 		spillThis (lrsym);
 		break;
 	    }
@@ -529,8 +537,6 @@ static bool isSpiltOnStack (symbol *sym)
     if (!sym->isspilt)
 	return FALSE ;
 
-/*     if (sym->_G.stackSpil) */
-/* 	return TRUE; */
     
     if (!sym->usl.spillLoc)
 	return FALSE;
@@ -568,14 +574,6 @@ static void spillThis (symbol *sym)
 	    sym->regs[i] = NULL;
 	}
     
-    /* if spilt on stack then free up r0 & r1 
-       if they could have been assigned to some
-       LIVE ranges */
-    if (!mcs51_ptrRegReq && isSpiltOnStack(sym)) {
-	mcs51_ptrRegReq++ ;
-	spillLRWithPtrReg(sym);
-    }
-
     if (sym->usl.spillLoc && !sym->remat)
 	sym->usl.spillLoc->allocreq = 1;
     return;
@@ -600,24 +598,13 @@ static symbol *selectSpil (iCode *ic, eBBlock *ebp, symbol *forSym)
 	return leastUsedLR(selectS);
     }
 
-    /* get live ranges with spillLocations in direct space */
-    if ((selectS = liveRangesWith(lrcs,directSpilLoc,ebp,ic))) {
-	sym = leastUsedLR(selectS);
-	strcpy(sym->rname,(sym->usl.spillLoc->rname[0] ? 
-			   sym->usl.spillLoc->rname : 
-			   sym->usl.spillLoc->name)); 
-	sym->spildir = 1;
-	/* mark it as allocation required */
-	sym->usl.spillLoc->allocreq = 1;
-	return sym;
-    }
-
     /* if the symbol is local to the block then */        
     if (forSym->liveTo < ebp->lSeq ) {       
 
 	/* check if there are any live ranges allocated
 	   to registers that are not used in this block */
-	if (!_G.blockSpil && (selectS = liveRangesWith(lrcs,notUsedInBlock,ebp,ic))) {
+	if (!_G.blockSpil && 
+	    (selectS = liveRangesWith(lrcs,notUsedInBlock,ebp,ic))) {
 	    sym = leastUsedLR(selectS);
 	    /* if this is not rematerializable */
 	    if (!sym->remat) {
@@ -629,7 +616,8 @@ static symbol *selectSpil (iCode *ic, eBBlock *ebp, symbol *forSym)
 
 	/* check if there are any live ranges that not
 	   used in the remainder of the block */
-	if (!_G.blockSpil && (selectS = liveRangesWith(lrcs,notUsedInRemaining,ebp,ic))) {
+	if (!_G.blockSpil && 
+	    (selectS = liveRangesWith(lrcs,notUsedInRemaining,ebp,ic))) {
 	    sym = leastUsedLR (selectS);
 	    if (!sym->remat) {
 		sym->remainSpil = 1;
@@ -698,13 +686,6 @@ static bool spilSomething (iCode *ic, eBBlock *ebp, symbol *forSym)
 	if (ssym->regs[i])
 	    freeReg(ssym->regs[i]);
      
-    /* if spilt on stack then free up r0 & r1 
-       if they could have been assigned to as gprs */
-    if (!mcs51_ptrRegReq && isSpiltOnStack(ssym) ) {
-	mcs51_ptrRegReq++ ;
-	spillLRWithPtrReg(ssym);
-    }
-
     /* if this was a block level spil then insert push & pop 
        at the start & end of block respectively */
     if (ssym->blockSpil) {
@@ -740,7 +721,7 @@ static bool spilSomething (iCode *ic, eBBlock *ebp, symbol *forSym)
 /*-----------------------------------------------------------------*/
 /* getRegPtr - will try for PTR if not a GPR type if not spil      */
 /*-----------------------------------------------------------------*/
-regs *getRegPtr (iCode *ic, eBBlock *ebp, symbol *sym)
+static regs *getRegPtr (iCode *ic, eBBlock *ebp, symbol *sym)
 {
     regs *reg;
 
@@ -774,7 +755,7 @@ static regs *getRegGpr (iCode *ic, eBBlock *ebp,symbol *sym)
     if ((reg = allocReg(REG_GPR)))        
 	return reg;    
 
-    if (!mcs51_ptrRegReq)
+    if (!avr_ptrRegReq)
 	if ((reg = allocReg(REG_PTR)))
 	    return reg ;
 	
@@ -783,7 +764,7 @@ static regs *getRegGpr (iCode *ic, eBBlock *ebp,symbol *sym)
 	return NULL ;
 
     /* this looks like an infinite loop but 
-       in really selectSpil will abort  */
+       in reality selectSpil will abort  */
     goto tryAgain ;    
 }
 
@@ -931,7 +912,7 @@ static int willCauseSpill ( int nr, int rt)
 	if (nFreeRegs(REG_GPR) >= nr)
 	    return 0;
     } else {
-	if (mcs51_ptrRegReq) {
+	if (avr_ptrRegReq) {
 	    if (nFreeRegs(rt) >= nr)
 		return 0;
 	} else {
@@ -952,30 +933,30 @@ static int willCauseSpill ( int nr, int rt)
 /*-----------------------------------------------------------------*/
 static void positionRegs (symbol *result, symbol *opsym, int lineno)
 {
-	int count = min(result->nRegs,opsym->nRegs);
-	int i , j = 0, shared = 0;
-
-	/* if the result has been spilt then cannot share */
-	if (opsym->isspilt)
-		return ;
+    int count = min(result->nRegs,opsym->nRegs);
+    int i , j = 0, shared = 0;
+    
+    /* if the result has been spilt then cannot share */
+    if (opsym->isspilt)
+	return ;
  again:
-	shared = 0;
-	/* first make sure that they actually share */
-	for ( i = 0 ; i < count; i++ ) {
-		for (j = 0 ; j < count ; j++ ) {
-			if (result->regs[i] == opsym->regs[j] && i !=j) {
-				shared = 1;
-				goto xchgPositions;
-			}
-		}
+    shared = 0;
+    /* first make sure that they actually share */
+    for ( i = 0 ; i < count; i++ ) {
+	for (j = 0 ; j < count ; j++ ) {
+	    if (result->regs[i] == opsym->regs[j] && i !=j) {
+		shared = 1;
+		goto xchgPositions;
+	    }
 	}
+    }
  xchgPositions:
-	if (shared) {
-		regs *tmp = result->regs[i];
-		result->regs[i] = result->regs[j];
-		result->regs[j] = tmp;		
-		goto again;
-	}
+    if (shared) {
+	regs *tmp = result->regs[i];
+	result->regs[i] = result->regs[j];
+	result->regs[j] = tmp;		
+	goto again;
+    }
 }
 
 /*-----------------------------------------------------------------*/
@@ -1028,7 +1009,6 @@ static void serialRegAssign (eBBlock **ebbs, int count)
 		bitVect *spillable;
 		int willCS ;
 		int j;
-		int ptrRegSet = 0;
 			       
 		/* if it does not need or is spilt 
 		   or is already assigned to registers
@@ -1076,15 +1056,7 @@ static void serialRegAssign (eBBlock **ebbs, int count)
 		    }
 		}		
 		
-		/* if we need ptr regs for the right side
-		   then mark it */
-		if (POINTER_GET(ic) && getSize(OP_SYMBOL(IC_LEFT(ic))->type) 
-		    <= PTRSIZE) 
-		{
-		    mcs51_ptrRegReq++;
-		    ptrRegSet = 1;
-		}
-		/* else we assign registers to it */		
+		/* we assign registers to it */		
 		_G.regAssigned = bitVectSetBit(_G.regAssigned,sym->key);
 
 		for (j = 0 ; j < sym->nRegs ;j++ ) {
@@ -1109,12 +1081,7 @@ static void serialRegAssign (eBBlock **ebbs, int count)
 		    OP_SYMBOL(IC_RIGHT(ic))->nRegs && ic->op != '=')
 			positionRegs(OP_SYMBOL(IC_RESULT(ic)),
 				     OP_SYMBOL(IC_RIGHT(ic)),ic->lineno);
-		
-		if (ptrRegSet) {
-		    mcs51_ptrRegReq--;
-		    ptrRegSet = 0;
-		}
-				
+						
 	    }	    
 	}
     }
@@ -1140,7 +1107,7 @@ static bitVect *rUmaskForOp (operand *op)
     if (sym->isspilt || !sym->nRegs)
 	return NULL;
 
-    rumask = newBitVect(mcs51_nRegs);
+    rumask = newBitVect(avr_nRegs);
 
     for (j = 0; j < sym->nRegs; j++) {
 	rumask = bitVectSetBit(rumask,
@@ -1155,7 +1122,7 @@ static bitVect *rUmaskForOp (operand *op)
 /*-----------------------------------------------------------------*/
 static bitVect *regsUsedIniCode (iCode *ic)
 {
-    bitVect *rmask = newBitVect(mcs51_nRegs);
+    bitVect *rmask = newBitVect(avr_nRegs);
 
     /* do the special cases first */
     if (ic->op == IFX ) {
@@ -1222,7 +1189,7 @@ static void createRegMask (eBBlock **ebbs, int count)
 	    /* now create the register mask for those 
 	       registers that are in use : this is a
 	       super set of ic->rUsed */
-	    ic->rMask = newBitVect(mcs51_nRegs+1);
+	    ic->rMask = newBitVect(avr_nRegs+1);
 
 	    /* for all live Ranges alive at this point */
 	    for (j = 1; j < ic->rlive->size; j++ ) {
@@ -1324,22 +1291,7 @@ static void regTypeNum ()
 				      bitVectFirstBit(sym->defs))) &&
 		POINTER_GET(ic) && 
 		!IS_BITVAR(sym->etype)) {
-		
-				
-		/* if remat in data space */
-		if (OP_SYMBOL(IC_LEFT(ic))->remat &&
-		    DCL_TYPE(aggrToPtr(sym->type,FALSE)) == POINTER) {
-		
-		    /* create a psuedo symbol & force a spil */
-		    symbol *psym = newSymbol(rematStr(OP_SYMBOL(IC_LEFT(ic))),1);
-		    psym->type = sym->type;
-		    psym->etype = sym->etype;
-		    strcpy(psym->rname,psym->name);
-		    sym->isspilt = 1;
-		    sym->usl.spillLoc = psym;
-		    continue ;
-		}
-
+						
 		/* if in data space or idata space then try to
 		   allocate pointer register */
 		   
@@ -1356,10 +1308,12 @@ static void regTypeNum ()
             }
 	    
 	    /* determine the type of register required */
-	    if (sym->nRegs == 1   && 
-		IS_PTR(sym->type) && 
-		sym->uptr) 
- 		sym->regType = REG_PTR ; 	    
+	    if (sym->nRegs == 2   && /* size is two */
+		IS_PTR(sym->type) && /* is a pointer */
+		sym->uptr)   {        /* has has pointer usage i.e. get/set pointer */
+ 		sym->regType = REG_PTR ;
+		avr_ptrRegReq++;
+	    }
  	    else 
 		sym->regType = REG_GPR ;
 	    
@@ -1370,17 +1324,6 @@ static void regTypeNum ()
 	    sym->nRegs = 0 ;	
     }
     
-}
-
-/*-----------------------------------------------------------------*/
-/* freeAllRegs - mark all registers as free                        */
-/*-----------------------------------------------------------------*/
-static void freeAllRegs()
-{
-    int i;
-
-    for (i=0;i< mcs51_nRegs;i++ )
-	regs8051[i].isFree = 1;
 }
 
 /*-----------------------------------------------------------------*/
@@ -1470,15 +1413,6 @@ static int packRegsForAssign (iCode *ic,eBBlock *ebp)
 	return 0;
     }
 	
-    /* if the true symbol is defined in far space or on stack
-       then we should not since this will increase register pressure */
-    if (isOperandInFarSpace(IC_RESULT(ic))) {
-	if ((dic = farSpacePackable(ic)))
-	    goto pack;
-	else
-	    return 0;
-	
-    }
     /* find the definition of iTempNN scanning backwards if we find a 
        a use of the true symbol in before we find the definition then 
        we cannot */	
@@ -1552,6 +1486,9 @@ static int packRegsForAssign (iCode *ic,eBBlock *ebp)
 	    return 0;	    	     
     }
 pack:
+    /* if in far space & tru symbol then don't */
+    if ((IS_TRUE_SYMOP(IC_RESULT(ic))) && isOperandInFarSpace(IC_RESULT(ic)))
+	return 0;
     /* found the definition */
     /* replace the result with the result of */
     /* this assignment and remove this assignment */
@@ -1764,7 +1701,7 @@ static iCode *packRegsForOneuse (iCode *ic, operand *op , eBBlock *ebp)
        a function call */
     if (dic->op == CALL || dic->op == PCALL ) {
 	if (ic->op != SEND && ic->op != RETURN) {
-	    OP_SYMBOL(op)->ruonly = 1;
+/* 	    OP_SYMBOL(op)->ruonly = 1; */
 	    return dic;
 	}
 	dic = dic->next ;
@@ -1832,7 +1769,7 @@ static iCode *packRegsForOneuse (iCode *ic, operand *op , eBBlock *ebp)
 	}
     }
 	        
-    OP_SYMBOL(op)->ruonly = 1;
+/*     OP_SYMBOL(op)->ruonly = 1; */
     return sic;
 	
 }
@@ -2114,29 +2051,6 @@ static void packRegisters (eBBlock *ebp)
 	if (POINTER_GET(ic))
 	    OP_SYMBOL(IC_LEFT(ic))->uptr = 1;
 	
-	if (!SKIP_IC2(ic)) {
-	    /* if we are using a symbol on the stack
-	       then we should say mcs51_ptrRegReq */
-	    if (ic->op == IFX && IS_SYMOP(IC_COND(ic)))
-		mcs51_ptrRegReq += ((OP_SYMBOL(IC_COND(ic))->onStack ||
-			       OP_SYMBOL(IC_COND(ic))->iaccess) ? 1 : 0);
-	    else
-		if (ic->op == JUMPTABLE && IS_SYMOP(IC_JTCOND(ic)))
-		    mcs51_ptrRegReq += ((OP_SYMBOL(IC_JTCOND(ic))->onStack ||
-				   OP_SYMBOL(IC_JTCOND(ic))->iaccess) ? 1 : 0);
-		else {
-		    if (IS_SYMOP(IC_LEFT(ic)))
-			mcs51_ptrRegReq += ((OP_SYMBOL(IC_LEFT(ic))->onStack ||
-				       OP_SYMBOL(IC_LEFT(ic))->iaccess) ? 1 : 0);
-		    if (IS_SYMOP(IC_RIGHT(ic)))
-			mcs51_ptrRegReq += ((OP_SYMBOL(IC_RIGHT(ic))->onStack ||
-				       OP_SYMBOL(IC_RIGHT(ic))->iaccess) ? 1 : 0);
-		    if (IS_SYMOP(IC_RESULT(ic)))
-			mcs51_ptrRegReq += ((OP_SYMBOL(IC_RESULT(ic))->onStack ||
-				       OP_SYMBOL(IC_RESULT(ic))->iaccess) ? 1 : 0);    
-		}
-	}
-
 	/* if the condition of an if instruction
 	   is defined in the previous instruction then
 	   mark the itemp as a conditional */
@@ -2154,34 +2068,34 @@ static void packRegisters (eBBlock *ebp)
 	}
 	
 	/* reduce for support function calls */
-	if (ic->supportRtn || ic->op == '+' || ic->op == '-' )
-	    packRegsForSupport (ic,ebp);	
+/* 	if (ic->supportRtn || ic->op == '+' || ic->op == '-' ) */
+/* 	    packRegsForSupport (ic,ebp);	 */
 	
 	/* some cases the redundant moves can
 	   can be eliminated for return statements */
-	if ((ic->op == RETURN || ic->op == SEND) &&
-	    !isOperandInFarSpace(IC_LEFT(ic))    &&
-	    !options.model)
-	    packRegsForOneuse (ic,IC_LEFT(ic),ebp);	
+/* 	if ((ic->op == RETURN || ic->op == SEND) && */
+/* 	    !isOperandInFarSpace(IC_LEFT(ic))    && */
+/* 	    !options.model) */
+/* 	    packRegsForOneuse (ic,IC_LEFT(ic),ebp);	 */
 
 	/* if pointer set & left has a size more than
 	   one and right is not in far space */
-	if (POINTER_SET(ic)                    &&
-	    !isOperandInFarSpace(IC_RIGHT(ic)) &&
-	    !OP_SYMBOL(IC_RESULT(ic))->remat   &&
-	    !IS_OP_RUONLY(IC_RIGHT(ic))        &&
-	    getSize(aggrToPtr(operandType(IC_RESULT(ic)),FALSE)) > 1 )
+/* 	if (POINTER_SET(ic)                    && */
+/* 	    !isOperandInFarSpace(IC_RIGHT(ic)) && */
+/* 	    !OP_SYMBOL(IC_RESULT(ic))->remat   && */
+/* 	    !IS_OP_RUONLY(IC_RIGHT(ic))        && */
+/* 	    getSize(aggrToPtr(operandType(IC_RESULT(ic)),FALSE)) > 1 ) */
 
-	    packRegsForOneuse (ic,IC_RESULT(ic),ebp);
+/* 	    packRegsForOneuse (ic,IC_RESULT(ic),ebp); */
 
 	/* if pointer get */
-	if (POINTER_GET(ic)                    &&
-	    !isOperandInFarSpace(IC_RESULT(ic))&&
-	    !OP_SYMBOL(IC_LEFT(ic))->remat     &&
-	    !IS_OP_RUONLY(IC_RESULT(ic))         &&
-	    getSize(aggrToPtr(operandType(IC_LEFT(ic)),FALSE)) > 1 )
+/* 	if (POINTER_GET(ic)                    && */
+/* 	    !isOperandInFarSpace(IC_RESULT(ic))&& */
+/* 	    !OP_SYMBOL(IC_LEFT(ic))->remat     && */
+/* 	    !IS_OP_RUONLY(IC_RESULT(ic))         && */
+/* 	    getSize(aggrToPtr(operandType(IC_LEFT(ic)),FALSE)) > 1 ) */
 
-	    packRegsForOneuse (ic,IC_LEFT(ic),ebp);
+/* 	    packRegsForOneuse (ic,IC_LEFT(ic),ebp); */
 
 
 	/* if this is cast for intergral promotion then
@@ -2229,9 +2143,9 @@ static void packRegisters (eBBlock *ebp)
 	   -------------
 	   push V1
 	*/
-	if (ic->op == IPUSH ) {
-	    packForPush(ic,ebp);
-	}
+/* 	if (ic->op == IPUSH ) { */
+/* 	    packForPush(ic,ebp); */
+/* 	} */
 	  
 	
 	/* pack registers for accumulator use, when the
@@ -2242,38 +2156,119 @@ static void packRegisters (eBBlock *ebp)
 	   the result of that operation is not on stack then
 	   we can leave the result of this operation in acc:b
 	   combination */
-	if ((IS_ARITHMETIC_OP(ic) 
+/* 	if ((IS_ARITHMETIC_OP(ic)  */
 	     
-	     || IS_BITWISE_OP(ic) 
+/* 	     || IS_BITWISE_OP(ic)  */
 	     
-	     || ic->op == LEFT_OP || ic->op == RIGHT_OP
+/* 	     || ic->op == LEFT_OP || ic->op == RIGHT_OP */
 	     
-	     ) &&
-	    IS_ITEMP(IC_RESULT(ic)) &&
-	    getSize(operandType(IC_RESULT(ic))) <= 2)
+/* 	     ) && */
+/* 	    IS_ITEMP(IC_RESULT(ic)) && */
+/* 	    getSize(operandType(IC_RESULT(ic))) <= 2) */
 
-	    packRegsForAccUse (ic);
+/* 	    packRegsForAccUse (ic); */
 
     }
+}
+
+/*-----------------------------------------------------------------*/
+/* preAssignParms - we have a leaf function preassign registers    */
+/*-----------------------------------------------------------------*/
+static void preAssignParms (iCode *ic)
+{
+    int i = R16_IDX;
+    /* look for receives and assign registers
+       to the result of the receives */
+    while (ic) {
+	/* if it is a receive */
+	if (ic->op == RECEIVE) {
+	    symbol *r = OP_SYMBOL(IC_RESULT(ic));
+	    int size = getSize(r->type);
+	    if (r->regType == REG_GPR) {
+		int j = 0;
+		while (size--) {
+		    r->regs[j++] = &regsAVR[i++];
+		    regsAVR[i-1].isFree = 0;
+		}
+		/* put in the regassigned vector */
+		_G.regAssigned = bitVectSetBit(_G.regAssigned,r->key);
+	    } else {
+		/* not a GPR then we should mark as free */
+		while (size--) {
+		    regsAVR[i++].isFree =1;
+		}
+	    }
+	}
+	ic = ic->next;
+    }
+    /* mark anything remaining as free */
+    while (i <= R23_IDX)
+	regsAVR[i++].isFree =1;
+}
+
+/*-----------------------------------------------------------------*/
+/* setdefaultRegs - do setup stuff for register allocation         */
+/*-----------------------------------------------------------------*/
+static void setDefaultRegs(eBBlock **ebbs,int count)
+{
+
+    /* if no pointer registers required in this function
+       then mark r26-27 & r30-r31 as GPR & free */
+    if (!avr_ptrRegReq) {
+	regsAVR[R26_IDX].isFree =
+	    regsAVR[R27_IDX].isFree =
+	    regsAVR[R30_IDX].isFree =
+	    regsAVR[R31_IDX].isFree = 1;
+	regsAVR[R26_IDX].type =
+	    regsAVR[R27_IDX].type =
+	    regsAVR[R30_IDX].type =
+	    regsAVR[R31_IDX].type = REG_GPR ;	
+    } else {
+	regsAVR[R26_IDX].isFree =
+	    regsAVR[R27_IDX].isFree =
+	    regsAVR[R30_IDX].isFree =
+	    regsAVR[R31_IDX].isFree = 1;
+	regsAVR[R26_IDX].type =
+	    regsAVR[R27_IDX].type =
+	    regsAVR[R30_IDX].type =
+	    regsAVR[R31_IDX].type = REG_PTR ;
+    }
+
+    /* registers 0-1 / 24-25 used as scratch */
+    regsAVR[R0_IDX].isFree = 
+	regsAVR[R1_IDX].isFree =
+	regsAVR[R24_IDX].isFree =
+	regsAVR[R25_IDX].isFree = 0;
+
+    /* if this has no function calls then we need
+       to do something special 
+       a) pre-assign registers to parameters RECEIVE
+       b) mark the remaining parameter regs as free */
+    if (!currFunc->hasFcall) {
+	preAssignParms(ebbs[0]->sch);
+    } else {
+	int i=0;
+	for (i= R16_IDX ; i <= R23_IDX ;i++)
+	    regsAVR[i].isFree = 0;
+    }
+
+    /* Y - is not allocated (it is the stack frame) */
+    regsAVR[R28_IDX].isFree =
+	regsAVR[R28_IDX].isFree =0;
 }
   
 /*-----------------------------------------------------------------*/
 /* assignRegisters - assigns registers to each live range as need  */
 /*-----------------------------------------------------------------*/
-void mcs51_assignRegisters (eBBlock **ebbs, int count)
+void avr_assignRegisters (eBBlock **ebbs, int count)
 {
     iCode *ic;
     int i ;
 
     setToNull((void *)&_G.funcrUsed);
-    mcs51_ptrRegReq = _G.stackExtend = _G.dataExtend = 0;
-    /* if not register extentions then reduce number
-       of registers */
-    if (options.regExtend)
-	mcs51_nRegs = 13;
-    else
-	mcs51_nRegs = 8;
+    avr_ptrRegReq = _G.stackExtend = _G.dataExtend = 0;
 
+    /* setup other default register allocation */
     /* change assignments this will remove some
        live ranges reducing some register pressure */
     for (i = 0 ; i < count ;i++ )
@@ -2285,7 +2280,10 @@ void mcs51_assignRegisters (eBBlock **ebbs, int count)
     /* first determine for each live range the number of 
        registers & the type of registers required for each */
     regTypeNum ();
-    
+
+    /* setup the default registers */
+    setDefaultRegs(ebbs,count);
+   
     /* and serially allocate registers */ 
     serialRegAssign(ebbs,count);
 
@@ -2316,7 +2314,7 @@ void mcs51_assignRegisters (eBBlock **ebbs, int count)
     ic = iCodeLabelOptimize(iCodeFromeBBlock (ebbs,count));
 
 
-    gen51Code(ic);
+    genAVRCode(ic);
 
     /* free up any _G.stackSpil locations allocated */   
     applyToSet(_G.stackSpil,deallocStackSpil);
@@ -2324,7 +2322,6 @@ void mcs51_assignRegisters (eBBlock **ebbs, int count)
     setToNull((void **)&_G.stackSpil);
     setToNull((void **)&_G.spiltSet);
     /* mark all registers as free */
-    freeAllRegs();
 
     return ;
 }

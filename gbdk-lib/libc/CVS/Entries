@@ -1,13 +1,34 @@
-/Makefile/1.4/Wed Feb 23 02:45:18 2000//
-/Makefile.platform/1.2/Tue Feb 22 04:05:50 2000//
-/isalpha.c/1.1/Wed Feb 23 02:46:23 2000//
-/isdigit.c/1.1/Wed Feb 23 02:46:23 2000//
-/islower.c/1.1/Wed Feb 23 02:46:23 2000//
-/isspace.c/1.1/Wed Feb 23 02:46:23 2000//
-/isupper.c/1.1/Wed Feb 23 02:46:23 2000//
-/printf.c/1.2/Wed Feb 23 02:45:18 2000//
-/puts.c/1.1/Tue Feb 22 04:12:15 2000//
-/string.c/1.1.1.1/Mon Feb 21 00:46:01 2000//
-/tolower.c/1.1/Wed Feb 23 02:46:23 2000//
-/toupper.c/1.1/Wed Feb 23 02:46:23 2000//
-D
+/Makefile/1.7/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/Makefile.platform/1.2/Tue Feb 22 04:05:50 2000//Tgbdk-293
+/abs.c/1.1/Thu Mar 30 05:56:06 2000//Tgbdk-293
+/atoi.c/1.1/Thu Mar 30 05:56:06 2000//Tgbdk-293
+/atol.c/1.1/Thu Mar 30 05:56:06 2000//Tgbdk-293
+/calloc.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/free.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/isalpha.c/1.2/Sat Mar 25 04:02:45 2000//Tgbdk-293
+/isdigit.c/1.2/Sat Mar 25 04:02:45 2000//Tgbdk-293
+/islower.c/1.2/Sat Mar 25 04:02:45 2000//Tgbdk-293
+/isspace.c/1.2/Sat Mar 25 04:02:45 2000//Tgbdk-293
+/isupper.c/1.2/Sat Mar 25 04:02:45 2000//Tgbdk-293
+/itoa.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/labs.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/ltoa.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/malloc.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/printf.c/1.2/Wed Feb 23 02:45:18 2000//Tgbdk-293
+/puts.c/1.1/Tue Feb 22 04:12:15 2000//Tgbdk-293
+/realloc.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/reverse.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/scanf.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/strcat.c/1.1/Thu Mar 30 05:56:06 2000//Tgbdk-293
+/string.c/1.1.1.1/Mon Feb 21 00:46:01 2000//Tgbdk-293
+/strlen.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/strncat.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/strncmp.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/strncpy.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/time.c/1.2/Wed Apr  5 03:45:18 2000//Tgbdk-293
+/tolower.c/1.2/Sat Mar 25 04:02:45 2000//Tgbdk-293
+/toupper.c/1.2/Sat Mar 25 04:02:45 2000//Tgbdk-293
+D/asm////
+D/consolez80////
+D/gb////
+D/rrgb////

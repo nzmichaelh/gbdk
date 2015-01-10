@@ -11,16 +11,31 @@ SDCCLIB = $(BUILD)
 CVSFLAGS = -z5
 CVS = cvs
 DIR = .
-VER = 2.92
+VER = 2.93
+# Used as a branch name.  Will be fixed for 2.94
+SHORTVER = 293
+
 ROOT_GBDK = :pserver:anonymous@cvs.gbdk.sourceforge.net:/cvsroot/gbdk
 ROOT_SDCC = :pserver:anonymous@cvs.sdcc.sourceforge.net:/cvsroot/sdcc
 
-# For DOS
-#E = .exe
-#GBDK_ROOT = /gbdk
+# For mingw32 hosted on Linux
+# Source extension - what the gcc generated files have appended
+SE =
+# Dest extenstion - what extension we want them to have.
+E = .exe
+GBDK_ROOT = \\\\gbdk
+
+# For mingw32 on win32
+# Source extension - what the gcc generated files have appended
+SE = .exe
+# Dest extenstion - what extension we want them to have.
+E = .exe
+GBDK_ROOT = \\\\gbdk
+
 # For Linux
-E =
-GBDK_ROOT = /usr/lib/gbdk
+#SE = 
+#E =
+#GBDK_ROOT = /usr/lib/gbdk
 
 all: logged_in dist
 
@@ -29,10 +44,10 @@ clean:
 	rm -f *~
 	rm -rf $(BUILD) gbdk-lib gbdk-support sdcc logged_in
 
-update:
-	cd $(DIR); cvs $(CVSFLAGS) -d$(ROOT_SDCC) co sdcc
-	cd $(DIR); cvs $(CVSFLAGS) -d$(ROOT_GBDK) co gbdk-lib
-	cd $(DIR); cvs $(CVSFLAGS) -d$(ROOT_GBDK) co gbdk-support
+update: logged_in
+	cd $(DIR); cvs $(CVSFLAGS) -d$(ROOT_SDCC) co -r gbdk-$(SHORTVER) sdcc
+	cd $(DIR); cvs $(CVSFLAGS) -d$(ROOT_GBDK) co -r gbdk-$(SHORTVER) gbdk-lib
+	cd $(DIR); cvs $(CVSFLAGS) -d$(ROOT_GBDK) co -r gbdk-$(SHORTVER) gbdk-support
 
 _sdcc: sdcc/sdccconf.h
 	cd sdcc; \
@@ -40,38 +55,38 @@ _sdcc: sdcc/sdccconf.h
 	do make -C $$i; done
 	mkdir -p $(BUILD)/bin
 	for i in sdcc sdcpp link-gbz80 as-gbz80; \
-	do cp sdcc/bin/$$i$(E) $(BUILD)/bin; done
+	do cp sdcc/bin/$$i$(SE) $(BUILD)/bin/$$i$(E); done
 
 sdcc/sdccconf.h: sdcc/configure
 	cd sdcc; \
-	./configure --datadir=$(GBDK_ROOT);
+	./configure --datadir=$(GBDK_ROOT) \
+	--disable-mcs51-port \
+	--disable-avr-port \
+	;
 
-_gbdk-lib: _sdcc build-lcc
+_gbdk-lib: _sdcc _gbdk-support
 	cp -r gbdk-lib/include $(BUILD)
 	make -C gbdk-lib SDCCLIB=$(SDCCLIB) PORTS=gbz80 PLATFORMS=gb
-
-build-lcc:
-	make -C gbdk-support/lcc clean
-	make -C gbdk-support/lcc SDCCLIB=$(SDCCLIB)/
-	mkdir -p $(BUILD)/bin
-	cp gbdk-support/lcc/lcc$(E) $(BUILD)/bin
 
 _gbdk-support:
 	make -C gbdk-support/lcc clean
 	make -C gbdk-support/lcc SDCCLIB=$(GBDK_ROOT)/
 	mkdir -p $(BUILD)/bin
-	cp gbdk-support/lcc/lcc$(E) $(BUILD)/bin
+	cp gbdk-support/lcc/lcc$(SE) $(BUILD)/bin/lcc$(E)
 
 dist: _sdcc _gbdk-lib _gbdk-support
 	mkdir -p $(BUILD)/bin
 	mkdir -p $(BUILD)/lib
 	cp -r gbdk-lib/build/gbz80 $(BUILD)/lib
 	cp -r gbdk-lib/build/gb $(BUILD)/lib
+	make -C gbdk-lib/libc clean
+	make -C gbdk-lib/examples/gb make.bat
 	cp -r gbdk-lib/examples $(BUILD)
 	cp -r gbdk-lib/libc $(BUILD)
 	cp -r sdcc/doc $(BUILD)
 	cp gbdk-support/README $(BUILD)
 	strip $(BUILD)/bin/*
+	rm -rf `find gbdk -name "CVS"`
 
 zdist: dist
 	tar czf gbdk-$(VER).tar.gz gbdk

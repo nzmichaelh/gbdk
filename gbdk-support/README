@@ -1,17 +1,47 @@
-gbdk3-2.92 - http://gbdk.sourceforge.net/
+gbdk3-2.93 - http://gbdk.sourceforge.net/
 -----------------------------------------
 This is a early-release beta.  Please report any bugs :)
+
+Special note:
+-------------
+I've reverted the WORD to 16 bit unsigned change that required
+-DGBDK_2_COMPAT=1.  You can use BYTE_IS_UNSIGNED if you, like me,
+really want WORD to be unsigned :)
+
+Short story:
+------------
+win32:
+* Unzip using WinZip or similar (which youve probably already done :)
+    e.g use WinZip to extract to d:\gbstuff\gbdk
+* Add the 'bin' directory to your path if required.
+    e.g Add 'PATH=%PATH%;d:\gbstuff\gbdk\bin' to autoexec.bat
+* Restart if needed
+* GBDK is ready to go - there is no need to compile the libraries or
+  to set envoronment varibles.  You may want to remove the
+  GBDKDIR line from autoexec.bat that an older version of gbdk may
+  have put there.
+  See the ChangeLog for more information.
+* You can compile the examples by running 'make.bat' in examples\gb
+    e.g d:, cd \gbstuff\gbdk\examples\gb, make
+
+Linux:
+* Very similar to win32
+* Extract the archive somewhere (normally /usr/lib/gbdk)
+* Set GBDKDIR to where you installed with a trailing /
+* Try compiling the examples as above
 
 Reporting problems and feature requests
 ---------------------------------------
 1.  Make sure that you have read this README fully.
-2.  Read the latest copy of this README
+2.  Have a read of the gbdk homepage
+    http://gbdk.sourceforge.net/
+3.  Read the latest copy of this README
     http://cvs.sourceforge.net/cgi-bin/cvsweb.cgi/~checkout~/gbdk-support/README?cvsroot=gbdk
-3.  Make sure you have the latest version
+4.  Make sure you have the latest version
     https://sourceforge.net/project/?group_id=1249
-4.  Check if anyone else has reported the problem
+5.  Check if anyone else has reported the problem
     https://sourceforge.net/bugs/?group_id=1249
-5.  Submit a new bug using the link above.  It is _very_ helpful if you can 
+6.  Submit a new bug using the link above.  It is _very_ helpful if you can 
     show how to reproduce the bug and/or give me the source to try and/or
     use the --dumpall (lcc -Wf--dumpall) option and send me all of the *.dump
     files.  Use the email address below.
@@ -21,22 +51,45 @@ extract, and type:
 
 make -f update.mak update
 
-The Linux binary is normally installed in /usr/lib/gbdk, and
-the win32 binary in the root directory of the C drive.  If you
+The Linux binary is normally installed in /usr/lib/gbdk.  If you
 install somewhere else, set GBDKDIR to the appropriate path.
 
-eg.  A win32 user installs to f:\tools\gbstuff\gbdk.  Add the line
-	set GBDKDIR=f:\tools\gbstuff\gbdk\
-	set PATH=%PATH%;f:\tools\gbstuff\gbdk\bin
-     to autoexec.bat so that lcc can find everything.  Note the
-trailing backslash.
-
-Linux users also need to install libgc4 or above (Debian users try
-'apt-get install libgc5').  The win32 version is compiled with cygwin
-b20.
+eg.
+	export GBDKDIR=/usr/local/stuff/gbdk/
+   to autoexec.bat so that lcc can find everything.  Note the
+trailing slash.
 
 Changelog
 ---------
+gbdk3-2.93
+* Added multi-bank support into the compiler
+   - The old -Wf-boxx and -Wf-baxx options now work
+* Has preliminary support for generating rgbds and ISAS compatible
+  assembler.  Try -W--asm=rgbds or -W--asm=isas.  The ISAS code is
+  untested as I dont have access to the real assembler.
+* RSH is fixed
+* AND is fixed
+* The missing parts of 2.1.0's libs are there.  Note: They are untested.
+* The dscan demo now fully works (with a hack :)
+* There is a bug with cached computed values which are later used as pointers.
+  When the value is first used as a BYTE arg, then later as a pointer
+  the pointer fails as the high byte was never computed and is now missing.
+  A temporary fix is to declare something appropriate as 'volatile' to
+  stop the value being cached.  See dscan.c/bombs() for an example.
+  
+gbdk3-2.92-2:
+* win32 only.  Takes care of some of the install bugs, including:
+   - Now autodetects where it is installed.
+	This can be overridden using set GBDKDIR=...
+   - Problems with the installer (now uses WinZip)
+   - Problems with the temp directory
+	Now scans TMP, TEMP, TMPDIR and finally c:\tmp
+   - cygwin1.dll and 'make' are no longer required
+   	gbdk is now built using mingw32 which is win32 native
+	make.bat is automagically generated from the Makefile
+   - I've reverted to using WORD for signed 16 bit etc.
+	GBDK_2_COMPAT is no longer required.
+
 gbdk3-2.92:
 * All the examples now work (with a little bit of patching :)
 * Fixed problem with registers being cached instead of being marked

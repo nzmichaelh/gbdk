@@ -1,11 +1,11 @@
 #include <gb/gb.h>
 #include <stdio.h>
 
-UBYTE var_internal;  /* In internal RAM */
-extern UBYTE var_0;  /* In external RAM bank 0 */
-extern UBYTE var_1;  /* In external RAM bank 1 */
-extern UBYTE var_2;  /* In external RAM bank 2 */
-extern UBYTE var_3;  /* In external RAM bank 3 */
+int var_internal;  /* In internal RAM */
+extern int var_0;  /* In external RAM bank 0 */
+extern int var_1;  /* In external RAM bank 1 */
+extern int var_2;  /* In external RAM bank 2 */
+extern int var_3;  /* In external RAM bank 3 */
 
 void bank_1();
 void bank_2();

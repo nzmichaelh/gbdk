@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-BYTE isspace(char c)
+BOOLEAN isspace(char c)
 {
   if(c == ' ' || c == '\t' || c == '\n')
     return 1;

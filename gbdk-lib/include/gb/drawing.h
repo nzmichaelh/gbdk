@@ -55,27 +55,27 @@ void
    be set to SIGNED or UNSIGNED depending on whether the number is signed
    or not */
 void
-	gprintln(WORD number, BYTE radix, BYTE signed_value);
+	gprintln(INT16 number, INT8 radix, INT8 signed_value);
 
 /* Print the number 'number' as in 'gprintln' */
 void	
-	gprintn(BYTE number, BYTE radix, BYTE signed_value);
+	gprintn(INT8 number, INT8 radix, INT8 signed_value);
 
 /* Print the formatted string 'fmt' with arguments '...' */
-BYTE	
+INT8	
 	gprintf(char *fmt,...);
 
 /* Old style plot - try plot_point() */
 void
-	plot(UBYTE x, UBYTE y, UBYTE colour, UBYTE mode);
+	plot(UINT8 x, UINT8 y, UINT8 colour, UINT8 mode);
 
 /* Plot a point in the current drawing mode and colour at (x,y) */
 void	
-	plot_point(UBYTE x, UBYTE y);
+	plot_point(UINT8 x, UINT8 y);
 
 /* I (MLH) have no idea what switch_data does... */
 void
-	switch_data(UBYTE x, UBYTE y, unsigned char *src, unsigned char *dst);
+	switch_data(UINT8 x, UINT8 y, unsigned char *src, unsigned char *dst);
 
 /* Ditto */
 void	
@@ -83,21 +83,21 @@ void
 
 /* Draw a line in the current drawing mode and colour from (x1,y1) to (x2,y2) */
 void	
-	line(UBYTE x1, UBYTE y1, UBYTE x2, UBYTE y2);
+	line(UINT8 x1, UINT8 y1, UINT8 x2, UINT8 y2);
 
 /* Draw a box (rectangle) with corners (x1,y1) and (x2,y2) using fill mode
    'style' (one of NOFILL or FILL */
 void	
-	box(UBYTE x1, UBYTE y1, UBYTE x2, UBYTE y2, UBYTE style);
+	box(UINT8 x1, UINT8 y1, UINT8 x2, UINT8 y2, UINT8 style);
 
 /* Draw a circle with centre at (x,y) and radius 'radius'.  'style' sets
    the fill mode */
 void	
-	circle(UBYTE x, UBYTE y, UBYTE radius, UBYTE style);
+	circle(UINT8 x, UINT8 y, UINT8 radius, UINT8 style);
 
 /* Returns the current colour of the pixel at (x,y) */
-UBYTE	
-	getpix(UBYTE x, UBYTE y);
+UINT8	
+	getpix(UINT8 x, UINT8 y);
 
 /* Prints the character 'chr' in the default font at the current position */
 void	
@@ -106,10 +106,10 @@ void
 /* Sets the current text position to (x,y).  Note that x and y have units
    of cells (8 pixels) */
 void
-	gotogxy(UBYTE x, UBYTE y);
+	gotogxy(UINT8 x, UINT8 y);
 
 /* Set the current foreground colour (for pixels), background colour, and
    draw mode */
-void	color(UBYTE forecolor, UBYTE backcolor, UBYTE mode);
+void	color(UINT8 forecolor, UINT8 backcolor, UINT8 mode);
 
 #endif /* __DRAWING_H */

@@ -9,6 +9,13 @@
 #include "sdccconf.h"
 #include "SDCCerr.h"
 
+#ifdef __BORLANDC__
+#define NATIVE_WIN32 		1
+#endif
+#ifdef __MINGW32__
+#define NATIVE_WIN32		1
+#endif
+
 #ifdef _NO_GC
 
 #define GC_malloc malloc
@@ -193,6 +200,7 @@ struct options {
     int nopeep    : 1  ; /* no peep hole optimization */
     int asmpeep   : 1  ; /* pass inline assembler thru peep hole */
     int debug     : 1  ; /* generate extra debug info */
+    int nodebug	  : 1  ; /* Generate no debug info. */
     int stackOnData:1  ; /* stack after data segment  */
     int noregparms: 1  ; /* do not pass parameters in registers */
     int c1mode	  : 1  ; /* Act like c1 - no pre-proc, asm or link */
@@ -234,5 +242,25 @@ extern struct optimize optimize ;
 extern struct options options;
 extern int maxInterrupts;
 void parseWithComma (char **,char *) ;
+
+/** Creates a temporary file a'la tmpfile which avoids the bugs
+    in cygwin wrt c:\tmp.
+    Scans, in order: TMP, TEMP, TMPDIR, else uses tmpfile().
+*/
+FILE *tempfile(void);
+
+/** Creates a duplicate of the string 'sz' a'la strdup but using
+    libgc.
+*/
+char *gc_strdup(const char *sz);
+
+/** An assert() macro that will go out through sdcc's error
+    system.
+*/
+#define wassertl(a,s)	((a) ? 0 : \
+        (werror (E_INTERNAL_ERROR,__FILE__,__LINE__, s), 0))
+
+#define wassert(a)    wassertl(a,"code generator internal error")
+
 
 #endif

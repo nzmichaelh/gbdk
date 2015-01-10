@@ -11,12 +11,12 @@
  */
 
 void
-initrand(UWORD seed);
+initrand(UINT16 seed);
 
-BYTE
+INT8
 rand(void);
 
-WORD
+UINT16
 randw(void);
 
 /*
@@ -29,9 +29,9 @@ randw(void);
  */
 
 void
-initarand(WORD seed);
+initarand(UINT16 seed);
 
-BYTE
+INT8
 arand(void);
 
 #endif

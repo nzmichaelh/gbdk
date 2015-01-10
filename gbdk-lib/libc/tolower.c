@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-BYTE tolower(char c)
+char tolower(char c)
 {
   return ((c >= 'A' && c <= 'Z') ? c + 32: c);
 }

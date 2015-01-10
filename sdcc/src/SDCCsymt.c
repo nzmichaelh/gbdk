@@ -293,7 +293,7 @@ void pointerTypes (link *ptr, link *type)
 	    DCL_TYPE(ptr) = POINTER ;
 	    break;
 	case S_CODE:
-	    DCL_PTR_CONST(ptr) = 1;
+	    DCL_PTR_CONST(ptr) = port->mem.code_ro;
 	    DCL_TYPE(ptr) = CPOINTER ;
 	    break;
 	case S_EEPROM:
@@ -930,13 +930,15 @@ static void  checkSClass ( symbol *sym )
 
     /* global variables declared const put into code */
     if (sym->level == 0 && 
-	SPEC_SCLS(sym->etype) == S_CONSTANT) 
+	SPEC_SCLS(sym->etype) == S_CONSTANT) {
 	SPEC_SCLS(sym->etype) = S_CODE ;
-    
+	SPEC_CONST(sym->etype) = 1;
+    }
 
     /* global variable in code space is a constant */
     if (sym->level == 0 && 
-	SPEC_SCLS(sym->etype) == S_CODE) 
+	SPEC_SCLS(sym->etype) == S_CODE &&
+	port->mem.code_ro )
 	SPEC_CONST(sym->etype) = 1;
     
 
@@ -1003,6 +1005,7 @@ static void  checkSClass ( symbol *sym )
     if (SPEC_SCLS(sym->etype) == S_CODE && 
 	sym->ival == NULL               &&
 	!sym->level                     &&
+	port->mem.code_ro               &&
 	!IS_EXTERN(sym->etype)) 
 	werror(E_CODE_NO_INIT,sym->name);
     
@@ -1379,6 +1382,7 @@ void  processFuncArgs   (symbol *func, int ignoreName)
     value *val ;
     int pNum = 1;   
     
+
     /* if this function has variable argument list */
     /* then make the function a reentrant one	   */
     if (func->hasVargs)
@@ -1395,19 +1399,23 @@ void  processFuncArgs   (symbol *func, int ignoreName)
 	func->args = NULL ;
 	return ;
     }
-    
+
+    /* reset regparm for the port */
+    (*port->reset_regparms)();
     /* if any of the arguments is an aggregate */
     /* change it to pointer to the same type */
     while (val) {
 
 	/* mark it as a register parameter if
-	   the function does nit have VA_ARG
-	   and MAX_REG_PARMS not exceeded &&
+	   the function does not have VA_ARG
+	   and as port dictates
 	   not inhibited by command line option or #pragma */
-	if (pNum <= MAX_REG_PARMS && 
+	if (!func->hasVargs       && 	    
 	    !options.noregparms   &&
-	    !func->hasVargs)
+	    (*port->reg_parm)(val->type)) {
+
 	    SPEC_REGPARM(val->etype) = 1;
+	}
 	
 	if ( IS_AGGREGATE(val->type)) {
 	    /* if this is a structure */
@@ -1625,6 +1633,9 @@ void printTypeChain (link *type, FILE *of)
 	    case V_BIT:
 		fprintf(of,"bit {%d,%d}",SPEC_BSTR(type),SPEC_BLEN(type));
 		break;
+		
+	    default:
+		break;
 	    }
 	}
 	type = type->next;
@@ -1669,6 +1680,8 @@ void cdbTypeInfo (link *type,FILE *of)
 	    case ARRAY :
 		fprintf (of,"DA%d,",DCL_ELEM(type));
 		break;
+	    default:
+		break;
 	    }
 	} else { 
 	    switch (SPEC_NOUN(type)) {
@@ -1704,6 +1717,9 @@ void cdbTypeInfo (link *type,FILE *of)
 
 	    case V_BIT:
 		fprintf(of,"SB%d$%d",SPEC_BSTR(type),SPEC_BLEN(type));
+		break;
+
+	    default:
 		break;
 	    }
 	    fputs(":",of);

@@ -1,10 +1,10 @@
 #include <stdarg.h>
 #include <gb/drawing.h>
 
-BYTE gprintf(char *fmt, ...)
+INT8 gprintf(char *fmt, ...)
 {
   va_list ap;
-  BYTE nb = 0;
+  INT8 nb = 0;
 
   va_start(ap, fmt);
   for(; *fmt; fmt++)
@@ -18,25 +18,25 @@ BYTE gprintf(char *fmt, ...)
       }
       case 'd': {
 	/* decimal int */
-	  BYTE b = va_arg(ap, BYTE);
+	  INT8 b = va_arg(ap, INT8);
 	  gprintn(b, 10, SIGNED);
 	  break;
       }
       case 'u': {
 	  /* unsigned int */
-	  BYTE b = va_arg(ap, BYTE);
+	  INT8 b = va_arg(ap, INT8);
 	  gprintn(b, 10, UNSIGNED);
 	  break;
       }
       case 'o': {
 	  /* octal int */
-	  BYTE b = va_arg(ap, BYTE);
+	  INT8 b = va_arg(ap, INT8);
 	  gprintn(b, 8, UNSIGNED);
 	  break;
       }
       case 'x': {
 	  /* hexadecimal int */
-	  BYTE b = va_arg(ap, BYTE);
+	  INT8 b = va_arg(ap, INT8);
 	  gprintn(b, 16, UNSIGNED);
 	  break;
       }
@@ -52,19 +52,19 @@ BYTE gprintf(char *fmt, ...)
 	switch(*++fmt) {
 	case 'd':
 	  /* decimal long */
-	  gprintln(va_arg(ap, WORD), 10, SIGNED);
+	  gprintln(va_arg(ap, INT16), 10, SIGNED);
 	  break;
 	case 'u':
 	  /* unsigned long */
-	  gprintln(va_arg(ap, WORD), 10, UNSIGNED);
+	  gprintln(va_arg(ap, INT16), 10, UNSIGNED);
 	  break;
 	case 'o':
 	  /* octal long */
-	  gprintln(va_arg(ap, WORD), 8, UNSIGNED);
+	  gprintln(va_arg(ap, INT16), 8, UNSIGNED);
 	  break;
 	case 'x':
 	  /* hexadecimal long */
-	  gprintln(va_arg(ap, WORD), 16, UNSIGNED);
+	  gprintln(va_arg(ap, INT16), 16, UNSIGNED);
 	  break;
 	}
 	break;

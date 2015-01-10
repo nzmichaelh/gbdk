@@ -25,7 +25,7 @@
 #include "common.h"
 #include <ctype.h>
 
-#ifdef __BORLANDC__
+#if NATIVE_WIN32
 #include <process.h>
 #else
 #include "spawn.h"
@@ -128,16 +128,34 @@ static const char *_preCmd[] = {
     "-I" SDCC_INCLUDE_DIR, "$l", "$1", "$2", NULL
 };
 
+#if !OPT_DISABLE_MCS51
 extern PORT mcs51_port;
-extern PORT z80_port;
+#endif
+#if !OPT_DISABLE_GBZ80
 extern PORT gbz80_port;
+#endif
+#if !OPT_DISABLE_Z80
+extern PORT z80_port;
+#endif
+#if !OPT_DISABLE_AVR
+extern PORT avr_port;
+#endif
 
 PORT *port;
 
 static PORT *_ports[] = {
-    &mcs51_port,
-    &z80_port,
+#if !OPT_DISABLE_MCS51
+   &mcs51_port,
+#endif
+#if !OPT_DISABLE_GBZ80
     &gbz80_port
+#endif
+#if !OPT_DISABLE_Z80
+    &z80_port,
+#endif
+#if !OPT_DISABLE_AVR
+    &avr_port,
+#endif
 };
 
 #define NUM_PORTS (sizeof(_ports)/sizeof(_ports[0]))
@@ -156,7 +174,8 @@ static int _setPort(const char *name)
 	}
     }
     /* Error - didnt find */
-    return 1;
+    werror(E_UNKNOWN_TARGET,name);
+    exit(1);
 }
 
 static void _buildCmdLine(char *into, char **args, const char **cmds, 
@@ -980,7 +999,6 @@ int   parseCmdLine ( int argc, char **argv )
 	    fprintf(cdbFile,"M:%s\n",moduleName);
 	}
     }
-    port->finaliseOptions();
     return 0;
 }
 
@@ -991,9 +1009,6 @@ char *try_dir[]= {SRCDIR "/bin",PREFIX "/bin", NULL};
 int my_system (const char *cmd, char **cmd_argv)
 {    
     char *dir, *got= NULL; int i= 0;
-    #ifdef __BORLANDC__
-    char *r;
-    #endif
 
     while (!got && try_dir[i])
     {
@@ -1002,21 +1017,24 @@ int my_system (const char *cmd, char **cmd_argv)
         strcat(dir, "/");
         strcat(dir, cmd);
 
-        #ifdef __BORLANDC__
+#if NATIVE_WIN32
         strcat(dir, ".exe");
 
         /* Mung slashes into backslashes to keep WIndoze happy. */
-	r = dir;
-
-        while (*r)
-        {
-            if (*r == '/')
-            {
-                *r = '\\';
-            }
-            r++;
-        }
-        #endif
+	{
+	    char *r;
+	    r = dir;
+	    
+	    while (*r)
+		{
+		    if (*r == '/')
+			{
+			    *r = '\\';
+			}
+		    r++;
+		}
+	}
+#endif
 
         if (access(dir, X_OK) == 0)
         {
@@ -1197,6 +1215,10 @@ static int preProcess (char **envp)
 	/* set the macro for stack autos	*/
 	if ( options.stackAuto )
 	    _addToList(preArgv, "-DSDCC_STACK_AUTO");
+	    
+	/* set the macro for stack autos	*/
+	if ( options.stack10bit )
+	    _addToList(preArgv, "-DSDCC_STACK_TENBIT");	
     
 	/* set the macro for large model	*/
 	switch(options.model)
@@ -1279,10 +1301,13 @@ int main ( int argc, char **argv , char **envp)
     /* Initalise the port. */
     if (port->init)
 	port->init();
-    
-    initMem();
+
     setDefaultOptions();
     parseCmdLine(argc,argv);
+
+    initMem();
+
+    port->finaliseOptions();
 
     /* if no input then printUsage & exit */
     if ((!options.c1mode && !srcFileName && !nrelFiles) || (options.c1mode && !srcFileName && !options.out_name)) {
@@ -1306,7 +1331,9 @@ int main ( int argc, char **argv , char **envp)
 	    glue();
 	    if (!options.c1mode)
 		assemble(envp);
-	}
+	} else {
+	    exit(-1);
+        }
 	
     }
     

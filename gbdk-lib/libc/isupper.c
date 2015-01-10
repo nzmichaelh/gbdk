@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-BYTE isupper(char c)
+BOOLEAN isupper(char c)
 {
   if(c >= 'A' && c <= 'Z')
     return 1;

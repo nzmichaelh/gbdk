@@ -232,30 +232,28 @@ static asmop *newAsmop (short type)
     return aop;
 }
 
+static void genSetDPTR(int n)
+{
+    if (!n)
+    {
+        emitcode(";", "Select standard DPTR");
+        emitcode("mov", "dps, #0x00");
+    }
+    else
+    {
+        emitcode(";", "Select alternate DPTR");
+        emitcode("mov", "dps, #0x01");
+    }
+}
+
 /*-----------------------------------------------------------------*/
 /* pointerCode - returns the code for a pointer type               */
 /*-----------------------------------------------------------------*/
 static int pointerCode (link *etype)
 {
-    int p_type;
 
     return PTR_TYPE(SPEC_OCLS(etype));
 
-/*     if (SPEC_OCLS(etype)->codesp ) { */
-/* 	p_type = CPOINTER ;	 */
-/*     } */
-/*     else */
-/* 	if (SPEC_OCLS(etype)->fmap && !SPEC_OCLS(etype)->paged) */
-/* 	    p_type = FPOINTER ; */
-/* 	else */
-/* 	    if (SPEC_OCLS(etype)->fmap && SPEC_OCLS(etype)->paged) */
-/* 		p_type = PPOINTER; */
-/* 	    else */
-/* 		if (SPEC_OCLS(etype) == idata ) */
-/* 		    p_type = IPOINTER; */
-/* 		else */
-/* 		    p_type = POINTER ; */
-/*     return p_type; */
 }
 
 /*-----------------------------------------------------------------*/
@@ -312,14 +310,6 @@ static asmop *aopForSym (iCode *ic,symbol *sym,bool result)
          * far data space.
          */
          
-         if (result)
-         {
-             fprintf(stderr, 
-             	     "*** Internal error: 10 bit stack var used as result.\n");
-             emitcode(";", "look at me!");
-         }
-         
-        
         if ( _G.accInUse )
         	emitcode("push","acc");
 
@@ -329,29 +319,16 @@ static asmop *aopForSym (iCode *ic,symbol *sym,bool result)
                    ((char)(sym->stack - _G.nRegsSaved )) :
                    ((char)sym->stack)) & 0xff);
         
-        if (/* result */ 1)
-        {
-            emitcode (";", "#switchDPTR(2)");
-        }
-    	emitcode ("mov","dpx,#0x40");
-    	emitcode ("mov","dph,#0x00");
-    	emitcode ("mov", "dpl, a");
-    	if (/* result */ 1)
-    	{
-    	    emitcode (";", "#switchDPTR(1)");
-    	}
+        genSetDPTR(1);
+        emitcode ("mov","dpx1,#0x40");
+        emitcode ("mov","dph1,#0x00");
+        emitcode ("mov","dpl1, a");
+        genSetDPTR(0);
     	
         if ( _G.accInUse )
             emitcode("pop","acc");
             
-        if (/* !result */ 0)
-        {
-    	    sym->aop = aop = newAsmop(AOP_DPTR);
-    	}
-    	else
-    	{
-    	    sym->aop = aop = newAsmop(AOP_DPTR2);
-    	}
+        sym->aop = aop = newAsmop(AOP_DPTR2);
     	aop->size = getSize(sym->type); 
     	return aop;
     }
@@ -398,25 +375,28 @@ static asmop *aopForSym (iCode *ic,symbol *sym,bool result)
 /*-----------------------------------------------------------------*/
 static asmop *aopForRemat (symbol *sym)
 {
-    char *s = buffer;   
     iCode *ic = sym->rematiCode;
     asmop *aop = newAsmop(AOP_IMMD);
+    int val = 0;
 
-    while (1) {
-
-        /* if plus or minus print the right hand side */
-        if (ic->op == '+' || ic->op == '-') {
-            sprintf(s,"0x%04x %c ",(int) operandLitValue(IC_RIGHT(ic)),
-                    ic->op );
-            s += strlen(s);
-            ic = OP_SYMBOL(IC_LEFT(ic))->rematiCode;
-            continue ;
-        }
-
-        /* we reached the end */
-        sprintf(s,"%s",OP_SYMBOL(IC_LEFT(ic))->rname);
-        break;
+    for (;;) {
+    	if (ic->op == '+')
+	    val += operandLitValue(IC_RIGHT(ic));
+	else if (ic->op == '-')
+	    val -= operandLitValue(IC_RIGHT(ic));
+	else
+	    break;
+	
+	ic = OP_SYMBOL(IC_LEFT(ic))->rematiCode;
     }
+
+    if (val)
+    	sprintf(buffer,"(%s %c 0x%04x)",
+	        OP_SYMBOL(IC_LEFT(ic))->rname, 
+		val >= 0 ? '+' : '-',
+		abs(val) & 0xffff);
+    else
+	strcpy(buffer,OP_SYMBOL(IC_LEFT(ic))->rname);
 
     ALLOC_ATOMIC(aop->aopu.aop_immd,strlen(buffer)+1);
     strcpy(aop->aopu.aop_immd,buffer);    
@@ -772,10 +752,10 @@ static char *aopGet (asmop *aop, int offset, bool bit16, bool dname)
     case AOP_DPTR:
     case AOP_DPTR2:
     
-    	if (aop->type == AOP_DPTR2)
-    	{
-    	    emitcode (";", "#switchDPTR(2)");
-    	}
+    if (aop->type == AOP_DPTR2)
+    {
+        genSetDPTR(1);
+    }
     
 	while (offset > aop->coff) {
 	    emitcode ("inc","dptr");
@@ -792,20 +772,21 @@ static char *aopGet (asmop *aop, int offset, bool bit16, bool dname)
 	    emitcode("clr","a");
 	    emitcode("movc","a,@a+dptr");
         }
-	else
+    else {
 	    emitcode("movx","a,@dptr");
+    }
 	    
-    	if (aop->type == AOP_DPTR2)
-    	{
-    	    emitcode (";", "#switchDPTR(1)");
-    	}	    
+    if (aop->type == AOP_DPTR2)
+    {
+        genSetDPTR(0);
+    }
 	    
-	return (dname ? "acc" : "a");
+    return (dname ? "acc" : "a");
 	
 	
     case AOP_IMMD:
 	if (bit16) 
-	    sprintf (s,"#(%s)",aop->aopu.aop_immd);
+	    sprintf (s,"#%s",aop->aopu.aop_immd);
 	else
 	    if (offset) 
 		sprintf(s,"#(%s >> %d)",
@@ -915,10 +896,10 @@ static void aopPut (asmop *aop, char *s, int offset)
     case AOP_DPTR:
     case AOP_DPTR2:
     
-        if (aop->type == AOP_DPTR2)
-    	{
-    	    emitcode (";", "#switchDPTR(2)");
-    	}
+    if (aop->type == AOP_DPTR2)
+    {
+        genSetDPTR(1);
+    }
     
 	if (aop->code) {
 	    werror(E_INTERNAL_ERROR,__FILE__,__LINE__,
@@ -944,9 +925,9 @@ static void aopPut (asmop *aop, char *s, int offset)
 	emitcode ("movx","@dptr,a");
 	
     if (aop->type == AOP_DPTR2)
-    	{
-    	    emitcode (";", "#switchDPTR(1)");
-    	}	
+    {
+        genSetDPTR(0);
+    }
 	break;
 	
     case AOP_R0:
@@ -1095,14 +1076,16 @@ static void reAdjustPreg (asmop *aop)
         case AOP_DPTR2:
             if (aop->type == AOP_DPTR2)
     	    {
-    	        emitcode (";", "#switchDPTR(2)");
+                genSetDPTR(1);
     	    } 
             while (size--)
+            {
                 emitcode("lcall","__decdptr");
+            }
                 
     	    if (aop->type == AOP_DPTR2)
     	    {
-    	        emitcode (";", "#switchDPTR(1)");
+                genSetDPTR(0);
     	    }                
             break;  
 
@@ -2047,7 +2030,19 @@ static void genFunction (iCode *ic)
 	if (!inExcludeList("dph"))
 	    emitcode ("push","dph");
 	if (options.model == MODEL_FLAT24 && !inExcludeList("dpx"))
-	    emitcode ("push", "dpx");	
+	{
+	    emitcode ("push", "dpx");
+	    /* Make sure we're using standard DPTR */
+	    emitcode ("push", "dps");
+	    emitcode ("mov", "dps, #0x00");
+	    if (options.stack10bit)
+	    {	
+	    	/* This ISR could conceivably use DPTR2. Better save it. */
+	    	emitcode ("push", "dpl1");
+	    	emitcode ("push", "dph1");
+	    	emitcode ("push", "dpx1");
+	    }
+	}
 	/* if this isr has no bank i.e. is going to
 	   run with bank 0 , then we need to save more
 	   registers :-) */
@@ -2218,7 +2213,16 @@ static void genEndFunction (iCode *ic)
 	}
 
 	if (options.model == MODEL_FLAT24 && !inExcludeList("dpx"))
+	{
+	    if (options.stack10bit)
+	    {
+	        emitcode ("pop", "dpx1");
+	        emitcode ("pop", "dph1");
+	        emitcode ("pop", "dpl1");
+	    }	
+	    emitcode ("pop", "dps");
 	    emitcode ("pop", "dpx");
+	}
 	if (!inExcludeList("dph"))
 	    emitcode ("pop","dph");
 	if (!inExcludeList("dpl"))
@@ -2267,7 +2271,6 @@ static void genEndFunction (iCode *ic)
 	}
 
 	/* if debug then send end of function */
-/* 	if (options.debug && currFunc) { */
 	if (currFunc) {
 	    _G.debugLine = 1;
 	    emitcode("","C$%s$%d$%d$%d ==.",
@@ -2380,8 +2383,6 @@ static int findLabelBackwards(iCode *ic, int key)
             return count;
         }
     }
-    
-    /* printf("findLabelBackwards: not found.\n"); */
     
     return 0;
 }
@@ -7041,26 +7042,13 @@ static void genAssign (iCode *ic)
     aopOp(right,ic,FALSE);
     
     /* special case both in far space */
-    /* However, if we are using 10 bit stack mode,
-     * the result should be held in DPTR2,
-     * so we can operate without the special case.
-     *
-     * I think.
-     */
-    if (AOP_TYPE(right) == AOP_DPTR &&
+    if ((AOP_TYPE(right) == AOP_DPTR ||
+         AOP_TYPE(right) == AOP_DPTR2) &&
 	IS_TRUE_SYMOP(result)       &&
 	isOperandInFarSpace(result)) {
 	
-	if (!options.stack10bit)
-	{
-	    genFarFarAssign (result,right,ic);
-            return ;
-        }
-        else
-        {
-            fprintf(stderr, "*** 10bit stack opt 1\n");
-            emitcode(";", "look at me: optimization possible?\n");
-        }
+	genFarFarAssign (result,right,ic);
+	return ;
     }
 
     aopOp(result,ic,TRUE);

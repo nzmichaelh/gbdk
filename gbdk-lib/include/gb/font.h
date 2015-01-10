@@ -18,13 +18,13 @@
 /* See gb.h/M_NO_SCROLL and gb.h/M_NO_INTERP */
 
 /* font_t is a handle to a font loaded by font_load() */
-typedef UWORD font_t;
+typedef UINT16 font_t;
 
 /* The default fonts */
-extern UBYTE font_spect[], font_italic[], font_ibm[], font_min[];
+extern UINT8 font_spect[], font_italic[], font_ibm[], font_min[];
 
 /* Backwards compatible font */
-extern UBYTE fontibm_fixed[];
+extern UINT8 fontibm_fixed[];
 
 /* Init the font system */
 void	font_init(void);
@@ -38,7 +38,7 @@ font_t	font_load( void *font );
 font_t	font_set( font_t font_handle );
 
 /* Print the same character 'show' 'num' times */
-void print_repeat(char show, UBYTE num);
+void print_repeat(char show, UINT8 num);
 
 /* Use mode() and color() to set the font modes and colours */
 
@@ -47,7 +47,7 @@ typedef struct sfont_handle mfont_handle;
 typedef struct sfont_handle *pmfont_handle;
 
 struct sfont_handle {
-    UBYTE first_tile;		/* First tile used */
+    UINT8 first_tile;		/* First tile used */
     void *font;			/* Pointer to the base of the font */
 };
 	

@@ -31,6 +31,7 @@
 #include "SDCCval.h"
 #include "SDCCmem.h"
 #include "SDCCast.h"
+
 extern int yyerror (char *);
 extern FILE	*yyin;
 extern char srcLstFname[];
@@ -922,6 +923,8 @@ pointer
 		 case S_EEPROM:
 		     DCL_TYPE($3) = EEPPOINTER;
 		     break;
+		 default:
+		     werror(W_PTR_TYPE_INVALID);
 		 }
 	     }
 	     else 

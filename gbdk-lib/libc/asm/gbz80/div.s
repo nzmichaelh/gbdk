@@ -156,9 +156,9 @@ __moduint::
 	;;  if signs are different
 	;; Remainder has same sign as dividend
 	LD	A,B		; Get high byte of dividend
-	LD	(.srem),A	; Save as sign of remainder
+	PUSH	AF		; Save as sign of remainder (.srem)
 	XOR	D		; Xor with high byte of divisor
-	LD	(.squot),A	; Save sign of quotient
+	PUSH	AF		; Save sign of quotient (.squot)
 	;; Take absolute value of divisor
 	BIT	7,D
 	JR	Z,.chkde	; Jump if divisor is positive
@@ -181,9 +181,12 @@ __moduint::
 	;; Divide absolute values
 .dodiv:
 	CALL	.divu16
-	RET	C		; Exit if divide by zero
+	JR	NC,1$		; Exit if divide by zero
+	LDA	SP,4(SP)	; Clean up the stack
+	RET
+1$:	
 	;; Negate quotient if it is negative
-	LD	A,(.squot)
+	POP	AF
 	AND	#0x80
 	JR	Z,.dorem	; Jump if quotient is positive
 	SUB	A		; Substract quotient from 0
@@ -194,7 +197,7 @@ __moduint::
 	LD	B,A
 .dorem:
 	;; Negate remainder if it is negative
-	LD	A,(.srem)
+	POP	AF
 	AND	#0x80
 	RET	Z		; Return if remainder is positive
 	SUB	A		; Substract remainder from 0

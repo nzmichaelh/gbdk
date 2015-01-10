@@ -414,6 +414,9 @@ int setAstLineno ( ast *tree, int lineno)
     return 0;
 }
 
+#if 0
+/* this functions seems to be superfluous?! kmh */
+
 /*-----------------------------------------------------------------*/
 /* resolveFromTable - will return the symbal table value           */
 /*-----------------------------------------------------------------*/
@@ -439,6 +442,7 @@ value *resolveFromTable (value *val)
 
     return val;
 }
+#endif
 
 /*-----------------------------------------------------------------*/
 /* funcOfType :- function of type with name                        */
@@ -577,10 +581,12 @@ int processParms (ast *func, value *defParm,
 	actParm->ftype= defParm->type;
     }
     
-    actParm->argSym = resolveFromTable(defParm)->sym ;
+/*    actParm->argSym = resolveFromTable(defParm)->sym ; */
+    actParm->argSym = defParm->sym;
     /* make a copy and change the regparm type to the defined parm */
     actParm->etype = getSpec(actParm->ftype = copyLinkChain(actParm->ftype));
     SPEC_REGPARM(actParm->etype) = SPEC_REGPARM(defParm->etype);
+    (*parmNumber)++;
     return 0;
 }
 /*-----------------------------------------------------------------*/
@@ -595,7 +601,7 @@ ast *createIvalType ( ast *sym,link  *type, initList *ilist)
 	ilist =  ilist->init.deep  ;
     
     iExpr = decorateType(resolveSymbols(list2expr(ilist)));
-    return newNode('=',sym,iExpr);
+    return decorateType(newNode('=',sym,iExpr));
 }
 
 /*-----------------------------------------------------------------*/
@@ -622,8 +628,8 @@ ast *createIvalStruct (ast *sym,link *type,initList *ilist)
 	if (!iloop)
 	    break;
 	sflds->implicit = 1;
-	lAst = decorateType(resolveSymbols(newNode('.',sym,
-						   newAst(EX_VALUE,symbolVal(sflds)))));
+	lAst = newNode(PTR_OP,newNode('&',sym,NULL),newAst(EX_VALUE,symbolVal(sflds)));
+	lAst = decorateType(resolveSymbols(lAst));
 	rast = createIval (lAst, sflds->type, iloop,rast);
     }
     return rast ;
@@ -788,7 +794,7 @@ ast  *createIval  (ast *sym, link *type, initList *ilist, ast *wid)
 }
 
 /*-----------------------------------------------------------------*/
-/* initAggregates - initialises aggregate variables with initv */
+/* initAggregates - initialises aggregate variables with initv     */
 /*-----------------------------------------------------------------*/
 ast *initAggregates ( symbol *sym, initList *ival, ast *wid)
 {
@@ -1756,7 +1762,7 @@ ast *decorateType (ast *tree)
 	}
 	if (SPEC_SCLS(tree->left->etype) == S_CODE) {
 	    DCL_TYPE(p) = CPOINTER ;
-	    DCL_PTR_CONST(p) = 1;
+	    DCL_PTR_CONST(p) = port->mem.code_ro;
 	}
 	else
 	    if (SPEC_SCLS(tree->left->etype) == S_XDATA)
@@ -3576,7 +3582,7 @@ ast  *createFunction   (symbol  *name,   ast  *body )
 	name->stack = SPEC_STAK(fetype) = stack;
     
     /* name needs to be mangled */
-    sprintf (name->rname,"_%s",name->name);
+    sprintf (name->rname,"%s%s", port->fun_prefix, name->name);
     
     body = resolveSymbols(body); /* resolve the symbols */
     body = decorateType (body);  /* propagateType & do semantic checks */

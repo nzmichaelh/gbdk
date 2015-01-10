@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-BYTE toupper(char c)
+char toupper(char c)
 {
   return ((c >= 'a' && c <= 'z') ? c - 32: c);
 }

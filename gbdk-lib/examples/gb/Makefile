@@ -1,4 +1,4 @@
-CC	= ../../bin/lcc -Wa-l -Wl-m -DGBDK_2_COMPAT=1 -Wl-j -v
+CC	= ../../bin/lcc -Wa-l -Wl-m -Wl-j --asm=rgbds
 
 BINS	= galaxy.gb \
 	space.gb \
@@ -10,21 +10,23 @@ BINS	= galaxy.gb \
 	filltest.gb \
 	ram_fn.gb \
 	fonts.gb \
-	samptest.gb 
-
+	samptest.gb \
+	banks.gb
+	
 # sound.gb: Cant do bitfields
-# banks.gb: Doesnt support banks.
 OTHER = sound.gb \
-	banks.gb \
 
 all:	$(BINS)
+
+make.bat: Makefile
+	make -sn | sed y/\\//\\\\/ | grep -v make > make.bat
 
 %.o:	%.c
 	$(CC) -c -o $@ $<
 
 %.s:	%.c
 	$(CC) -S -o $@ $<
-	
+
 %.o:	%.s
 	$(CC) -c -o $@ $<
 

@@ -78,20 +78,20 @@ add_JOY(int_handler h);
 
 /* Set the current mode - one of M_* defined above */
 void
-	mode(UBYTE m);
+	mode(UINT8 m);
 
 /* Returns the current mode */
-UBYTE
+UINT8
 	get_mode(void);
 
 /* GB type (GB, PGB, CGB) */
-extern UBYTE _cpu;
+extern UINT8 _cpu;
 
 #define DMG_TYPE 0x01 /* Original GB or Super GB */
 #define MGB_TYPE 0xFF /* Pocket GB or Super GB 2 */
 #define CGB_TYPE 0x11 /* Color GB */
 
-extern UWORD sys_time;	/* Time in VBL periods (60Hz) */
+extern UINT16 sys_time;	/* Time in VBL periods (60Hz) */
 
 /* ************************************************************ */
 
@@ -103,9 +103,9 @@ void
 receive_byte(void);
 /* Receive byte from the serial port in _io_in */
 
-extern UBYTE _io_status;
-extern UBYTE _io_in;
-extern UBYTE _io_out;
+extern UINT8 _io_status;
+extern UINT8 _io_in;
+extern UINT8 _io_out;
 
 /* Status codes */
 #define IO_IDLE		0x00U		/* IO is completed */
@@ -135,8 +135,8 @@ extern UBYTE _io_out;
  */
 /* MBC5 */
 #define SWITCH_ROM_MBC5(b) \
-  *(unsigned char *)0x3000 = (b)>>8; \
-  *(unsigned char *)0x2000 = (b)&0xFF
+  *(unsigned char *)0x3000 = (UINT16)(b)>>8; \
+  *(unsigned char *)0x2000 = (UINT8)(b)
 
 #define SWITCH_RAM_MBC5(b) \
   *(unsigned char *)0x4000 = (b)
@@ -150,15 +150,15 @@ extern UBYTE _io_out;
 /* ************************************************************ */
 
 void
-delay(UWORD d);
+delay(UINT16 d);
 
 /* ************************************************************ */
 
-UBYTE
+UINT8
 joypad(void);
 
-UBYTE
-waitpad(UBYTE mask);
+UINT8
+waitpad(UINT8 mask);
 
 void
 waitpadup(void);
@@ -172,7 +172,7 @@ void
 disable_interrupts(void);
 
 void
-set_interrupts(UBYTE flags);
+set_interrupts(UINT8 flags);
 
 void
 reset(void);
@@ -186,9 +186,9 @@ display_off(void);
 /* ************************************************************ */
 
 void
-hiramcpy(UBYTE dst,
+hiramcpy(UINT8 dst,
 	 const void *src,
-	 UBYTE n);
+	 UINT8 n);
 
 /* ************************************************************ */
 
@@ -225,122 +225,122 @@ hiramcpy(UBYTE dst,
 /* ************************************************************ */
 
 void
-set_bkg_data(UBYTE first_tile,
-	     UBYTE nb_tiles,
+set_bkg_data(UINT8 first_tile,
+	     UINT8 nb_tiles,
 	     unsigned char *data);
 
 void
-set_bkg_tiles(UBYTE x,
-	      UBYTE y,
-	      UBYTE w,
-	      UBYTE h,
+set_bkg_tiles(UINT8 x,
+	      UINT8 y,
+	      UINT8 w,
+	      UINT8 h,
 	      unsigned char *tiles);
 
 void
-get_bkg_tiles(UBYTE x,
-	      UBYTE y,
-	      UBYTE w,
-	      UBYTE h,
+get_bkg_tiles(UINT8 x,
+	      UINT8 y,
+	      UINT8 w,
+	      UINT8 h,
 	      unsigned char *tiles);
 
 void
-move_bkg(UBYTE x,
-	 UBYTE y);
+move_bkg(UINT8 x,
+	 UINT8 y);
 
 void
-scroll_bkg(BYTE x,
-	   BYTE y);
+scroll_bkg(INT8 x,
+	   INT8 y);
 
 /* ************************************************************ */
 
 void
-set_win_data(UBYTE first_tile,
-	     UBYTE nb_tiles,
+set_win_data(UINT8 first_tile,
+	     UINT8 nb_tiles,
 	     unsigned char *data);
 
 void
-set_win_tiles(UBYTE x,
-	      UBYTE y,
-	      UBYTE w,
-	      UBYTE h,
+set_win_tiles(UINT8 x,
+	      UINT8 y,
+	      UINT8 w,
+	      UINT8 h,
 	      unsigned char *tiles);
 
 void
-get_win_tiles(UBYTE x,
-	      UBYTE y,
-	      UBYTE w,
-	      UBYTE h,
+get_win_tiles(UINT8 x,
+	      UINT8 y,
+	      UINT8 w,
+	      UINT8 h,
 	      unsigned char *tiles);
 
 void
-move_win(UBYTE x,
-	 UBYTE y);
+move_win(UINT8 x,
+	 UINT8 y);
 
 void
-scroll_win(BYTE x,
-	   BYTE y);
+scroll_win(INT8 x,
+	   INT8 y);
 
 /* ************************************************************ */
 
 void
-set_sprite_data(UBYTE first_tile,
-		UBYTE nb_tiles,
+set_sprite_data(UINT8 first_tile,
+		UINT8 nb_tiles,
 		unsigned char *data);
 
 void
-get_sprite_data(UBYTE first_tile,
-		UBYTE nb_tiles,
+get_sprite_data(UINT8 first_tile,
+		UINT8 nb_tiles,
 		unsigned char *data);
 
 void
-set_sprite_tile(UBYTE nb,
-		UBYTE tile);
+set_sprite_tile(UINT8 nb,
+		UINT8 tile);
 
-UBYTE
-get_sprite_tile(UBYTE nb);
-
-void
-set_sprite_prop(UBYTE nb,
-		UBYTE prop);
-
-UBYTE
-get_sprite_prop(UBYTE nb);
+UINT8
+get_sprite_tile(UINT8 nb);
 
 void
-move_sprite(UBYTE nb,
-	    UBYTE x,
-	    UBYTE y);
+set_sprite_prop(UINT8 nb,
+		UINT8 prop);
+
+UINT8
+get_sprite_prop(UINT8 nb);
 
 void
-scroll_sprite(BYTE nb,
-	      BYTE x,
-	      BYTE y);
+move_sprite(UINT8 nb,
+	    UINT8 x,
+	    UINT8 y);
+
+void
+scroll_sprite(INT8 nb,
+	      INT8 x,
+	      INT8 y);
 
 /* ************************************************************ */
 
 void
 set_data(unsigned char *vram_addr,
 	 unsigned char *data,
-	 UWORD len);
+	 UINT16 len);
 
 void
 get_data(unsigned char *data,
 	 unsigned char *vram_addr,
-	 UWORD len);
+	 UINT16 len);
 
 void
-set_tiles(UBYTE x,
-	  UBYTE y,
-	  UBYTE w,
-	  UBYTE h,
+set_tiles(UINT8 x,
+	  UINT8 y,
+	  UINT8 w,
+	  UINT8 h,
 	  unsigned char *vram_addr,
 	  unsigned char *tiles);
 
 void
-get_tiles(UBYTE x,
-	  UBYTE y,
-	  UBYTE w,
-	  UBYTE h,
+get_tiles(UINT8 x,
+	  UINT8 y,
+	  UINT8 w,
+	  UINT8 h,
 	  unsigned char *tiles,
 	  unsigned char *vram_addr);
 

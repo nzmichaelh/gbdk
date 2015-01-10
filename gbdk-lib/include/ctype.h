@@ -3,25 +3,25 @@
 
 #include <types.h>
 
-BYTE
+BOOLEAN
 isalpha(char c);
 
-BYTE
+BOOLEAN
 isupper(char c);
 
-BYTE
+BOOLEAN
 islower(char c);
 
-BYTE
+BOOLEAN
 isdigit(char c);
 
-BYTE
+BOOLEAN
 isspace(char c);
 
-BYTE
+char
 toupper(char c);
 
-BYTE
+char
 tolower(char c);
 
 #endif /* _CTYPE_H */

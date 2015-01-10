@@ -4,9 +4,12 @@ TOPDIR = ..
 
 include $(TOPDIR)/Makefile.common
 
-LIBC_OBJ = string.o printf.o puts.o \
-	isalpha.o isdigit.o islower.o isspace.o isupper.o \
-	toupper.o tolower.o
+LIBC_OBJ =	abs.o atoi.o atol.o isalpha.o isdigit.o \
+		islower.o isspace.o isupper.o itoa.o labs.o ltoa.o \
+		printf.o puts.o reverse.o scanf.o strcat.o string.o \
+		strlen.o strncat.o strncmp.o strncpy.o time.o \
+		tolower.o toupper.o
+#		free.o malloc.o realloc.o calloc.o
 
 CFLAGS = -I$(TOPDIR)/include
 CFLAGS += -m$(PORT) -v
@@ -38,4 +41,3 @@ ports-clean:
 
 platform-clean:
 	for i in $(PLATFORMS); do make -C $$i clean PLAT=$$i; done
-

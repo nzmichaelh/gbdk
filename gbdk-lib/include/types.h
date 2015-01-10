@@ -5,11 +5,9 @@
 
 #define	NULL     0
 
-enum {
-    FALSE,
-    TRUE
-};
+#define FALSE		0
+#define TRUE		1
 
-typedef void *             POINTER;
+typedef void *       	POINTER;
 
 #endif

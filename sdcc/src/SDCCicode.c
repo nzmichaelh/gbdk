@@ -1060,7 +1060,7 @@ operand *operandFromSymbol (symbol *sym)
 {
     operand *op ;
     iCode *ic ;
-    
+    int ok =1 ;
     /* if the symbol's type is a literal */
     /* then it is an enumerator type     */
     if (IS_LITERAL(sym->etype) && SPEC_ENUM(sym->etype)) 
@@ -1084,6 +1084,11 @@ operand *operandFromSymbol (symbol *sym)
     
     /* under the following conditions create a
        register equivalent for a local symbol */
+    if (sym->level && sym->etype && SPEC_OCLS(sym->etype) &&
+	IN_FARSPACE(SPEC_OCLS(sym->etype))  &&
+	options.stackAuto == 0)
+	ok =0;
+
     if (!IS_AGGREGATE(sym->type) &&     /* not an aggregate */
 	!IS_FUNC(sym->type)      &&     /* not a function   */
 	!sym->_isparm            &&     /* not a parameter  */
@@ -1093,7 +1098,7 @@ operand *operandFromSymbol (symbol *sym)
 	!IS_VOLATILE(sym->etype) &&     /* not declared as volatile */
 	!IS_STATIC(sym->etype)   &&     /* and not declared static  */
 	!sym->islbl              &&     /* not a label */
-	!IN_FARSPACE(SPEC_OCLS(sym->etype)) && /* not in far space */
+	ok                       &&     /* farspace check */
 	!IS_BITVAR(sym->etype)          /* not a bit variable */
 	) {
 	
@@ -1106,7 +1111,7 @@ operand *operandFromSymbol (symbol *sym)
 	OP_SYMBOL(sym->reqv)->islocal = 1;
 	SPIL_LOC(sym->reqv) = sym;
     }
-
+   
     if (!IS_AGGREGATE(sym->type)) {
 	op = newOperand();
 	op->type = SYMBOL;
@@ -1648,7 +1653,7 @@ link *aggrToPtr ( link *type, bool force)
     ptype->next = type;
     /* if the output class is generic */
     if ((DCL_TYPE(ptype) = PTR_TYPE(SPEC_OCLS(etype))) == CPOINTER)
-	DCL_PTR_CONST(ptype) = 1;
+	DCL_PTR_CONST(ptype) = port->mem.code_ro;
 
     /* if the variable was declared a constant */
     /* then the pointer points to a constant */
@@ -1671,7 +1676,7 @@ operand *geniCodeArray2Ptr (operand *op)
 
     /* set the pointer depending on the storage class */    
     if ((DCL_TYPE(optype) = PTR_TYPE(SPEC_OCLS(opetype))) == CPOINTER)
-	DCL_PTR_CONST(optype) = 1;
+	DCL_PTR_CONST(optype) = port->mem.code_ro;
 
     
     /* if the variable was declared a constant */
@@ -1926,18 +1931,19 @@ operand *geniCodeAddressOf (operand *op)
     link *optype = operandType(op);
     link *opetype= getSpec(optype);
     
+    /* lvalue check already done in decorateType */
     /* this must be a lvalue */
-    if (!op->isaddr && !IS_AGGREGATE(optype)) {
-	werror (E_LVALUE_REQUIRED,"&");
-	return op;
-    }
+/*     if (!op->isaddr && !IS_AGGREGATE(optype)) { */
+/* 	werror (E_LVALUE_REQUIRED,"&"); */
+/* 	return op; */
+/*     } */
     
     p = newLink();
     p->class = DECLARATOR ;
     
     /* set the pointer depending on the storage class */
     if ((DCL_TYPE(p) = PTR_TYPE(SPEC_OCLS(opetype))) == CPOINTER)
-	DCL_PTR_CONST(p) = 1;
+	DCL_PTR_CONST(p) = port->mem.code_ro;
 
     /* make sure we preserve the const & volatile */
     if (IS_CONSTANT(opetype)) 
@@ -1991,6 +1997,14 @@ void setOClass (link *ptr, link *spec)
     case PPOINTER:
 	SPEC_OCLS(spec) = xstack;
 	break;
+
+    case EEPPOINTER:
+	SPEC_OCLS(spec) = eeprom;
+	break;
+
+    default:
+	break;
+
     }
 }
 
@@ -2402,16 +2416,19 @@ static void geniCodeReceive (value *args)
 
 	    /* we will use it after all optimizations
 	       and before liveRange calculation */	    
-	    if (!sym->addrtaken && 
-		!IS_VOLATILE(sym->etype) &&
-		!IN_FARSPACE(SPEC_OCLS(sym->etype))) {
-		opl = newiTempOperand(args->type,0);
-		sym->reqv = opl ;	    
-		sym->reqv->key = sym->key ;
-		OP_SYMBOL(sym->reqv)->key = sym->key;
-		OP_SYMBOL(sym->reqv)->isreqv = 1;
-		OP_SYMBOL(sym->reqv)->islocal= 0;
-		SPIL_LOC(sym->reqv) =  sym;
+	    if (!sym->addrtaken && !IS_VOLATILE(sym->etype)) {
+
+		if(IN_FARSPACE(SPEC_OCLS(sym->etype)) &&
+		   options.stackAuto == 0) {
+		} else {
+		    opl = newiTempOperand(args->type,0);
+		    sym->reqv = opl ;	    
+		    sym->reqv->key = sym->key ;
+		    OP_SYMBOL(sym->reqv)->key = sym->key;
+		    OP_SYMBOL(sym->reqv)->isreqv = 1;
+		    OP_SYMBOL(sym->reqv)->islocal= 0;
+		    SPIL_LOC(sym->reqv) =  sym;
+		}
 	    }
 
 	    ic = newiCode(RECEIVE,NULL,NULL);

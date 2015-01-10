@@ -2,7 +2,7 @@
  * lcc [ option ]... [ file | -llib ]...
  * front end for the ANSI C compiler
  */
-static char rcsid[] = "$Id: lcc.c,v 1.4 2000/03/08 04:31:46 michaelh Exp $";
+static char rcsid[] = "$Id: lcc.c,v 1.5 2000/03/27 00:56:12 michaelh Exp $";
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -52,6 +52,7 @@ extern int getpid(void);
 
 extern char *cpp[], *include[], *com[], *as[],*ld[], inputs[], *suffixes[];
 extern int option(char *);
+extern void set_gbdk_dir(void);
 
 void finalise(void);
 
@@ -104,7 +105,9 @@ int main(int argc, char *argv[]) {
 	plist = append("-D__LCC__", 0);
 	initinputs();
 	if (getenv("GBDKDIR"))
-		option(stringf("--prefix=%s", getenv("GBDKDIR")));
+	        option(stringf("--prefix=%s", getenv("GBDKDIR")));
+	else
+	    set_gbdk_dir();
 	for (nf = 0, i = j = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-o") == 0) {
 			if (++i < argc) {
