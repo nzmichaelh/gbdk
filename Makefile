@@ -31,6 +31,8 @@ SDCCDIR = $(TOPDIR)/sdcc
 GBDKLIBDIR = $(TOPDIR)/gbdk-lib
 # Directory containing the source to gbdk-support
 GBDKSUPPORTDIR = $(TOPDIR)/gbdk-support
+# Directory containing the source to maccer
+MACCERDIR = $(TOPDIR)/maccer
 
 # Base setup
 # Extension to add to executables
@@ -45,12 +47,14 @@ TARGETOS = $(HOSTOS)
 TARGETDIR = /opt/gbdk
 # Directory that gbdk for this target is built into.
 BUILDDIR = $(TOPDIR)/build/$(TARGETOS)/gbdk
+# Intermediates directory
+INTDIR = $(TOPDIR)/tmp
 
 NOISELOG = $(TOPDIR)/noise.log
 
 all: native-build
 
-clean: sdcc-clean gbdk-support-clean gbdk-lib-clean
+clean: sdcc-clean gbdk-support-clean gbdk-lib-clean maccer-clean
 
 distclean: clean build-dir-clean
 
@@ -137,9 +141,9 @@ $(SDCCDIR)/sdccconf.h:
 	cd $(SDCCDIR); CC=$(TARGETCC) CXX=$(TARGETCXX) STRIP=$(TARGETSTRIP) RANLIB=$(TARGETRANLIB) CXXFLAGS=$(TARGETCXXFLAGS) ./configure $(SDCCCONFIGUREFLAGS) --host=$(HOSTOS)
 
 sdcc-install: sdcc-build build-bin-dir
-	rm -fr tmp
-	$(MAKE) -C $(SDCCDIR) install prefix=$(TOPDIR)/tmp
-	cp tmp/bin/sdcc* tmp/bin/sdcpp* tmp/bin/link-* tmp/bin/as-* $(BUILDDIR)/bin
+	rm -rf $(INTDIR)/sdcc
+	$(MAKE) -C $(SDCCDIR) install prefix=$(INTDIR)/sdcc
+	cp $(INTDIR)/sdcc/bin/sdcc* $(INTDIR)/sdcc/bin/sdcpp* $(INTDIR)/sdcc/bin/link-* $(INTDIR)/sdcc/bin/as-* $(BUILDDIR)/bin
 
 # PENDING: Hack below
 sdcc-clean:
@@ -159,9 +163,9 @@ gbdk-support-clean:
 	$(MAKE) -C $(GBDKSUPPORTDIR)/lcc clean
 
 # Rules for gbdk-lib
-gbdk-lib-build:
+gbdk-lib-build: maccer-build
 ifndef CROSSCOMPILING
-	$(MAKE) -C $(GBDKLIBDIR)/libc PORTS=gbz80 PLATFORMS=gb SDCCLIB=$(SDCCDIR)
+	PATH=$(PATH):$(INTDIR)/host $(MAKE) -C $(GBDKLIBDIR)/libc PORTS=gbz80 PLATFORMS=gb SDCCLIB=$(SDCCDIR)
 endif
 
 gbdk-lib-install: gbdk-lib-build
@@ -175,6 +179,12 @@ gbdk-lib-clean:
 gbdk-lib-examples-makefile:
 	$(MAKE) -C $(BUILDDIR)/examples/gb make.bat
 	unix2dos $(BUILDDIR)/examples/gb/make.bat
+
+maccer-build:
+	$(MAKE) -C $(MACCERDIR) install PREFIX=$(INTDIR)/host
+
+maccer-clean:
+	$(MAKE) -C $(MACCERDIR) clean
 
 # Final binary
 binary: binary-tidyup
