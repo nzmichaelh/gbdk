@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-BOOLEAN isupper(char c)
+BOOLEAN isupper(char c) BANKED
 {
   if(c >= 'A' && c <= 'Z')
     return 1;

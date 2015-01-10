@@ -39,6 +39,10 @@
     ...!uunet!pcrat!dry2	(results only)
 */
 
+#define NOENUM		1
+#define NOSTRUCTASSIGN	1
+#define REG
+
 #include "dhry.h"
 #include <string.h>
 /** For printf */
@@ -87,6 +91,8 @@ Enumeration Func_1 (Capital_Letter Ch_1_Par_Val, Capital_Letter Ch_2_Par_Val);
 Boolean Func_2 (char *Str_1_Par_Ref, char *Str_2_Par_Ref);
 Boolean Func_3 (Enumeration Enum_Par_Val);
 
+unsigned getsp(void);
+
 int main(void)
 {
     One_Fifty       Int_1_Loc;
@@ -105,13 +111,12 @@ int main(void)
     Next_Ptr_Glob = &_r[0];
     Ptr_Glob = &_r[1];
 
-
     Ptr_Glob->Ptr_Comp                    = Next_Ptr_Glob;
     Ptr_Glob->Discr                       = Ident_1;
     Ptr_Glob->variant.var_1.Enum_Comp     = Ident_3;
     Ptr_Glob->variant.var_1.Int_Comp      = 40;
 
-    strcpy (Ptr_Glob->variant.var_1.Str_Comp, 
+    strcpy(Ptr_Glob->variant.var_1.Str_Comp, 
 	    "DHRYSTONE PROGRAM, SOME STRING");
     strcpy (Str_1_Loc, "DHRYSTONE PROGRAM, 1'ST STRING");
 
@@ -123,13 +128,15 @@ int main(void)
     /* overflow may occur for this array element.                   */
 
     /* 32766 is the highest value for a 16 bitter */
-    Number_Of_Runs = 32766;
+    Number_Of_Runs = 10000;
 
     runTime = clock();
 
     /* Main test loop */
     for (Run_Index = 1; Run_Index <= Number_Of_Runs; ++Run_Index) {
 	DPRINTF(("Run_Index = %d\n", Run_Index));
+	if (!(Run_Index & 1023))
+	    printf("Loops: %u\r", Run_Index);
 	Proc_5();
 	Proc_4();
 	/* Ch_1_Glob == 'A', Ch_2_Glob == 'B', Bool_Glob == true */
@@ -195,13 +202,13 @@ int main(void)
 	DPRINTF(("Looping.\n"));
     } /* loop "for Run_Index" */
 
-#if 1
     _printTStates();
 
     printf("Run_Index = %d\n", Run_Index);
 
     runTime = clock() - runTime;
 
+#if 1
     printf ("Execution ends\n");
     printf ("\n");
     printf ("Final values of the variables used in the benchmark:\n");
@@ -216,7 +223,11 @@ int main(void)
     printf ("        should be:   %c\n", 'B');
     printf ("Arr_1_Glob[8]:       %d\n", Arr_1_Glob[8]);
     printf ("        should be:   %d\n", (int)7);
+#if 0
     printf ("Arr_2_Glob[8][7]:    %d\n", Arr_2_Glob[8][7]);
+#else
+    //    printf ("Arr_2_Glob[8][7]:    %d\n", Arr_2_Glob[8][7]);
+#endif
     printf ("        should be:   Number_Of_Runs + 10\n");
     printf ("Ptr_Glob->\n");
     printf ("  Ptr_Comp:          %d\n", (int) Ptr_Glob->Ptr_Comp);
@@ -254,10 +265,10 @@ int main(void)
     printf ("Str_2_Loc:           %s\n", Str_2_Loc);
     printf ("        should be:   DHRYSTONE PROGRAM, 2'ND STRING\n");
     printf ("\n");
+#endif
     printf("Dhrystones/s = %u\n", Number_Of_Runs / (runTime/CLOCKS_PER_SEC));
     printf("MIPS = d/s/1757 = (sigh, need floats...)\n");
     _printTStates();
-#endif
     printf("Time: %u ticks\n", runTime);
 }
 

@@ -1,0 +1,53 @@
+ifndef PORT
+PORT = gbz80
+endif
+
+ifeq ($(ASM),rgbds)
+CFLAGS += --asm=rgbds
+# Override the default rule
+%.o: %.s
+
+$(LIB): pre $(OBJ) $(CRT0)
+	mkdir -p $(BUILD)
+ifneq ($(LIB_APPEND), 1)
+	rm -f $(LIB)
+endif
+	xlib $(LIB) a $(OBJ)
+ifdef CRT0
+	cp -f $(CRT0) $(BUILD)
+endif
+
+pre:
+	-astorgb.pl global.s > global.asm
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+
+%.asm: %.s
+	astorgb.pl $< > $@
+
+%.o: %.rasm
+	rgbasm -o$@ $<
+
+%.o: %.asm
+	rgbasm -o$@ $<
+
+else
+$(LIB): $(OBJ) $(CRT0) dummy
+	mkdir -p $(BUILD)
+	cp -f $(OBJ) $(BUILD)
+ifneq ($(LIB_APPEND), 1)
+	ls $(OBJ) > $(LIB)
+else
+	ls $(OBJ) >> $(LIB)
+endif
+ifdef CRT0
+	cp -f $(CRT0) $(BUILD)
+endif
+
+endif
+
+clean:
+	rm -f $(OBJ) $(CLEANSPEC)
+
+dummy:

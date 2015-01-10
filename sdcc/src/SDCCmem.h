@@ -36,6 +36,7 @@ extern FILE	*junkFile ;
 #define  BIT_NAME      port->mem.bit_name
 #define  REG_NAME      port->mem.reg_name
 #define  STATIC_NAME   port->mem.static_name
+#define	 HOME_NAME     port->mem.home_name
  
 /* forward definition for variables */
 extern   memmap  *xstack;    /* xternal stack data         */
@@ -53,6 +54,8 @@ extern   memmap  *_const;    /* constant segment           */
 extern   memmap  *generic;   /* unknown                    */
 extern   memmap  *overlay;   /* the overlay segment        */
 extern   memmap  *eeprom;    /* eepromp space              */
+extern   memmap  *eeprom;    /* eepromp space              */
+extern	 memmap	 *home;	     /* Non-banked home space	   */
 
 extern   struct  set     *ovrSetSets;
 
@@ -79,5 +82,5 @@ int         allocVariables (struct symbol  *                );
 void        overlay2Set    (                                );
 void        overlay2data   (                                );
 void        redoStackOffsets(                               );
-
+void        printAllocInfo (struct symbol *, FILE *);
 #endif

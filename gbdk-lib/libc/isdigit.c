@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-BOOLEAN isdigit(char c)
+BOOLEAN isdigit(char c) BANKED
 {
   if(c >= '0' && c <= '9')
     return 1;

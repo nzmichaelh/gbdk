@@ -6,6 +6,6 @@
 
 /** Return a non-null value if running on Super GameBoy */
 UINT8
-sgb_check(void);
+sgb_check(void) BANKED;
 
 #endif /* _SGB_H */

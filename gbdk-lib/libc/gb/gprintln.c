@@ -4,7 +4,7 @@
 
 extern char *digits;
 
-void gprintln(INT16 number, INT8 radix, INT8 signed_value)
+void gprintln(INT16 number, INT8 radix, INT8 signed_value) BANKED
 {
   UINT16 l;
 

@@ -1,5 +1,6 @@
-/Makefile/1.1/Mon Feb 21 02:04:36 2000//Tgbdk-294
-/Makefile.common/1.7/Sun Mar  5 22:11:32 2000//Tgbdk-294
+/Makefile/1.1/Mon Feb 21 02:04:36 2000//Tgbdk-295
 D/examples////
 D/include////
 D/libc////
+D/tools////
+/Makefile.common/1.11.2.1/Sat Jul 22 17:43:15 2000//Tgbdk-295

@@ -2,22 +2,41 @@ PRJDIR = ../..
 
 include $(PRJDIR)/Makefile.common
 
+OBJDIR	= obj/$(EXT)
 SDC	= .
-OBJS	= asdata.o asexpr.o aslex.o aslist.o asmain.o asout.o \
-	  assubr.o assym.o z80adr.o z80ext.o z80mch.o z80pst.o
-BINS	= $(BUILDDIR)/as$(EXT)
+SRC	= asdata.c asexpr.c aslex.c aslist.c asmain.c asout.c \
+	  assubr.c assym.c z80adr.c z80ext.c z80mch.c z80pst.c
+OBJS	= $(SRC:%.c=$(OBJDIR)/%.o)
+BINS	= $(BUILDDIR)as$(EXT)
 
 CFLAGS	+= $(OPTS) -I. -DINDEXLIB -DMLH_MAP -DUNIX -DSDK
 CFLAGS	+= -funsigned-char
 LDFLAGS += -lm
 
-all:	$(BINS)
+all:	$(OBJDIR) dep $(BINS)
+
+dep: Makefile.dep
+
+Makefile.dep: $(SRC) *.h
+	$(CPP) $(CPPFLAGS) $(M_OR_MM) $(SRC) > Makefile.dep
+
+include Makefile.dep
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
 $(BINS): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(BINS) $(OBJS)
 
-%.o:	%.c
+
+$(OBJDIR)/%.o:	%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 clean:
-	rm -f $(OBJS) $(BINS)
+	rm -rf $(OBJS) $(BINS) $(OBJDIR)
+
+_as-z80:
+	$(MAKE) EXT=-z80$(E)
+
+_as-gbz80:
+	$(MAKE) EXT=-gbz80$(E) OPTS=-DGAMEBOY

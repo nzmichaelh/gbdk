@@ -2,7 +2,7 @@
 #include <string.h>
 #include <types.h>
 
-char *reverse(char *s)
+char *reverse(char *s) BANKED
 {
   UINT8 i, j;
   char c;

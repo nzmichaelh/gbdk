@@ -12,6 +12,7 @@ static va_list _iprintf(char *pInto, const char *szFormat, va_list ap)
 {
     char *pStart = pInto;
     char *sz = gc_strdup(szFormat);
+    static int count;
 
     while (*sz) {
 	if (*sz == '%') {
@@ -23,6 +24,16 @@ static va_list _iprintf(char *pInto, const char *szFormat, va_list ap)
 	    /* Name of the code segment */
 	    case 'C':
 		strcpy(pInto, CODE_NAME);
+		pInto = pStart + strlen(pStart);
+		sz++;
+		break;
+	    case 'F':
+		strcpy(pInto, srcFileName);
+		pInto = pStart + strlen(pStart);	
+		sz++;
+		break;
+	    case 'I':
+		sprintf(pInto, "%u", ++count);
 		pInto = pStart + strlen(pStart);
 		sz++;
 		break;
@@ -144,19 +155,20 @@ static const ASM_MAPPING _asxxxx_mapping[] = {
     { "area", ".area %s" },
     { "areacode", ".area %s" },
     { "areadata", ".area %s" },
+    { "areahome", ".area %s" },
     { "ascii", ".ascii \"%s\"" },
     { "ds", ".ds %d" },
-    { "db", ".db %d" },
+    { "db", ".db" },
     { "dbs", ".db %s" },
-    { "dw", ".dw %d" },
+    { "dw", ".dw" },
     { "dws", ".dw %s" },
     { "constbyte", "0x%02X" },
     { "constword", "0x%04X" },
     { "immedword", "#0x%04X" },
     { "immedbyte", "#0x%02X" },
     { "hashedstr", "#%s" },
-    { "lsbimmeds", "#>%s" },
-    { "msbimmeds", "#<%s" },
+    { "lsbimmeds", "#<%s" },
+    { "msbimmeds", "#>%s" },
     { "module", ".module %s" },
     { "global", ".globl %s" },
     { "fileprelude", "" },
@@ -166,6 +178,7 @@ static const ASM_MAPPING _asxxxx_mapping[] = {
       "; ---------------------------------"
     },
     { "functionlabeldef", "%s:" },
+    { "bankimmeds", "0	; PENDING: bank support" },
     { NULL, NULL }
 };
 

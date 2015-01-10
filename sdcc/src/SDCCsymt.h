@@ -101,6 +101,7 @@ typedef struct specifier {
     unsigned   _typedef :1  ;  /* is typedefed               */
     unsigned   _isregparm:1 ;  /* is the first parameter     */
     unsigned   _isenum   :1 ;  /* is an enumerated type      */
+    unsigned    nonbanked   :1  ;  /* function has the nonbanked attribute */
     unsigned   _IntNo       ;  /* 1=Interrupt svc routine    */
     short      _regbank     ;  /* register bank 2b used      */
     unsigned   _addr        ;  /* address of symbol          */
@@ -135,11 +136,11 @@ typedef enum {
 } DECLARATOR_TYPE;
 
 typedef struct declarator {
-    DECLARATOR_TYPE dcl_type;     /* POINTER,ARRAY or FUNCTION  */
-    short    num_elem;     /* # of elems if type==array  */
-    short    ptr_const :1;   /* pointer is constant        */
-    short    ptr_volatile:1; /* pointer is volatile        */
-    struct link *tspec;     /* pointer type specifier      */
+    DECLARATOR_TYPE dcl_type;       /* POINTER,ARRAY or FUNCTION  */
+    unsigned int    num_elem;       /* # of elems if type==array  */
+    short           ptr_const :1;   /* pointer is constant        */
+    short           ptr_volatile:1; /* pointer is volatile        */
+    struct link     *tspec;         /* pointer type specifier      */
 } declarator ;
 
 #define DECLARATOR   0
@@ -201,9 +202,13 @@ typedef struct symbol {
     unsigned onStack    :1      ;  /* this symbol allocated on the stack */
     unsigned iaccess    :1      ;  /* indirect access      */
     unsigned ruonly     :1      ;  /* used in return statement only */
-    unsigned accuse     :1      ;  /* can be left in the accumulator */
     unsigned spildir    :1      ;  /* spilt in direct space */
     unsigned ptrreg     :1      ;  /* this symbol assigned to a ptr reg */
+    unsigned accuse             ;  /* can be left in the accumulator
+				      On the Z80 accuse is devided into
+				      ACCUSE_A and ACCUSE_HL as the idea
+				      is quite similar.
+				   */
 
     int      stack              ;  /* offset on stack      */
     int      xstack             ;  /* offset on xternal stack */
@@ -274,6 +279,7 @@ typedef struct symbol {
 #define SPEC_STRUCT(x) x->select.s.v_struct
 #define SPEC_TYPEDEF(x) x->select.s._typedef
 #define SPEC_REGPARM(x) x->select.s._isregparm
+#define SPEC_NONBANKED(x) x->select.s.nonbanked
 
 /* type check macros */
 #define IS_DECL(x)   ( x && x->class == DECLARATOR	)
@@ -320,6 +326,9 @@ typedef struct symbol {
 #define IS_LITERAL(x)   (IS_SPEC(x)  && x->select.s.sclass == S_LITERAL)
 #define IS_ISR(x)		(IS_SPEC(x)  && SPEC_INTRTN(x))
 #define IS_REGPARM(x)   (IS_SPEC(x) && SPEC_REGPARM(x))
+#define IS_NONBANKED(x)   (IS_SPEC(x) && SPEC_NONBANKED(x))
+/* Note that !IS_BANKED is not IS_NONBANKED */
+#define IS_BANKED(x)	(IS_SPEC(x) && !SPEC_NONBANKED(x) && !SPEC_STAT(x))
 
 /* forward declaration for the global vars */
 extern bucket *SymbolTab[] ;

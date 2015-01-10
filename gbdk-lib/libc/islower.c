@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-BOOLEAN islower(char c)
+BOOLEAN islower(char c) BANKED
 {
   if(c >= 'a' && c <= 'z')
     return 1;

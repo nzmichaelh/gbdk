@@ -10,20 +10,20 @@
 
 /** Initalise the random number generator.
     seed needs to be different each time, else the same sequence will be 
-    generated.  A good source is the DVI register.
+    generated.  A good source is the DIV register.
 */
 void
-initrand(UINT16 seed);
+initrand(UINT16 seed) NONBANKED; /* Non-banked as called from asm in arand.s */
 
 /** Returns a random value.
  */
 INT8
-rand(void);
+rand(void) BANKED;
 
 /** Returns a random word.
  */
 UINT16
-randw(void);
+randw(void) BANKED;
 
 /** Random generator using the linear lagged additive method
     Note that 'initarand()' calls 'initrand()' with the same seed value, and
@@ -32,11 +32,11 @@ randw(void);
     @author	Luc Van den Borre
 */
 void
-initarand(UINT16 seed);
+initarand(UINT16 seed) BANKED;
 
 /** Generates a random number using the linear lagged additive method.
  */
 INT8
-arand(void);
+arand(void) BANKED;
 
 #endif

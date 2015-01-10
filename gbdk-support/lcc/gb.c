@@ -43,7 +43,7 @@ static struct {
     { "comdefault",	"-m%port% --c1mode" },
     { "as",		"%bindir%as-%port%" },
     { "ld",		"%bindir%link-%port%" },
-    { "libdir",		"%prefix%lib/" },
+    { "libdir",		"%prefix%lib/asxxxx/" },
     { "bindir",		"%prefix%bin/" },
 };
 
@@ -97,7 +97,7 @@ static CLASS classes[] = {
       NULL,
       "consolez80",
       "%cpp% %cppdefault% $1 $2 $3",
-      "%includedefault%",
+      "-I%includedir%/gbdk-lib",
       "%com% %comdefault% $1 $2 $3",
       "%as% -pog $1 $3 $2",
       "%ld% -n -- -i $1 -b_DATA=0x8000 -b_CODE=0x200 -k%libdir%%port%/ -l%port%.lib "

@@ -973,6 +973,7 @@ DEFSETFUNC(diCodeForSym)
 int constFold (iCode *ic, set *cseSet)
 {
     iCode *dic = NULL;
+    iCode *ldic= NULL;
     /* this routine will change
        a = b + 10;
        c = a + 10;
@@ -1006,6 +1007,16 @@ int constFold (iCode *ic, set *cseSet)
     if (!IS_OP_LITERAL(IC_RIGHT(dic)))
 	return 0;
 
+    /* find the definition of the left operand
+       of dic.then check if this defined with a
+       get_pointer return 0 if the pointer size is
+       less than 2 (MCS51 specific) */
+    if (!(applyToSet(cseSet,diCodeForSym,IC_LEFT(dic),&ldic)))
+	return 0;
+
+    if (POINTER_GET(ldic) && getSize(operandType(IC_LEFT(ldic))) <= 1)
+	return 0;
+    
     /* it is if the operations are the same*/
     /* the literal parts need to be added  */
     IC_LEFT(ic) = operandFromOperand(IC_LEFT(dic));    
@@ -1096,6 +1107,20 @@ DEFSETFUNC(delGetPointerSucc)
 
     return applyToSet(ebp->succList,delGetPointerSucc,op,dfnum);
 }    
+
+/*-----------------------------------------------------------------*/
+/* fixUpTypes - KLUGE HACK fixup a lowering problem                */
+/*-----------------------------------------------------------------*/
+static void fixUpTypes(iCode *ic)
+{
+	link *t1 = operandType(IC_LEFT(ic)) ,*t2;
+	/* for pointer_gets if the types of result & left r the
+	   same then change it type of result to next */
+	if (IS_PTR(t1) &&
+	    checkType(t2=operandType(IC_RESULT(ic)),t1) == 1) {
+		setOperandType(IC_RESULT(ic),t2->next);
+	}
+}
 
 /*-----------------------------------------------------------------*/
 /* cseBBlock - common subexpression elimination for basic blocks   */
@@ -1224,6 +1249,8 @@ int cseBBlock ( eBBlock *ebb, int computeOnly,
 	if (POINTER_GET(ic) && !IS_PTR(operandType(IC_LEFT(ic)))) {
 	    setOperandType(IC_LEFT(ic),
 			   aggrToPtr(operandType(IC_LEFT(ic)),FALSE));
+	    fixUpTypes(ic);
+
 	}
 	if (POINTER_SET(ic) && !IS_PTR(operandType(IC_RESULT(ic)))) {
 	    setOperandType(IC_RESULT(ic),
@@ -1331,6 +1358,9 @@ int cseBBlock ( eBBlock *ebb, int computeOnly,
 	      IS_ITEMP(IC_RESULT(ic))               &&
 	    ! computeOnly) {
 	    applyToSet (cseSet,findPrevIc,ic,&pdic);
+	    if (pdic && checkType(operandType(IC_RESULT(pdic)),
+				  operandType(IC_RESULT(ic))) != 1)
+		    pdic = NULL;
 	} 
        
 	/* if found then eliminate this and add to*/

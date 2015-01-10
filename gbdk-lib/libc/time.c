@@ -1,13 +1,12 @@
 /*
   time.c
-
   Simple, not completly conformant implementation of time routines
 */
 
 /* clock() is in clock.s */
 #include <time.h>
 
-time_t time(time_t *t)
+time_t time(time_t *t) BANKED
 {
     UINT16 ret;
 

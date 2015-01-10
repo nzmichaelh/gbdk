@@ -53,6 +53,7 @@
 #include "gen.h"
 
 char *aopLiteral (value *val, int offset);
+extern int allocInfo;
 
 /* this is the down and dirty file with all kinds of 
    kludgy & hacky stuff. This is what it is all about
@@ -7152,6 +7153,7 @@ static void genCast (iCode *ic)
 {
     operand *result = IC_RESULT(ic);
     link *ctype = operandType(IC_LEFT(ic));
+    link *rtype = operandType(IC_RIGHT(ic));
     operand *right = IC_RIGHT(ic);
     int size, offset ;
 
@@ -7224,20 +7226,6 @@ static void genCast (iCode *ic)
 	    else {
 		/* we have to go by the storage class */
 		p_type = PTR_TYPE(SPEC_OCLS(etype));
-
-/* 		if (SPEC_OCLS(etype)->codesp )  */
-/* 		    p_type = CPOINTER ;	 */
-/* 		else */
-/* 		    if (SPEC_OCLS(etype)->fmap && !SPEC_OCLS(etype)->paged) */
-/* 			p_type = FPOINTER ; */
-/* 		    else */
-/* 			if (SPEC_OCLS(etype)->fmap && SPEC_OCLS(etype)->paged) */
-/* 			    p_type = PPOINTER; */
-/* 			else */
-/* 			    if (SPEC_OCLS(etype) == idata ) */
-/* 				p_type = IPOINTER ; */
-/* 			    else */
-/* 				p_type = POINTER ; */
 	    }
 		
 	    /* the first two bytes are known */
@@ -7299,10 +7287,10 @@ static void genCast (iCode *ic)
         offset++;
     }
 
-    /* now depending on the sign of the destination */
+    /* now depending on the sign of the source && destination */
     size = AOP_SIZE(result) - AOP_SIZE(right);
     /* if unsigned or not an integral type */
-    if (SPEC_USIGN(ctype) || !IS_SPEC(ctype)) {
+    if (SPEC_USIGN(rtype) || !IS_SPEC(rtype)) {
         while (size--)
             aopPut(AOP(result),zero,offset++);
     } else {
@@ -7421,6 +7409,9 @@ void gen51Code (iCode *lic)
 
     lineHead = lineCurr = NULL;
 
+    /* print the allocation information */
+    if (allocInfo)
+	printAllocInfo( currFunc, codeOutFile);
     /* if debug information required */
 /*     if (options.debug && currFunc) { */
     if (currFunc) {
@@ -7656,6 +7647,6 @@ void gen51Code (iCode *lic)
 	peepHole (&lineHead);
 
     /* now do the actual printing */
-    printLine (lineHead,codeOutFile);
+    printLine (lineHead,codeOutFile);    
     return;
 }

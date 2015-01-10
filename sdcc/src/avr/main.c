@@ -145,9 +145,12 @@ PORT avr_port = {
 	_asmCmd,
 	"-plosgffc",		/* Options with debug */
 	"-plosgff",		/* Options without debug */
+	0
     },
     {
-	_linkCmd
+	_linkCmd, 
+	NULL,
+	".rel"
     },
     {
 	_defaultRules
@@ -168,12 +171,13 @@ PORT avr_port = {
 	"GSINIT  (CODE)",
 	"OSEG    (OVR,DATA)",
 	"GSFINAL (CODE)",
+	"HOME	 (CODE)",
 	NULL,
 	NULL,
 	0,
     },
     { 
-	-1, 1, 4, 1, 1
+	-1, 1, 4, 1, 1, 0
     },
     /* avr has an 8 bit mul */
     {

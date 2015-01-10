@@ -123,8 +123,8 @@ LIBGC_CFLAGS= -O -DNO_SIGNALS -DSILENT \
 #   Flags for building libgc.a -- the last two are required.
 
 CXXFLAGS= $(CFLAGS) 
-AR= ar
-RANLIB= ranlib
+AR 		= ar
+RANLIB		= @RANLIB@
 
 
 # Redefining srcdir allows object code for the nonPCR version of the collector

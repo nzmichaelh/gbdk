@@ -1103,7 +1103,7 @@ static void serialRegAssign (eBBlock **ebbs, int count)
 				     OP_SYMBOL(IC_LEFT(ic)),ic->lineno);
 		/* do the same for the right operand */
 		if (IC_RIGHT(ic) && IS_SYMOP(IC_RIGHT(ic)) &&
-		    OP_SYMBOL(IC_RIGHT(ic))->nRegs && ic->op != '=')
+		    OP_SYMBOL(IC_RIGHT(ic))->nRegs)
 			positionRegs(OP_SYMBOL(IC_RESULT(ic)),
 				     OP_SYMBOL(IC_RIGHT(ic)),ic->lineno);
 		
@@ -1729,7 +1729,9 @@ static iCode *packRegsForOneuse (iCode *ic, operand *op , eBBlock *ebp)
        the usage of b, & acc */
     if (getSize(operandType(op)) >  (fReturnSize - 2) &&
 	ic->op != RETURN             &&
-	ic->op != SEND)
+	ic->op != SEND               &&
+	!POINTER_SET(ic)             &&
+	!POINTER_GET(ic))
 	return NULL;
 
     /* this routine will mark the a symbol as used in one 
@@ -1820,7 +1822,7 @@ static iCode *packRegsForOneuse (iCode *ic, operand *op , eBBlock *ebp)
 		return NULL;
 
 	/* if left or right or result is in far space */
-	if (isOperandInFarSpace(IC_LEFT(dic))   ||
+ 	if (isOperandInFarSpace(IC_LEFT(dic))   ||
 	    isOperandInFarSpace(IC_RIGHT(dic))  ||
 	    isOperandInFarSpace(IC_RESULT(dic)) ||
 	    IS_OP_RUONLY(IC_LEFT(dic))          ||

@@ -11,23 +11,23 @@
  */
 void
 gotoxy(UINT8 x,
-	   UINT8 y);
+	   UINT8 y) BANKED;
 
 /** Get the current X position of the cursor.
  */
 UINT8
-posx(void);
+posx(void) BANKED;
 
 /** Get the current Y position of the cursor.
  */
 UINT8
-posy(void);
+posy(void) BANKED;
 
 /** Writes out a single character at the current cursor
     position.
     Does not update the cursor or interpret the character.
 */
 void
-setchar(char c);
+setchar(char c) BANKED;
 
 #endif /* _CONSOLE_H */

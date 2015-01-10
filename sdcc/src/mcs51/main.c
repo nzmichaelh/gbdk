@@ -202,9 +202,12 @@ PORT mcs51_port = {
 	_asmCmd,
 	"-plosgffc",		/* Options with debug */
 	"-plosgff",		/* Options without debug */
+	0
     },
     {
-	_linkCmd
+	_linkCmd,
+	NULL,
+	".rel"
     },
     {
 	_defaultRules
@@ -225,12 +228,13 @@ PORT mcs51_port = {
 	"GSINIT  (CODE)",
 	"OSEG    (OVR,DATA)",
 	"GSFINAL (CODE)",
+	"HOME	 (CODE)",
 	NULL,
 	NULL,
 	1
     },
     { 
-	+1, 1, 4, 1, 1
+	+1, 1, 4, 1, 1, 0
     },
     /* mcs51 has an 8 bit mul */
     {

@@ -6,10 +6,10 @@
 
 /* memory segments */
 memmap  *xstack= NULL ;	 /* xternal stack data	       */
-memmap  *istack= NULL;	 /* internal stack	           */
-memmap  *code  = NULL;	 /* code segment	           */
+memmap  *istack= NULL;	 /* internal stack	       */
+memmap  *code  = NULL;	 /* code segment	       */
 memmap  *data  = NULL;	 /* internal data upto 128     */
-memmap  *xdata = NULL;	 /* external data			   */
+memmap  *xdata = NULL;	 /* external data	       */
 memmap  *idata = NULL;	 /* internal data upto 256     */
 memmap  *bit   = NULL;	 /* bit addressable space      */
 memmap  *statsg= NULL;	 /* the constant data segment  */
@@ -19,6 +19,7 @@ memmap  *sfrbit= NULL;   /* sfr bit space               */
 memmap  *generic=NULL;   /* is a generic pointer        */
 memmap  *overlay=NULL;   /* overlay segment             */
 memmap  *eeprom =NULL;   /* eeprom location             */
+memmap	*home	=NULL;	 /* Unswitchable code bank 	*/
 
 /* this is a set of sets each set containing
    symbols in a single overlay */
@@ -113,6 +114,18 @@ void initMem ()
 		   POINTER-TYPE   -   CPOINTER
 	*/
 	code 	  = allocMap (0, 1, 0, 0, 0, 1, options.code_loc, CODE_NAME,'C',CPOINTER);
+
+	/* home  segment ;   
+	           SFRSPACE       -   NO
+		   FAR-SPACE      -   YES
+		   PAGED          -   NO
+		   DIRECT-ACCESS  -   NO
+		   BIT-ACCESS     -   NO
+		   CODE-ACESS     -   YES 
+		   DEBUG-NAME     -   'C'
+		   POINTER-TYPE   -   CPOINTER
+	*/
+	home 	  = allocMap (0, 1, 0, 0, 0, 1, options.code_loc, CODE_NAME,'C',CPOINTER);
 
 	/* Static segment (code for variables );
 	           SFRSPACE       -   NO
@@ -429,7 +442,11 @@ void allocParms ( value  *val )
 		else {
 		    /* This looks like the wrong order but it turns out OK... */
 		    /* PENDING: isr, bank overhead, ... */
-		    SPEC_STAK(lval->etype) = SPEC_STAK(lval->sym->etype) = lval->sym->stack = stackPtr;
+		    SPEC_STAK(lval->etype) = SPEC_STAK(lval->sym->etype) = lval->sym->stack = 
+			stackPtr +
+			(IS_BANKED(currFunc->etype) ? port->stack.banked_overhead : 0) +
+			(IS_ISR(currFunc->etype) ? port->stack.isr_overhead : 0) +
+			0;
 		    stackPtr += getSize (lval->type);
 		}		    
 	    }
@@ -857,4 +874,65 @@ void redoStackOffsets ()
 	     sym = setNextItem(xstack->syms))
 	    cdbSymbol(sym,cdbFile,FALSE,FALSE);	
     }
+}
+
+/*-----------------------------------------------------------------*/
+/* printAllocInfoSeg- print the allocation for a given section     */
+/*-----------------------------------------------------------------*/
+static void printAllocInfoSeg ( memmap *map, symbol *func, FILE *of)
+{
+    symbol *sym;
+    
+    if (!map) return;
+    if (!map->syms) return;
+
+    for (sym = setFirstItem(map->syms); sym;
+	 sym = setNextItem(map->syms)) {
+	
+	if (sym->level == 0) continue;
+	if (sym->localof != func) continue ;
+	fprintf(of,";%-25s Allocated to ",sym->name);
+
+	/* if assigned to registers */
+	if (!sym->allocreq && sym->reqv) {
+	    int i;
+	    sym = OP_SYMBOL(sym->reqv);
+	    fprintf(of,"registers ");
+	    for (i = 0 ; i < 4 && sym->regs[i] ; i++)
+		fprintf(of,"%s ",port->getRegName(sym->regs[i]));
+	    fprintf(of,"\n");
+	    continue ;
+	}
+
+	/* if on stack */
+	if (sym->onStack) {
+	    fprintf(of,"stack - offset %d\n",sym->stack);
+	    continue;
+	}
+	
+	/* otherwise give rname */
+	fprintf(of,"in memory with name '%s'\n",sym->rname);
+    }
+}
+
+/*-----------------------------------------------------------------*/
+/* printAllocInfo - prints allocation information for a function   */
+/*-----------------------------------------------------------------*/
+void printAllocInfo( symbol * func, FILE *of)
+{
+    if (!of) of = stdout;
+
+    /* must be called after register allocation is complete */
+    fprintf(of,";------------------------------------------------------------\n");
+    fprintf(of,";Allocation info for local variables in function '%s'\n",func->name);
+    fprintf(of,";------------------------------------------------------------\n");
+    
+    printAllocInfoSeg(xstack,func,of);
+    printAllocInfoSeg(istack,func,of);
+    printAllocInfoSeg(code,func,of);
+    printAllocInfoSeg(data,func,of);
+    printAllocInfoSeg(xdata,func,of);
+    printAllocInfoSeg(idata,func,of);
+    printAllocInfoSeg(sfr,func,of);
+    printAllocInfoSeg(sfrbit,func,of);
 }

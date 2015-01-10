@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-BOOLEAN isspace(char c)
+BOOLEAN isspace(char c) BANKED
 {
   if(c == ' ' || c == '\t' || c == '\n')
     return 1;

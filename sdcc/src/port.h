@@ -30,12 +30,18 @@ typedef struct {
 	const char *debug_opts;
 	/** Arguments for normal assembly mode.  PENDING: ignored */
 	const char *plain_opts;
+	/* print externs as global */
+	int externGlobal;
     } assembler;
 
     /* linker related info */
     struct {
 	/** Command to run (eg link-z80) */
 	const char **cmd;
+	/** If non-null will be used to execute the link. */
+	void (*do_link)(void);
+	/** Extention for object files (.rel, .obj, ...) */
+	const char *rel_ext;
     } linker;
 
     struct {
@@ -70,6 +76,7 @@ typedef struct {
 	const char *static_name;
 	const char *overlay_name;
 	const char *post_static_name;
+	const char *home_name;
 	struct memmap *default_local_map ; /* default location for auto vars */
 	struct memmap *default_globl_map ; /* default location for globl vars*/
 	int         code_ro;               /* code space read-only 1=yes */
@@ -87,6 +94,9 @@ typedef struct {
 	int call_overhead;
 	/** Re-enterant space */
 	int reent_overhead;
+	/** 'banked' call overhead.
+	    Mild overlap with bank_overhead */
+	int banked_overhead;
     } stack;
 
     struct {

@@ -7,24 +7,24 @@
 #include <types.h>
 
 BOOLEAN
-isalpha(char c);
+isalpha(char c) BANKED;
 
 BOOLEAN
-isupper(char c);
+isupper(char c) BANKED;
 
 BOOLEAN
-islower(char c);
+islower(char c) BANKED;
 
 BOOLEAN
-isdigit(char c);
+isdigit(char c) BANKED;
 
 BOOLEAN
-isspace(char c);
+isspace(char c) BANKED;
 
 char
-toupper(char c);
+toupper(char c) BANKED;
 
 char
-tolower(char c);
+tolower(char c) BANKED;
 
 #endif /* _CTYPE_H */

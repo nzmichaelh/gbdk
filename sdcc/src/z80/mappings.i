@@ -3,6 +3,7 @@ static const ASM_MAPPING _asxxxx_gb_mapping[] = {
     { "area", ".area _%s" },
     { "areacode", ".area _%s" },
     { "areadata", ".area _%s" },
+    { "areahome", ".area _%s" },
     { "functionlabeldef", "%s:" },
     { "*hl", "(hl)" },
     { "di", "di" },
@@ -11,18 +12,12 @@ static const ASM_MAPPING _asxxxx_gb_mapping[] = {
     { "ldaspsp", "lda sp,%d(sp)" },
     { "*pair", "(%s)" },
     { "shortjp", "jr" },
-    { "enter", "push bc" },
+    { "enter", "" },
     { "enterx", 
-      "push bc\n"
-      "\tlda sp,-%d(sp)" },
-    { "leave", 
-      "pop bc\n"
-      "\tret"
+      "lda sp,-%d(sp)" },
+    { "leave", ""
     },
-    { "leavex", 
-      "lda sp,%d(sp)\n"
-      "\tpop bc\n"
-      "\tret"
+    { "leavex", "lda sp,%d(sp)"
     },
     { "pusha", 
       "push af\n"
@@ -31,37 +26,55 @@ static const ASM_MAPPING _asxxxx_gb_mapping[] = {
       "\tpush hl"
     },
     { "adjustsp", "lda sp,-%d(sp)" },
+    { "fileprelude", "" },
     { NULL, NULL }
 };
 
 static const ASM_MAPPING _asxxxx_z80_mapping[] = {
+    /* We want to prepend the _ */
+    { "area", ".area _%s" },
+    { "areacode", ".area _%s" },
+    { "areadata", ".area _%s" },
+    { "areahome", ".area _%s" },
     { "*ixx", "%d(ix)" },
     { "*iyx", "%d(iy)" },
     { "*hl", "(hl)" },
     { "di", "di" },
-    { "ldahli", "ld a,(hl+)" },
-    { "ldahlsp", "lda hl,%d(sp)" },
-    { "ldaspsp", "lda sp,%d(sp)" },
+    { "ldahli", 
+		"ld a,(hl)\n"
+		"\tinc\thl" },
+    { "ldahlsp", 
+		"ld hl,#%d\n"
+		"\tadd\thl,sp" },
+    { "ldaspsp", 
+		"ld hl,#%d\n"
+		"\tadd\thl,sp\n"
+		"\tld\tsp,hl" },
     { "*pair", "(%s)" },
-    { "shortjp", "jr" },
-    { "enter", "push bc" },
+    { "shortjp", "jp" },
+    { "enter", 
+		"push\tix\n"
+		"\tld\tix,#0\n"
+		"\tadd\tix,sp" },
     { "enterx", 
-      "push bc\n"
-      "lda sp,-%d(sp)" },
+		"push\tix\n"
+		"\tld\tix,#0\n"
+		"\tadd\tix,sp\n"
+		"\tld\thl,#-%d\n"
+		"\tadd\thl,sp\n"
+		"\tld\tsp,hl" },
     { "leave", 
-      "pop bc\n"
-      "\tret"
+		"pop\tix\n"
     },
     { "leavex", 
-      "lda sp,%d(sp)\n"
-      "\tpop bc\n"
-      "\tret"
+		"ld sp,ix\n"
+		"\tpop\tix\n"
     },
     { "pusha", 
-      "push af\n"
-      "\tpush bc\n"
-      "\tpush de\n"
-      "\tpush hl"
+      		"push af\n"
+      		"\tpush\tbc\n"
+      		"\tpush\tde\n"
+      		"\tpush\thl"
     },
     { "adjustsp", "lda sp,-%d(sp)" },
     { NULL, NULL }
@@ -87,7 +100,12 @@ static const ASM_MAPPING _rgbds_mapping[] = {
       "\tGLOBAL __modschar\n"
       "\tGLOBAL __moduchar\n"
       "\tGLOBAL __modsint\n"
-      "\tGLOBAL __moduint"
+      "\tGLOBAL __moduint\n"
+      "\tGLOBAL __mulslong\n"  
+      "\tGLOBAL __modslong\n"  
+      "\tGLOBAL __divslong\n"  
+      "\tGLOBAL banked_call\n"
+      "\tGLOBAL banked_ret\n"
     },
     { "functionheader", 
       "; ---------------------------------\n"
@@ -97,14 +115,15 @@ static const ASM_MAPPING _rgbds_mapping[] = {
     { "functionlabeldef", "%s:" },
     { "zero", "$00" },
     { "one", "$01" },
-    { "area", "SECTION \"%s\",%C" },
-    { "areacode", "SECTION \"CODE\",%C" },
-    { "areadata", "SECTION \"DATA\",BSS" },
+    { "area", "SECTION \"%s\",CODE" },
+    { "areadata", "SECTION \"%F_%s\",BSS" },
+    { "areacode", "SECTION \"%F_CODE\",%s" }, 
+    { "areahome", "SECTION \"%F_HOME\",HOME" },
     { "ascii", "DB \"%s\"" },
     { "ds", "DS %d" },
-    { "db", "DB %d" },
+    { "db", "DB" },
     { "dbs", "DB %s" },
-    { "dw", "DW %d" },
+    { "dw", "DW" },
     { "dws", "DW %s" },
     { "immed", "" },
     { "constbyte", "$%02X" },
@@ -114,6 +133,7 @@ static const ASM_MAPPING _rgbds_mapping[] = {
     { "hashedstr", "%s" },
     { "lsbimmeds", "%s & $FF" },
     { "msbimmeds", "%s >> 8" },
+    { "bankimmeds", "BANK(%s)" },
     { "module", "; MODULE %s" },
     { NULL, NULL }
 };
@@ -127,19 +147,12 @@ static const ASM_MAPPING _rgbds_gb_mapping[] = {
     },
     { "di", "di" },
     { "adjustsp", "add sp,-%d" },
-    { "enter", "push bc" },
-    { "enterx", 
-      "push bc\n"
-      "\tadd sp,-%d"
+    { "enter", "" },
+    { "enterx", "add sp,-%d"
     },
-    { "leave", 
-      "pop bc\n"
-      "\tret"
+    { "leave", ""
     },
-    { "leavex", 
-      "add sp,%d\n"
-      "\tpop bc\n"
-      "\tret"
+    { "leavex", "add sp,%d"
     },
     { "ldahli", "ld a,[hl+]" },
     { "*hl", "[hl]" },
@@ -175,7 +188,9 @@ static const ASM_MAPPING _isas_mapping[] = {
       "\tGLOBAL __modschar\n"
       "\tGLOBAL __moduchar\n"
       "\tGLOBAL __modsint\n"
-      "\tGLOBAL __moduint"
+      "\tGLOBAL __moduint\n"
+      "\tGLOBAL banked_call\n"
+      "\tGLOBAL banked_ret\n"
     },
     { "functionheader", 
       "; ---------------------------------\n"
@@ -188,11 +203,12 @@ static const ASM_MAPPING _isas_mapping[] = {
     { "area", "%s\tGROUP" },
     { "areacode", "_CODE\tGROUP" },
     { "areadata", "_DATA\tGROUP" },
+    { "areahome", "_CODE\tGROUP" },
     { "ascii", "DB \"%s\"" },
     { "ds", "DS %d" },
-    { "db", "DB %d" },
+    { "db", "DB" },
     { "dbs", "DB %s" },
-    { "dw", "DW %d" },
+    { "dw", "DW" },
     { "dws", "DW %s" },
     { "immed", "" },
     { "constbyte", "0x%02X" },
@@ -202,6 +218,7 @@ static const ASM_MAPPING _isas_mapping[] = {
     { "hashedstr", "%s" },
     { "lsbimmeds", "%s & 0xFF" },
     { "msbimmeds", "%s >> 8" },
+    { "bankimmeds", "!%s" },
     { "module", "; MODULE %s" },
     { NULL, NULL }
 };
@@ -215,20 +232,12 @@ static const ASM_MAPPING _isas_gb_mapping[] = {
     },
     { "di", "di" },
     { "adjustsp", "add sp,-%d" },
-    { "enter", "push bc" },
-    { "enterx", 
-      "push bc\n"
-      "\tadd sp,-%d"
+    { "enter", "" },
+    { "enterx", "add sp,-%d"
     },
-    { "leave", 
-      "pop bc\n"
-      "\tret"
+    { "leave", ""
     },
-    { "leavex", 
-      "add sp,%d\n"
-      "\tpop bc\n"
-      "\tret"
-    },
+    { "leavex", "add sp,%d\n" },
     { "ldahli", "ld a,(hli)" },
     { "*hl", "(hl)" },
     { "ldahlsp", "ldhl sp,%d" },

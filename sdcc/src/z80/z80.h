@@ -19,3 +19,7 @@ extern Z80_OPTS z80_opts;
 #define IS_GB  (z80_opts.sub == SUB_GBZ80)
 #define IS_Z80 (z80_opts.sub == SUB_Z80)
 
+enum {
+    ACCUSE_A = 1,
+    ACCUSE_HL
+};
