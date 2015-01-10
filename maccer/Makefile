@@ -1,6 +1,6 @@
 # Makefile for maccer
 CC	= gcc
-LDFLAGS = -lm
+LDADD	= -lm
 CFLAGS	= -Wall -O
 
 VER 	= 0.25
@@ -14,8 +14,7 @@ OBJS	= maccer.o
 all: $(BIN)
 
 $(BIN): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(BIN) $(OBJS)
-	doc++ -d html $(BIN).c
+	$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) $(LDADD)
 
 clean:
 	rm -f $(BIN) $(BIN).exe $(OBJS) *~
